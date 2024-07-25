@@ -13,7 +13,7 @@ TASK_CHOICES = {
 class TestAdminForm(forms.ModelForm):
     class Meta:
         form = Task
-        fields = ('title', 'user', 'task_numbers')
+        fields = ('title', 'group', 'task_numbers')
         widgets = {
             'task_numbers': forms.CheckboxSelectMultiple(choices=TASK_CHOICES),
         }
@@ -28,7 +28,7 @@ class TestAdminForm(forms.ModelForm):
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
     form = TestAdminForm
-    list_display = ('title', 'user')
+    list_display = ('title', 'group')
 
 
 @admin.register(Task)

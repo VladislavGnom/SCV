@@ -1,15 +1,39 @@
+import ast
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from app.forms import ImageForm
-from app.models import Image, Task
+from app.models import Image, Task, Test
 from django.http import Http404
 
 
+# help function
+def get_user_groups(user):
+    return [group.id for group in user.groups.all()]
+
+
+def get_count_groups(user):
+    return user.groups.count()
+
+
+def str_to_int(obj):
+    return int(obj)
+
+
 def index(request):
+    print(request.group)
     return render(request, 'app/index.html')
 
 
 def scv_home(request):
-    gen_task_for_type = [1, 2, 3]
+    # ast.literal_eval - используется для преобразования строкового представления списка из БД в нормальный список
+    # пока что ограничиваемся отображением одной к/р. Это нужно допилить:)
+    # этот код позволяет регать пользователя в разных группах и он всегда будет получать ДЗ со всех этих групп. Функционалпод вопросом
+    tests = []
+    for i in range(get_count_groups(request.user)):
+        test = Test.objects.filter(group=get_user_groups(request.user)[i])
+        tests.append(test)
+
+    # list(map(str_to_int, ast.literal_eval(tests[0].task_numbers)))
+    gen_task_for_type = [1, 2]
     all_tasks = []
     # upload file
     if request.method == "POST":
