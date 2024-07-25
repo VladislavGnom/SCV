@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<h1 class="text-center">SCV Home</h1>
+
+<div class="container">
+    <div class="card">
+        <div class="card-title ml-2">
+            <h2 class="mt-2">Upload File</h2>
+            <form class="mt-2" action="" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button class="btn btn-warning" type="submit">Upload</button>
+            </form>
+
+            {% if img_obj %}
+                <h3 class="text-success mt-2 h5">Succesfully uploaded: {{img_obj.title }}</h3>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <div class="card-body">
+            {% if images %}
+                {% for image in images %}
+                    <img src="{{ image.image.url }}" alt="connect" style="max-height:100px">
+                {% endfor %}
+            {% else %}
+                <div class="h3">Нет загруженных файлов</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="card mt-5">
+    {% if tasks %}
+        <form action="{% url 'show-result' %}" method="post">
+        {% csrf_token %}
+        {% for task in tasks %}
+        <div>
+            {{ task.type_task }}
+        </div>
+        <div>
+            <img src="{{ task.photo.url }}" alt="Задание {{ task.type_task }}">
+        </div>
+        <input name="task-id-{{ task.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ">
+        {% endfor %}
+        <br><button type="submit" class="btn btn-success btn-sm mt-4 col-12">Загрузить решение</button>
+        </form>
+    {% endif %}
+    </div>
+</div>
+
+<div style="height:1000px"></div>
+
+
+{% endblock %}

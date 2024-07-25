@@ -1,0 +1,102 @@
+from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
+from app.forms import ImageForm
+from app.models import Image, Task
+from django.http import Http404
+
+
+def index(request):
+    return render(request, 'app/index.html')
+
+
+def scv_home(request):
+    gen_task_for_type = [1, 2, 3]
+    all_tasks = []
+    # upload file
+    if request.method == "POST":
+        form = ImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+
+            img_obj = form.instance
+            images = get_list_or_404(Image)
+
+            for type in gen_task_for_type:
+                all_tasks.append(Task.objects.filter(type_task=type).order_by('?').first())
+
+
+            context = {
+                'form': form, 
+                'img_obj': img_obj, 
+                'images': images,
+                'tasks': all_tasks,
+                }
+
+            return render(request, 'app/scv_home.html', context=context)
+    else:
+        images = Image.objects.all()
+        form = ImageForm()
+        for type in gen_task_for_type:
+            all_tasks.append(Task.objects.filter(type_task=type).order_by('?').first())
+
+        
+        context = {
+            'form': form, 
+            'images': images,
+            'tasks': all_tasks,
+            'gen_is_true': True,
+            }
+        
+    
+    return render(request, 'app/scv_home.html', context=context)
+
+
+# # check handler tasks
+# def tasks_handler(request):
+#     if request.method == 'POST':
+#         # counter right answers
+#         count = 0
+#         data = dict(request.POST)
+
+#         for task_id, user_answer in data.items():
+#             if task_id != 'csrfmiddlewaretoken':  
+#                 id = task_id.split('-')[2]
+#                 right_answer = Task.objects.get(pk=id).answer
+
+#                 user_answer = user_answer[0].strip()
+
+#                 if right_answer == user_answer:
+#                     count += 1
+#     else:
+#         return redirect('scv-home')
+
+        
+#     return redirect('show-result')
+    
+
+
+def show_result(request):
+    if request.method == 'POST':
+        # counter right answers
+        count = 0
+        data = dict(request.POST)
+
+        for task_id, user_answer in data.items():
+            if task_id != 'csrfmiddlewaretoken':  
+                id = task_id.split('-')[2]
+                right_answer = Task.objects.get(pk=id).answer
+
+                user_answer = user_answer[0].strip()
+
+                if right_answer == user_answer:
+                    count += 1
+
+        context = {
+            'count': count,
+
+        }
+                
+        
+        return render(request, 'app/show_result.html', context=context) 
+    else:
+        return redirect('scv-home')
+
