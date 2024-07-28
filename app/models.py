@@ -34,7 +34,7 @@ class Test(models.Model):
         return self.title
 
 
-class UserTests(models.Model):
+class UserTest(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     tasks_id = models.CharField(max_length=255)

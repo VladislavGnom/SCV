@@ -1,7 +1,7 @@
 import ast
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from app.forms import ImageForm
-from app.models import Image, Task, Test
+from app.models import Image, Task, Test, UserTest
 from django.http import Http404
 
 
@@ -34,7 +34,6 @@ def scv_home(request):
 
     tests = Test.objects.filter(group=get_user_groups(request.user)[0])
     
-    ready_tests = []
     gen_tasks_for_type = []
     all_tasks = []
 
@@ -69,9 +68,23 @@ def scv_home(request):
     else:
         images = Image.objects.all()
         form = ImageForm()
-        for gen_task in gen_tasks_for_type:
-                variant = [Task.objects.filter(type_task=type).order_by('?').first() for type in gen_task]
+
+        data = UserTest.objects.filter(user=request.user)
+
+        if not data:
+            count = 1
+            for gen_task in gen_tasks_for_type:
+                    variant = [Task.objects.filter(type_task=type).order_by('?').first() for type in gen_task]
+                    all_tasks.append(variant)
+                    UserTest.objects.create(title=f'Variant {count}', user=request.user, tasks_id=[v.pk for v in variant])
+                    count += 1
+        else:
+            gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
+            for gen_task in gen_tasks_for_type:
+                variant = [Task.objects.filter(pk=pk).order_by('?').first() for pk in gen_task]
                 all_tasks.append(variant)
+
+
 
         context = {
             'form': form, 

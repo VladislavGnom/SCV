@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import reverse
 from django import forms
-from .models import Task, Image, Test
+from .models import Task, Image, Test, UserTest
 
 TASK_CHOICES = {
     '1': '1',
@@ -42,6 +42,10 @@ class TaskAdminForm(admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, name)
     view_tasks_link.short_description = "Links"
     
+
+@admin.register(UserTest)
+class UserTestAdmin(admin.ModelAdmin):
+    list_display = ('title', 'user', 'is_complete')
 
 # admin.site.register(Task)
 admin.site.register(Image)
