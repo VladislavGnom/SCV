@@ -10,8 +10,8 @@ def get_user_groups(user):
     return [group.id for group in user.groups.all()]
 
 
-def get_count_groups(user):
-    return user.groups.count()
+# def get_count_groups(user):
+#     return user.groups.count()
 
 
 def str_to_int(obj):
@@ -27,14 +27,23 @@ def scv_home(request):
     # ast.literal_eval - используется для преобразования строкового представления списка из БД в нормальный список
     # пока что ограничиваемся отображением одной к/р. Это нужно допилить:)
     # этот код позволяет регать пользователя в разных группах и он всегда будет получать ДЗ со всех этих групп. Функционалпод вопросом
-    tests = []
-    for i in range(get_count_groups(request.user)):
-        test = Test.objects.filter(group=get_user_groups(request.user)[i])
-        tests.append(test)
+    # tests = []
+    # for i in range(get_count_groups(request.user)):
+    #     test = Test.objects.filter(group=get_user_groups(request.user)[i])
+    #     tests.append(test)
+
+    tests = Test.objects.filter(group=get_user_groups(request.user)[0])
+    
+    ready_tests = []
+    gen_tasks_for_type = []
+    all_tasks = []
+
+    for test in tests:
+        gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
 
     # list(map(str_to_int, ast.literal_eval(tests[0].task_numbers)))
-    gen_task_for_type = [1, 2]
-    all_tasks = []
+
+
     # upload file
     if request.method == "POST":
         form = ImageForm(request.POST, request.FILES)
@@ -44,8 +53,9 @@ def scv_home(request):
             img_obj = form.instance
             images = get_list_or_404(Image)
 
-            for type in gen_task_for_type:
-                all_tasks.append(Task.objects.filter(type_task=type).order_by('?').first())
+            for gen_task in gen_tasks_for_type:
+                for type in gen_task:
+                    all_tasks.append(Task.objects.filter(type_task=type).order_by('?').first())
 
 
             context = {
@@ -59,10 +69,10 @@ def scv_home(request):
     else:
         images = Image.objects.all()
         form = ImageForm()
-        for type in gen_task_for_type:
-            all_tasks.append(Task.objects.filter(type_task=type).order_by('?').first())
+        for gen_task in gen_tasks_for_type:
+                variant = [Task.objects.filter(type_task=type).order_by('?').first() for type in gen_task]
+                all_tasks.append(variant)
 
-        
         context = {
             'form': form, 
             'images': images,

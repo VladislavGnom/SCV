@@ -23,7 +23,7 @@
         <div class="card-body">
             {% if images %}
                 {% for image in images %}
-                    <img src="{{ image.image.url }}" alt="connect" style="max-height:100px">
+                    <a href="{{ image.image.url }}"><img src="{{ image.image.url }}" alt="connect" style="max-height:100px"></a>
                 {% endfor %}
             {% else %}
                 <div class="h3">Нет загруженных файлов</div>
@@ -33,23 +33,26 @@
 </div>
 
 <div class="container">
-    <div class="card mt-5">
     {% if tasks %}
-        <form action="{% url 'show-result' %}" method="post">
-        {% csrf_token %}
         {% for task in tasks %}
-        <div>
-            {{ task.type_task }}
+        <div class="card mt-5">
+            <form action="{% url 'show-result' %}" method="post">
+                {% csrf_token %}
+                {% for t in task %}
+                <div>
+                    {{ t.type_task }}
+                </div>
+                <div>
+                    <img src="{{ t.photo.url }}" alt="Задание {{ t.type_task }}">
+                </div>
+                <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ">
+                <hr>
+                {% endfor %}
+                <br><button type="submit" class="btn btn-success btn-sm mt-4 col-12">Загрузить решение</button>
+            </form>
         </div>
-        <div>
-            <img src="{{ task.photo.url }}" alt="Задание {{ task.type_task }}">
-        </div>
-        <input name="task-id-{{ task.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ">
         {% endfor %}
-        <br><button type="submit" class="btn btn-success btn-sm mt-4 col-12">Загрузить решение</button>
-        </form>
     {% endif %}
-    </div>
 </div>
 
 <div style="height:1000px"></div>
