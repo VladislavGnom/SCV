@@ -40,6 +40,7 @@ class UserTest(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     tasks_id = models.CharField(max_length=255)
     is_complete = models.BooleanField(default=False)
+    right_answers = models.IntegerField(blank=True, default=0)
 
     def __str__(self):
         return self.title

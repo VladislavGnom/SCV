@@ -41,26 +41,28 @@
 
 <div class="container">
     {% if tasks %}
-        {% for task in tasks %}
+        {% for title, task in merge_title_and_task %}
         <div class="card mt-5">
+            <div class="h3 text-center mt-3">{{ title }}</div><hr>
             <form action="{% url 'show-result' %}" method="post">
+                <input name="{{ title }}" class="d-none">
                 {% csrf_token %}
                 {% for t in task %}
-                <div>
-                    {{ t.type_task }}
-                </div>
-                <div>
-                    <img src="{{ t.photo.url }}" alt="Задание {{ t.type_task }}">
-                </div>
-                <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ">
-                <hr>
-                {% endfor %}
-                <br><button type="submit" class="btn btn-success btn-sm mt-4 col-12">Загрузить решение</button>
+                    <div>
+                        {{ t.type_task }}
+                    </div>
+                    <div>
+                        <img src="{{ t.photo.url }}" alt="Задание {{ t.type_task }}">
+                    </div>
+                    <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ">
+                    <hr>
+                    {% endfor %}
+                    <br><button type="submit" class="btn btn-success btn-sm mt-4 col-12">Загрузить решение</button>
             </form>
         </div>
         {% endfor %}
     {% else %}
-    <div class="h3">У вас нет активных тестов! :&#41;</div>
+    <div class="h3 mt-3 text-center">У вас нет активных тестов! :&#41;</div>
     {% endif %}
 </div>
 

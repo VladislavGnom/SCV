@@ -46,7 +46,7 @@ class TaskAdminForm(admin.ModelAdmin):
 
 @admin.register(UserTest)
 class UserTestAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'is_complete')
+    list_display = ('title', 'user', 'right_answers', 'is_complete')
 
 # admin.site.register(Task)
 admin.site.register(Image)
