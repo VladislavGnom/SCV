@@ -16,7 +16,6 @@ def str_to_int(obj):
 
 
 def index(request):
-    print(request.group)
     return render(request, 'app/index.html')
 
 
@@ -34,20 +33,30 @@ def scv_home(request):
     # все задания - список обьектов отобранных из БД для отображения в шаблоне
     all_tasks = []
 
+    # имена для тестов
+    name_for_test = []
+
+    # тесты пользователя (сгенерированные)
+    data = UserTest.objects.filter(user=request.user)
+
     # перебираем тесты для пользователя и добавляем в gen_tasks_for_type список из типов заданий, которые были заданы через админ панель
     for test in tests:
-        # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
-        gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
+        # проверка есть ли уже тест в таблице UserTest из таблицы Test
+        if not test.title in [test.title for test in data]:
+            # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+            gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
+            name_for_test.append(test.title)
+
 
 
     # upload file
     if request.method == "POST":
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save(commit=False)
+            image = form.save(commit=False)
             # устанавливаю пользователя который загружает фото - владельцем этого фото
-            form.user = request.user
-            form.save()
+            image.user = request.user
+            image.save()
 
             # получаем экземпляр файла
             img_obj = form.instance
@@ -80,22 +89,19 @@ def scv_home(request):
         # форма для загрузки фото
         form = ImageForm()
 
-        # тесты пользователя (сгенерированные)
-        data = UserTest.objects.filter(user=request.user)
+        # # тесты пользователя (сгенерированные)
+        # data = UserTest.objects.filter(user=request.user)
 
         # усли нет сгенерированных тестов для пользователя, то генерируем их
         if not data:
-            # счётчик (используется для названия теста)
-            count = 1
             # генерация варианта, перебираем список состоящий из списков типов заданий 
-            for gen_task in gen_tasks_for_type:
+            for indx, gen_task in enumerate(gen_tasks_for_type):
                     # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
                     variant = [Task.objects.filter(type_task=type).order_by('?').first() for type in gen_task]
                     # добавляем в список всех обьектов заданий для отображения в шаблоне
                     all_tasks.append(variant)
                     # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
-                    UserTest.objects.create(title=f'Variant {count}', user=request.user, tasks_id=[v.pk for v in variant])
-                    count += 1
+                    UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant])
         else:
             # список из id заданий для отображения сгенерированного варианта
             gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
@@ -105,12 +111,13 @@ def scv_home(request):
                 all_tasks.append(variant)
 
 
+        
+
 
         context = {
             'form': form, 
             'images': images,
             'tasks': all_tasks,
-            'gen_is_true': True,
             }
         
     
@@ -143,4 +150,34 @@ def show_result(request):
         return render(request, 'app/show_result.html', context=context) 
     else:
         return redirect('scv-home')
+
+
+def refresh_func(request):
+    # список (QuerySet) состоящий из тестов пользователя которые предназначены группе(классу) в которую он входит 
+    tests = Test.objects.filter(group=get_user_groups(request.user)[0])
+    
+    # список для списков типов заданий на основе которых будет генерироваться вариант/ы
+    gen_tasks_for_type = []
+
+    # имена для тестов
+    name_for_test = []
+
+    data = UserTest.objects.filter(user=request.user)
+    # перебираем тесты для пользователя и добавляем в gen_tasks_for_type список из типов заданий, которые были заданы через админ панель
+    for test in tests:
+        # проверка есть ли уже тест в таблице UserTest из таблицы Test
+        if not test.title in [test.title for test in data]:
+            # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+            gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
+            name_for_test.append(test.title)
+
+
+    # генерация варианта, перебираем список состоящий из списков типов заданий 
+    for indx, gen_task in enumerate(gen_tasks_for_type):
+        # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
+        variant = [Task.objects.filter(type_task=type).order_by('?').first() for type in gen_task]
+        # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
+        UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant])
+
+    return redirect('scv-home')
 

@@ -33,7 +33,8 @@ class TestAdmin(admin.ModelAdmin):
 
 @admin.register(Task)
 class TaskAdminForm(admin.ModelAdmin):
-    list_display = ('title', 'type_task', 'view_tasks_link',)
+    list_display = ('pk', 'title', 'type_task', 'view_tasks_link',)
+    list_display_links = ('title', 'pk')
     
     def view_tasks_link(self, obj):
         from django.utils.html import format_html
