@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect, get_list_or_404, get_object_or_40
 from app.forms import ImageForm
 from app.models import Image, Task, Test, UserTest
 from django.http import Http404
+from django.contrib.auth.models import User
 
 
 # help function 
@@ -236,4 +237,16 @@ def refresh_func(request):
 
     return redirect('scv-home')
 
+
+def profile(request):
+    data = User.objects.get(username=request.user)
+    has_user_group = get_user_groups(request.user)[0]
+
+
+    context = {
+        'data': data,
+        'group': has_user_group,
+    }
+
+    return render(request, 'app/profile.html', context=context)
 
