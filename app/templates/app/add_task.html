@@ -1,0 +1,24 @@
+{% extends 'base-special.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block main %}
+
+{% if messages %}
+<ul class="messages col-12">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<div class="text-center">
+<h1>Добавление задания</h1>
+
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-warning col-12">Добавить</button>
+</form>
+</div>
+{% endblock %}

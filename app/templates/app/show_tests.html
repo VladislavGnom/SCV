@@ -1,0 +1,16 @@
+{% extends 'base-special.html' %}
+
+{% block main %}
+<h1>Все тесты:</h1>
+
+{% if tests %}
+<ul>
+{% for test in tests %}
+    <li><a href="{% url 'show-result-detail' class_id test.title %}">{{ test.title }}</a></li>
+{% endfor %}
+</ul>
+{% else %}
+<h2>Пока нет тестов</h2>
+{% endif %}
+
+{% endblock %}

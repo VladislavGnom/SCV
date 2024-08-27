@@ -1,0 +1,31 @@
+{% extends 'base-special.html' %}
+
+{% block main %}
+<h1>Все работы класса:</h1>
+
+{% if usertests %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Ученик</th>
+            <th>Название теста</th>
+            <th>Статус выполнения</th>
+            <th>Правильных ответов</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for usertest in usertests %}
+            <tr>
+                <td>{{ usertest.user.full_name }}</td>
+                <td>{{ usertest.title }}</td>
+                <td>{% if usertest.is_complete %} ✅ {% else %} ❌ {% endif %}</td>
+                <td>{{ usertest.right_answers }}/{{ count_tasks }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<h2>Пока нет работ класса</h2>
+{% endif %}
+
+{% endblock %}

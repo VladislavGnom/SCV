@@ -54,7 +54,7 @@
                     <div>
                         <img src="{{ t.photo.url }}" alt="Задание {{ t.type_task }}">
                     </div>
-                    <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ">
+                    <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off">
                     <hr>
                     {% endfor %}
                     <br><button type="submit" class="btn btn-success btn-sm mt-4 col-12">Загрузить решение</button>

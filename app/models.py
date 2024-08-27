@@ -1,12 +1,12 @@
 from django.db import models
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group, AbstractUser
 
 
 
 class Image(models.Model):
     title = models.CharField(max_length=200)
     image = models.ImageField(upload_to='images')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.title
@@ -37,10 +37,14 @@ class Test(models.Model):
 
 class UserTest(models.Model):
     title = models.CharField(max_length=255)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
     tasks_id = models.CharField(max_length=255)
     is_complete = models.BooleanField(default=False)
     right_answers = models.IntegerField(blank=True, default=0)
 
     def __str__(self):
         return self.title
+    
+
+class CustomUser(AbstractUser):
+    full_name = models.CharField(max_length=255)

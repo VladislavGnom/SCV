@@ -1,0 +1,69 @@
+.errorlist {
+    color: red;
+    text-decoration: none;
+    list-style-type: none;
+}
+
+.table {
+    border: 1px solid #eee;
+    table-layout: fixed;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.table th {
+    font-weight: bold;
+    padding: 5px;
+    background: #efefef;
+    border: 1px solid #ddd;
+}
+
+.table td {
+    padding: 5px 10px;
+    border: 1px solid #eee;
+    text-align: left;
+}
+
+.table tbody tr:nth-child(odd){
+    background: #fff;
+}
+
+.table tbody tr:nth-child(even){
+    background: #F7F7F7;
+}
+
+.form-check {
+    position: relative;
+    display: inline-block;
+    padding-left: 2rem;
+}
+
+
+.info,
+.success,
+.warning,
+.error {
+    list-style-type: none;
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 3px 3px 3px 3px;
+}
+
+.messages .info {
+
+    color: #059;
+    background-color: #BEF;
+}
+
+.messages .success {
+    color: #270;
+    background-color: #DFF2BF;
+}
+.messages .warning {
+    color: #9F6000;
+    background-color: #FEEFB3;
+}
+.messages .error {
+    color: #D8000C;
+    background-color: #FFBABA;
+}

@@ -1,13 +1,31 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from django.urls import reverse
 from django import forms
-from .models import Task, Image, Test, UserTest
+from .models import Task, Image, Test, UserTest, CustomUser
 
 TASK_CHOICES = {
     '1': '1',
     '2': '2',
     '3': '3',
 }
+
+
+class CustomUserAdmin(UserAdmin):
+    model = CustomUser
+    add_fieldsets = UserAdmin.add_fieldsets + (
+        (None, {
+            'fields': ('full_name', ),
+        }),
+    )
+    fieldsets = UserAdmin.fieldsets + (
+        (None, {
+            'fields': ('full_name', ),
+        }),
+    )
+
+
+admin.site.register(CustomUser, CustomUserAdmin)
 
 
 class TestAdminForm(forms.ModelForm):

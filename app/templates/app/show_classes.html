@@ -1,0 +1,18 @@
+{% extends 'base-special.html' %}
+
+{% block main %}
+<h1>Все классы:</h1>
+
+{% if classes %}
+<ul>
+{% for class in classes %}
+    {% if class.name != 'Teachers' %}
+        <li><a href="{% url 'show-tests' class.id %}">{{ class.name }}</a></li>
+    {% endif %}
+{% endfor %}
+</ul>
+{% else %}
+<h2>Пока нет классов</h2>
+{% endif %}
+
+{% endblock %}
