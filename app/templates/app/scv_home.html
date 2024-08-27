@@ -52,7 +52,9 @@
                         {{ t.type_task }}
                     </div>
                     <div>
+                    <div class="multi">
                         <img src="{{ t.photo.url }}" alt="Задание {{ t.type_task }}">
+                    </div>
                     </div>
                     <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off">
                     <hr>

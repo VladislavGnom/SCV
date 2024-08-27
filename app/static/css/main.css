@@ -1,3 +1,43 @@
+/* @media screen and (max-width: 880px) {
+    .col-8 {
+        -ms-flex: 0 0 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .sidebar {
+        width: 100%;
+   }
+   .table {
+    font-size: 13px;
+   }
+}
+
+
+@media screen and (min-width: 880px) {
+    .col-8 {
+        -ms-flex: 0 0 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .sidebar {
+        width: 100%;
+   }
+}
+
+
+@media screen and (min-width: 906px) {
+    .col-8 {
+        flex: 0 0 66.666667%;
+        max-width: 66.666667%;
+    }
+
+    .sidebar {
+        width: 288px;
+   }
+} */
+
+
+
 .errorlist {
     color: red;
     text-decoration: none;
@@ -39,6 +79,7 @@
 }
 
 
+/* messages styles */
 .info,
 .success,
 .warning,
@@ -48,13 +89,10 @@
     padding: 10px;
     border-radius: 3px 3px 3px 3px;
 }
-
 .messages .info {
-
     color: #059;
     background-color: #BEF;
 }
-
 .messages .success {
     color: #270;
     background-color: #DFF2BF;
@@ -67,3 +105,9 @@
     color: #D8000C;
     background-color: #FFBABA;
 }
+
+/* overflow */
+.multi {
+    overflow: auto;
+} 
+
