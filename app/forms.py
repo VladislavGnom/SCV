@@ -3,16 +3,16 @@ from .models import Image, Task, Test
 from django.core.exceptions import ValidationError
 
 
-TASK_CHOICES = {
-    '1': '1',
-    '2': '2',
-    '3': '3',
-    '4': '4',
-    '5': '5',
-    '6': '6',
-    '7': '7',
-    '8': '8',
-}
+TASK_CHOICES = (
+    ('1', '1'),
+    ('2', '2'),
+    ('3', '3'),
+    ('4', '4'),
+    ('5', '5'),
+    ('6', '6'),
+    ('7', '7'),
+    ('8', '8'),
+)
 
 
 class ImageForm(forms.ModelForm):
@@ -38,6 +38,7 @@ class TaskForm(forms.ModelForm):
     
 
 class TestForm(forms.ModelForm):
+
     class Meta:
         model = Test
         fields = ('title', 'group', 'task_numbers')
