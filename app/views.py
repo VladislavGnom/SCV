@@ -29,7 +29,6 @@ def scv_home(request):
     if request.user.groups.filter(name='Teachers').exists():
         return teachers_home(request)
     else:
-        print('hello')
         # ast.literal_eval - используется для преобразования строкового представления списка из БД в нормальный список
         
         # один пользователь принадлежит только одной группе(т.к это как классы в школе - каждый ученик определён только в один класс)
