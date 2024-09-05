@@ -3,6 +3,16 @@
 {% block main %}
 <h1 class="text-center">SCV Home</h1>
 
+
+{% if messages %}
+<ul class="messages col-12">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+
 <div class="container">
     <div class="card">
         <div class="card-title ml-2">

@@ -28,10 +28,8 @@ class TaskForm(forms.ModelForm):
 
     def clean_type_task(self):
         data = self.cleaned_data.get('type_task')
-        print('im here!')
 
         if data not in range(1, 16):
-            print("im already here!")
             raise ValidationError("Введите верный тип задания")
         
         return data

@@ -89,12 +89,16 @@ def scv_home(request):
                     variant = [Task.objects.filter(pk=pk).order_by('?').first() for pk in gen_task]
                     all_tasks.append(variant)
 
+                merge_title_and_task = list(zip(all_title_tests, all_tasks))
+
 
                 context = {
                     'form': form, 
                     'img_obj': img_obj, 
                     'images': images,
                     'tasks': all_tasks,
+                    'all_title_tests': all_title_tests,
+                    'merge_title_and_task': merge_title_and_task,
                     }
 
                 return render(request, 'app/scv_home.html', context=context)
@@ -123,7 +127,7 @@ def scv_home(request):
                 gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
                 # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
                 for gen_task in gen_tasks_for_type:
-                    variant = [Task.objects.filter(pk=pk).order_by('?').first() for pk in gen_task]
+                    variant = [Task.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 
 
@@ -154,63 +158,73 @@ def show_result(request):
         # получаю первый ключ в словаре, который соответствует названию теста
         title_test = list(data.keys())[0]
 
-        # удаляю пару ключ-значение из словаря, которая соответствует названию теста
-        # это нужно для корректной работы следующего цикла!!!
-        del data[title_test]
-
-        # списки для дальнеёшего отображения результатов теста
-        right_answers = []
-        user_answers = []
-
-        for task_id, user_answer in data.items():
-            if task_id != 'csrfmiddlewaretoken':  
-                id = task_id.split('-')[2]
-                right_answer = Task.objects.get(pk=id).answer
-
-                user_answer = user_answer[0].strip()
-
-                right_answers.append(right_answer)
-                user_answers.append(user_answer)
-
-                if right_answer == user_answer:
-                    count += 1
-
-        # отбираю запись с текущим тестом по его названию
+        #-------------Fix bag---------#
+        # проверка: если пользователь уже завершил свой тест то нельзя его сдать на проверку снова 
         test_obj = UserTest.objects.get(user=request.user, title=title_test)
-        # изменяю поле is_complete на True, т.е на завершенное 
-        test_obj.is_complete = True
-        # устанавливаю количество правильных ответов
-        test_obj.right_answers = count
-        # применяю изменения в таблице БД
-        test_obj.save()
+        # если тест пользователя уже выполнен(на это указывает поле is_complete), то отправляем информационное сообщение и перенаправляем его на главную страницу
+        # иначе проверяем тест
+        if test_obj.is_complete:
+            messages.info(request, "Вы уже загрузили свой тест!")
 
-        task_id = list(map(str_to_int, ast.literal_eval(test_obj.tasks_id)))
+            return redirect('scv-home')
+        else:
+            # удаляю пару ключ-значение из словаря, которая соответствует названию теста
+            # это нужно для корректной работы следующего цикла!!!
+            del data[title_test]
 
-        tasks = [Task.objects.get(pk=id) for id in task_id]
+            # списки для дальнеёшего отображения результатов теста
+            right_answers = []
+            user_answers = []
+
+            for task_id, user_answer in data.items():
+                if task_id != 'csrfmiddlewaretoken':  
+                    id = task_id.split('-')[2]
+                    right_answer = Task.objects.get(pk=id).answer
+
+                    user_answer = user_answer[0].strip()
+
+                    right_answers.append(right_answer)
+                    user_answers.append(user_answer)
+
+                    if right_answer == user_answer:
+                        count += 1
+
+            # отбираю запись с текущим тестом по его названию
+            test_obj = UserTest.objects.get(user=request.user, title=title_test)
+            # изменяю поле is_complete на True, т.е на завершенное 
+            test_obj.is_complete = True
+            # устанавливаю количество правильных ответов
+            test_obj.right_answers = count
+            # применяю изменения в таблице БД
+            test_obj.save()
+
+            task_id = list(map(str_to_int, ast.literal_eval(test_obj.tasks_id)))
+
+            tasks = [Task.objects.get(pk=id) for id in task_id]
 
 
-        merge_user_and_right_answers = list(zip(user_answers, right_answers))
+            merge_user_and_right_answers = list(zip(user_answers, right_answers))
 
-        new_merge_user_and_right_answers = []  # format List[ List[Tuple(), Object] ], список из списков содержащих кортёж узерного и правильного ответа + обьект класса Task
-
-
-        for el in merge_user_and_right_answers:
-            new_merge_user_and_right_answers.append([el])
-
-        for indx, val in enumerate(tasks):
-            new_merge_user_and_right_answers[indx].append(val)
+            new_merge_user_and_right_answers = []  # format List[ List[Tuple(), Object] ], список из списков содержащих кортёж узерного и правильного ответа + обьект класса Task
 
 
-        context = {
-            'count_right': count,
-            'percent': int(count * 100 / len(tasks)), # вычисляю процент выполнения всей работы, умножаю по математике количество верных ответов на 100 и делю на количество всех ответов => результат в процентах выполнения всей работы
-            'tasks': tasks,
-            'title': title_test,
-            'new_merge_user_and_right_answers': new_merge_user_and_right_answers,
-        }
-                
-        
-        return render(request, 'app/show_result.html', context=context) 
+            for el in merge_user_and_right_answers:
+                new_merge_user_and_right_answers.append([el])
+
+            for indx, val in enumerate(tasks):
+                new_merge_user_and_right_answers[indx].append(val)
+
+
+            context = {
+                'count_right': count,
+                'percent': int(count * 100 / len(tasks)), # вычисляю процент выполнения всей работы, умножаю по математике количество верных ответов на 100 и делю на количество всех ответов => результат в процентах выполнения всей работы
+                'tasks': tasks,
+                'title': title_test,
+                'new_merge_user_and_right_answers': new_merge_user_and_right_answers,
+            }
+                    
+            
+            return render(request, 'app/show_result.html', context=context) 
     else:
         return redirect('scv-home')
 
