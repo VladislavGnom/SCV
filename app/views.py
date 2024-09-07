@@ -20,7 +20,7 @@ def str_to_int(obj):
 
 
 def index(request):
-    return render(request, 'app/index.html')
+    return render(request, 'app/index.html', context={'title': 'Индексная страница', })
 
 
 @login_required()
@@ -86,7 +86,7 @@ def scv_home(request):
                 gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
                 # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
                 for gen_task in gen_tasks_for_type:
-                    variant = [Task.objects.filter(pk=pk).order_by('?').first() for pk in gen_task]
+                    variant = [Task.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 
                 merge_title_and_task = list(zip(all_title_tests, all_tasks))
@@ -121,7 +121,7 @@ def scv_home(request):
                         # добавляем в список всех обьектов заданий для отображения в шаблоне
                         all_tasks.append(variant)
                         # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
-                        UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant])
+                        UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant], number_of_attempts=tests.get(title=f'{name_for_test[indx]}').number_of_attempts)
             else:
                 # список из id заданий для отображения сгенерированного варианта
                 gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
@@ -132,15 +132,20 @@ def scv_home(request):
 
 
             merge_title_and_task = list(zip(all_title_tests, all_tasks))
+
+
+            usertests = data
             
 
 
             context = {
+                'title': 'Главная страница',
                 'form': form, 
                 'images': images,
                 'tasks': all_tasks,
                 'all_title_tests': all_title_tests,
                 'merge_title_and_task': merge_title_and_task,
+                'usertests': usertests,
                 }
             
         
@@ -164,7 +169,7 @@ def show_result(request):
         # если тест пользователя уже выполнен(на это указывает поле is_complete), то отправляем информационное сообщение и перенаправляем его на главную страницу
         # иначе проверяем тест
         if test_obj.is_complete:
-            messages.info(request, "Вы уже загрузили свой тест!")
+            messages.info(request, "Вы исчерпали свои попытки на этот тест, он закрылся!")
 
             return redirect('scv-home')
         else:
@@ -191,8 +196,19 @@ def show_result(request):
 
             # отбираю запись с текущим тестом по его названию
             test_obj = UserTest.objects.get(user=request.user, title=title_test)
-            # изменяю поле is_complete на True, т.е на завершенное 
-            test_obj.is_complete = True
+
+
+            # увеличиваю число текущих попыток
+            test_obj.current_attempts += 1
+
+            # если количество попыток стало числом равному разрешёному количеству пересдач, то тест закрывается
+            if test_obj.current_attempts == test_obj.number_of_attempts:
+                # изменяю поле is_complete на True, т.е на завершенное 
+                test_obj.is_complete = True
+            # если пользователь решил тест правильно то даже если есть попытки, незачем его высвечивать, поэтому он тоже закрывается
+            elif count == len(right_answers):
+                # изменяю поле is_complete на True, т.е на завершенное 
+                test_obj.is_complete = True
             # устанавливаю количество правильных ответов
             test_obj.right_answers = count
             # применяю изменения в таблице БД
@@ -255,7 +271,7 @@ def refresh_func(request):
         # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
         variant = [Task.objects.filter(type_task=type).order_by('?').first() for type in gen_task]
         # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
-        UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant])
+        UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant], number_of_attempts=tests.get(title=f'{name_for_test[indx]}').number_of_attempts)
 
     return redirect('scv-home')
 

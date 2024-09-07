@@ -4,11 +4,18 @@ from django.urls import reverse
 from django import forms
 from .models import Task, Image, Test, UserTest, CustomUser
 
-TASK_CHOICES = {
-    '1': '1',
-    '2': '2',
-    '3': '3',
-}
+TASK_CHOICES = (
+    ('1', '1'),
+    ('2', '2'),
+    ('3', '3'),
+    ('4', '4'),
+    ('5', '5'),
+    ('6', '6'),
+    ('7', '7'),
+    ('8', '8'),
+    ('9', '9'),
+    ('10', '10'),
+)
 
 
 class CustomUserAdmin(UserAdmin):
@@ -31,7 +38,7 @@ admin.site.register(CustomUser, CustomUserAdmin)
 class TestAdminForm(forms.ModelForm):
     class Meta:
         form = Task
-        fields = ('title', 'group', 'task_numbers')
+        fields = ('title', 'group', 'task_numbers', 'number_of_attempts')
         widgets = {
             'task_numbers': forms.CheckboxSelectMultiple(choices=TASK_CHOICES),
         }

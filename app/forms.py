@@ -41,8 +41,14 @@ class TestForm(forms.ModelForm):
 
     class Meta:
         model = Test
-        fields = ('title', 'group', 'task_numbers')
+        fields = ('title', 'group', 'task_numbers', 'number_of_attempts')
         widgets = {
             'task_numbers': forms.CheckboxSelectMultiple(choices=TASK_CHOICES),
         }
+        labels = {
+            'title': 'Название', 
+            'group': 'Класс', 
+            'task_numbers': 'Типы заданий',
+            'number_of_attempts': 'Количество попыток',
+            }
 

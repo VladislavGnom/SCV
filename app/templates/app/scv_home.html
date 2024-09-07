@@ -42,6 +42,16 @@
     </div>
 </div>
 
+<div class="container mt-2">
+    <ul class="list-group">
+    {% if usertests %}
+        {% for test in usertests %}
+            <li class="list-group-item list-group-item-warning">Тест: {{ test.title }} Попытки: {{ test.current_attempts }}/{{ test.number_of_attempts }}</li>
+        {% endfor %}
+    {% endif %}
+    </ul>
+</div>
+
 <div class="container mt-3">
     <form action="{% url 'refresh' %}" method="post">
         {% csrf_token %}
