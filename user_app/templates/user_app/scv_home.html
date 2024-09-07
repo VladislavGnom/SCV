@@ -46,7 +46,17 @@
     <ul class="list-group">
     {% if usertests %}
         {% for test in usertests %}
-            <li class="list-group-item list-group-item-warning">Тест: {{ test.title }} Попытки: {{ test.current_attempts }}/{{ test.number_of_attempts }}</li>
+            <li class="list-group-item list-group-item-warning"><span class="text-muted">Тест:</span> {{ test.title }}. <span class="text-muted">Попытки:</span> {{ test.current_attempts }}/{{ test.number_of_attempts }}. <span class="text-muted">Статус:</span> {% if test.current_attempts == 0 %} Работа в процессе решения{% else %} Работа в процессе решения, попробуй решить на максимум баллов{% endif %}</li>
+        {% endfor %}
+    {% endif %}
+    </ul>
+</div>
+
+<div class="container mt-2">
+    <ul class="list-group">
+    {% if completed_usertests %}
+        {% for test in completed_usertests %}
+            <li class="list-group-item list-group-item-success"><span class="text-muted">Тест:</span> {{ test.title }}. <span class="text-muted">Попытки:</span> {{ test.current_attempts }}/{{ test.number_of_attempts }}. <span class="text-muted">Статус:</span> Работа выполнена и загружена</li>
         {% endfor %}
     {% endif %}
     </ul>

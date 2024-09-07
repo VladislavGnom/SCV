@@ -25,7 +25,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app',
+    'user_app',
+    'teacher_app',
     'authapp',
     "crispy_forms",
     "crispy_bootstrap4",
@@ -124,7 +125,7 @@ MEDIA_ROOT = BASE_DIR / 'media/'
 # auth 
 LOGIN_REDIRECT_URL = '/scv'
 LOGIN_URL = '/accounts/login'
-AUTH_USER_MODEL = 'app.CustomUser'
+AUTH_USER_MODEL = 'user_app.CustomUser'
 
 
 # crispy forms

@@ -4,7 +4,7 @@ from django.contrib.auth.models import Group, AbstractUser
 
 
 class Image(models.Model):
-    title = models.CharField(max_length=200)
+    title = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to='images')
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
 

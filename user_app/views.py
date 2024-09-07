@@ -1,12 +1,14 @@
 import ast
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
-from app.forms import ImageForm, TaskForm, TestForm
-from app.models import Image, Task, Test, UserTest, CustomUser
+from user_app.forms import ImageForm, TaskForm, TestForm
+from user_app.models import Image, Task, Test, UserTest, CustomUser
 from django.http import Http404
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+
+from teacher_app.views import teachers_home
 
 
 # help function 
@@ -20,7 +22,7 @@ def str_to_int(obj):
 
 
 def index(request):
-    return render(request, 'app/index.html', context={'title': 'Индексная страница', })
+    return render(request, 'user_app/index.html', context={'title': 'Индексная страница', })
 
 
 @login_required()
@@ -80,7 +82,7 @@ def scv_home(request):
                 images = Image.objects.filter(user=request.user)
 
                 # тесты пользователя (сгенерированные)
-                data = UserTest.objects.filter(user=request.user)
+                data = UserTest.objects.filter(user=request.user, is_complete=False)
 
                 # список из id заданий для отображения сгенерированного варианта
                 gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
@@ -91,6 +93,10 @@ def scv_home(request):
 
                 merge_title_and_task = list(zip(all_title_tests, all_tasks))
 
+                usertests = data
+
+                completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
+
 
                 context = {
                     'form': form, 
@@ -99,9 +105,11 @@ def scv_home(request):
                     'tasks': all_tasks,
                     'all_title_tests': all_title_tests,
                     'merge_title_and_task': merge_title_and_task,
+                    'usertests': usertests,
+                    'completed_usertests': completed_usertests,
                     }
 
-                return render(request, 'app/scv_home.html', context=context)
+                return render(request, 'user_app/scv_home.html', context=context)
         else:
             # получаем список из загруженных фотографий в БД ДЛЯ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
             images = Image.objects.filter(user=request.user)
@@ -135,6 +143,8 @@ def scv_home(request):
 
 
             usertests = data
+
+            completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
             
 
 
@@ -146,10 +156,11 @@ def scv_home(request):
                 'all_title_tests': all_title_tests,
                 'merge_title_and_task': merge_title_and_task,
                 'usertests': usertests,
+                'completed_usertests': completed_usertests,
                 }
             
         
-        return render(request, 'app/scv_home.html', context=context)
+        return render(request, 'user_app/scv_home.html', context=context)
     
 
 
@@ -169,7 +180,7 @@ def show_result(request):
         # если тест пользователя уже выполнен(на это указывает поле is_complete), то отправляем информационное сообщение и перенаправляем его на главную страницу
         # иначе проверяем тест
         if test_obj.is_complete:
-            messages.info(request, "Вы исчерпали свои попытки на этот тест, он закрылся!")
+            messages.info(request, "Вы исчерпали свои попытки на этот тест, поэтому он закрылся!")
 
             return redirect('scv-home')
         else:
@@ -205,10 +216,12 @@ def show_result(request):
             if test_obj.current_attempts == test_obj.number_of_attempts:
                 # изменяю поле is_complete на True, т.е на завершенное 
                 test_obj.is_complete = True
+                messages.info(request, "Вы исчерпали свои попытки на этот тест, поэтому он закрылся!")
             # если пользователь решил тест правильно то даже если есть попытки, незачем его высвечивать, поэтому он тоже закрывается
             elif count == len(right_answers):
                 # изменяю поле is_complete на True, т.е на завершенное 
                 test_obj.is_complete = True
+                messages.info(request, "Вы сделали тест полностью верно, поэтому он закрылся!")
             # устанавливаю количество правильных ответов
             test_obj.right_answers = count
             # применяю изменения в таблице БД
@@ -240,7 +253,7 @@ def show_result(request):
             }
                     
             
-            return render(request, 'app/show_result.html', context=context) 
+            return render(request, 'user_app/show_result.html', context=context) 
     else:
         return redirect('scv-home')
 
@@ -291,116 +304,7 @@ def profile(request):
     }
 
     if request.user.groups.filter(name='Teachers').exists():
-        return render(request, 'app/profile_teach.html', context=context)
+        return render(request, 'teacher_app/profile_teach.html', context=context)
     else:
-        return render(request, 'app/profile.html', context=context)
+        return render(request, 'user_app/profile.html', context=context)
 
-#------------------Teachers Functional----------------------#
-
-@login_required()
-def teachers_home(request):
-    return render(request, 'app/teachers_home.html', context={'active_block': ''})
-
-
-@login_required()
-def add_task(request):
-    if request.method == "POST":
-        form = TaskForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_task = form.save(commit=False)
-            new_task.save()
-
-            messages.success(request, 'Задание успешно добавлено!')
-
-            return redirect('add-task')
-    else:
-        form = TaskForm()
-
-    context = {
-        'form': form,
-        'active_block': 'Добавить задание',
-    }
-
-    return render(request, "app/add_task.html", context=context)
-
-
-@login_required()
-def add_test(request):
-    if request.method == "POST":
-        form = TestForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_task = form.save(commit=False)
-            new_task.save()
-
-            messages.success(request, 'Тест успешно создан!')
-
-            return redirect('add-test')
-    else:
-        form = TestForm()
-
-    context = {
-        'form': form,
-        'active_block': 'Добавить к/р',
-    }
-
-    return render(request, "app/add_test.html", context=context)
-
-
-@login_required()
-def show_classes(request):
-    all_classes = Group.objects.all()
-
-    context = {
-        'classes': all_classes,
-        'active_block': 'Мои классы',
-    }
-
-    return render(request, 'app/show_classes.html', context=context)
-
-
-@login_required()
-def show_tests(request, class_id):
-    tests = Test.objects.filter(group_id=class_id)
-
-
-    context = {
-        'tests': tests,
-        'class_id': class_id,
-        'active_block': 'Мои классы',
-    }
-
-    return render(request, 'app/show_tests.html', context=context)
-
-
-# help func
-# возвращает список id пользователей принадлежащих конкретной группе 
-def get_users_in_group(group_id):
-    try:
-        group = Group.objects.get(id=group_id)
-        users = group.user_set.all()
-        return users
-    except ObjectDoesNotExist:
-        return None
-
-
-@login_required()
-def show_result_detail(request, class_id, title):
-    # id всех пользователей входящих в конкретную группу
-    users_id = [user.id for user in get_users_in_group(class_id)]
-
-    # тесты пользователей соответсвующие одному названию теста и разным пользователям входящих в эту группу
-    usertests = UserTest.objects.filter(title=title, user_id__in=users_id)
-
-
-    # отбираю записи из таблицы Test по названию и получаю строковое представление списка номеров заданий и с помощью функции ast.literal_eval() преобразую эту строку в список, а затем узнаю кол-во элеменотов с помощью len() 
-    count_tasks = len(ast.literal_eval(Test.objects.get(title=title).task_numbers))
-
-
-
-    context = {
-        'usertests': usertests,
-        'count_tasks': count_tasks, 
-        'active_block': 'Мои классы',
-    }
-
-    return render(request, 'app/show_result_detail.html', context=context)
