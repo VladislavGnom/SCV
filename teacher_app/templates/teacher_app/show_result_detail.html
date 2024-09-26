@@ -16,7 +16,7 @@
     <tbody>
         {% for usertest in usertests %}
             <tr>
-                <td>{{ usertest.user.full_name }}</td>
+                <td>{{ usertest.user.first_name }} {{ usertest.user.last_name }}</td>
                 <td>{{ usertest.title }}</td>
                 <td>{% if usertest.is_complete %} ✅ {% else %} ❌ {% endif %}</td>
                 <td>{{ usertest.right_answers }}/{{ count_tasks }}</td>

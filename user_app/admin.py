@@ -20,17 +20,25 @@ TASK_CHOICES = (
 
 class CustomUserAdmin(UserAdmin):
     model = CustomUser
-    add_fieldsets = UserAdmin.add_fieldsets + (
-        (None, {
-            'fields': ('full_name', ),
-        }),
-    )
+    # Поля, которые дополнительно отображаются в админ панели
     fieldsets = UserAdmin.fieldsets + (
-        (None, {
-            'fields': ('full_name', ),
-        }),
+        ('Personal info', {'fields': ('open_password',)}), 
     )
 
+    add_fieldsets = (
+           (None, {
+               'fields': ('username', 'first_name', 'last_name', 'password1', 'password2', 'open_password'),  # добавьте ваше поле здесь
+           }),
+       )
+
+
+    list_display = ('first_name', 'last_name', 'get_username_display', 'open_password')
+    list_display_links = ('first_name', 'last_name')
+
+    def get_username_display(self, obj):
+        return obj.username
+    
+    get_username_display.short_description = 'Логин'
 
 admin.site.register(CustomUser, CustomUserAdmin)
 
@@ -38,7 +46,7 @@ admin.site.register(CustomUser, CustomUserAdmin)
 class TestAdminForm(forms.ModelForm):
     class Meta:
         form = Task
-        fields = ('title', 'group', 'task_numbers', 'number_of_attempts')
+        fields = ('title', 'group', 'is_complete', 'task_numbers', 'number_of_attempts')
         widgets = {
             'task_numbers': forms.CheckboxSelectMultiple(choices=TASK_CHOICES),
         }
@@ -53,7 +61,7 @@ class TestAdminForm(forms.ModelForm):
 @admin.register(Test)
 class TestAdmin(admin.ModelAdmin):
     form = TestAdminForm
-    list_display = ('title', 'group')
+    list_display = ('title', 'group', 'is_complete')
 
 
 @admin.register(Task)

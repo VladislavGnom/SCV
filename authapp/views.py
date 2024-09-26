@@ -1,15 +1,22 @@
-from django.contrib.auth.views import LoginView
-from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .forms import LoginForm
+from django.contrib.auth import authenticate, login
 
 
-class CustomLoginView(LoginRequiredMixin, LoginView):
-    template_name = 'authapp/login.html'
-    success_url = reverse_lazy('scv-home')
 
+def login_view(request):
+    form = LoginForm()
+    data = request.GET
+    username = data.get('username')
+    password = data.get('password')
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["title"] = "I want this on the template"
-        context["example2"] = "I want this on the template too"
-        return context
+    if username and password:
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect('scv-home')
+        else:
+            messages.info(request, "Такой пользователь не найден, попробуйте ещё раз!")
+
+    return render(request, 'authapp/login.html', context={'form': form})

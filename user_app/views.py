@@ -36,7 +36,7 @@ def scv_home(request):
         # один пользователь принадлежит только одной группе(т.к это как классы в школе - каждый ученик определён только в один класс)
         # список (QuerySet) состоящий из тестов пользователя которые предназначены группе(классу) в которую он входит 
         has_user_group = get_user_groups(request.user)[0]
-        tests = Test.objects.filter(group=has_user_group)
+        tests = Test.objects.filter(group=has_user_group, is_complete=False)
         
         # список для списков типов заданий на основе которых будет генерироваться вариант/ы
         gen_tasks_for_type = []
@@ -261,7 +261,7 @@ def show_result(request):
 @login_required()
 def refresh_func(request):
     # список (QuerySet) состоящий из тестов пользователя которые предназначены группе(классу) в которую он входит 
-    tests = Test.objects.filter(group=get_user_groups(request.user)[0])
+    tests = Test.objects.filter(group=get_user_groups(request.user)[0], is_complete=False)
     
     # список для списков типов заданий на основе которых будет генерироваться вариант/ы
     gen_tasks_for_type = []

@@ -5,8 +5,8 @@
 <h1 class="mb-3">Profile</h1>
 <div class="card">
     <div class="mt-3"></div>
-    ФИО: {{ data.full_name }}<br>
-    Класс: {{ group.name }}
+    Учитель: {{ data.first_name }} {{ data.last_name }}<br>
+    Группа: {{ group.name }}
     <hr>
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}

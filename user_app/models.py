@@ -50,4 +50,4 @@ class UserTest(models.Model):
     
 
 class CustomUser(AbstractUser):
-    full_name = models.CharField(max_length=255)
+    open_password = models.CharField(max_length=255, verbose_name='Пароль')
