@@ -28,7 +28,7 @@ def index(request):
 @login_required()
 # представление отображения страницы активных к/р
 def scv_home(request):
-    if request.user.groups.filter(name='Teachers').exists():
+    if request.user.groups.filter(name='Администратор').exists():
         return teachers_home(request)
     else:
         # ast.literal_eval - используется для преобразования строкового представления списка из БД в нормальный список

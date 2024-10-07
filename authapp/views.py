@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login
 
 
 
-def login_view(request):
+def login_view(request):    
     form = LoginForm()
     data = request.GET
     username = data.get('username')
