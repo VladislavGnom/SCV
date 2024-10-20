@@ -1,7 +1,7 @@
 import ast
 from django.shortcuts import render, redirect
 from teacher_app.forms import TaskForm, TestForm
-from user_app.models import Test, UserTest
+from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
@@ -39,22 +39,88 @@ def add_task(request):
 
 @login_required()
 def add_test(request):
-    if request.method == "POST":
-        form = TestForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_task = form.save(commit=False)
-            new_task.save()
+    # if request.method == "POST":
+    #     form = TestForm(request.POST, request.FILES)
+    #     if form.is_valid():
+    #         new_task = form.save(commit=False)
+    #         new_task.save()
 
-            messages.success(request, 'Тест успешно создан!')
+    #         messages.success(request, 'Тест успешно создан!')
 
-            return redirect('add-test')
-    else:
-        form = TestForm()
+    #         return redirect('add-test')
+    # else:
+    #     form = TestForm()
 
     context = {
         'title': 'Добавление теста',
-        'form': form,
+        # 'form': form,
         'active_block': 'Добавить к/р',
+        'subjects_main': SubjectMain.objects.all(),
+    }
+
+    return render(request, "teacher_app/add_test.html", context=context)
+
+
+@login_required
+def add_task_subject(request,  subject_main_id):
+    context = {
+        'title': 'Добавление теста',
+        # 'form': form,
+        'active_block': 'Добавить к/р',
+        'subject_main_id': subject_main_id,
+        'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
+        'subjects_parents': SubjectParents.objects.filter(subject_main_id=subject_main_id),
+    }
+
+    return render(request, "teacher_app/add_test.html", context=context)
+
+@login_required
+def add_task_subject_parents(request, subject_main_id, subject_parent_id):
+    context = {
+        'title': 'Добавление теста',
+        # 'form': form,
+        'active_block': 'Добавить к/р',
+        'subject_main_id': subject_main_id,
+        'subject_parent_id': subject_parent_id,
+        'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
+        'subject_parent_name': SubjectParents.objects.get(pk=subject_parent_id).subject_parent_name,
+        'subjects_children': SubjectChildren.objects.filter(subject_parent_id=subject_parent_id),
+    }
+
+    return render(request, "teacher_app/add_test.html", context=context)
+
+
+@login_required
+def add_task_subject_children(request, subject_main_id, subject_parent_id, subject_children_id):
+    context = {
+        'title': 'Добавление теста',
+        # 'form': form,
+        'active_block': 'Добавить к/р',
+        'subject_main_id': subject_main_id,
+        'subject_parent_id': subject_parent_id,
+        'subject_child_id': subject_children_id,
+        'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
+        'subject_parent_name': SubjectParents.objects.get(pk=subject_parent_id).subject_parent_name,
+        'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
+        'questions': Question.objects.filter(subject_id=subject_main_id),
+    }
+
+    return render(request, "teacher_app/add_test.html", context=context)
+
+
+@login_required
+def add_task_question(request, subject_main_id, subject_parent_id, subject_children_id, question_id):
+    context = {
+        'title': 'Добавление теста',
+        # 'form': form,
+        'active_block': 'Добавить к/р',
+        'subject_main_id': subject_main_id,
+        'subject_parent_id': subject_parent_id,
+        'question_id': question_id,
+        'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
+        'subject_parent_name': SubjectParents.objects.get(pk=subject_parent_id).subject_parent_name,
+        'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
+        'question': Question.objects.get(pk=question_id),
     }
 
     return render(request, "teacher_app/add_test.html", context=context)

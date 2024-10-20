@@ -48,6 +48,47 @@ class UserTest(models.Model):
     def __str__(self):
         return self.title
     
+class SubjectMain(models.Model):
+    subject_main_name = models.CharField(max_length=100)
+    enabled = models.BooleanField(default=1)
+    
+    def __str__(self):
+        return self.subject_main_name
+    
+
+class SubjectParents(models.Model):
+    subject_main = models.ForeignKey(SubjectMain, on_delete=models.CASCADE)
+    subject_parent_name = models.CharField(max_length=255)
+    enabled = models.BooleanField(default=1)
+    timestamps = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.subject_parent_name
+    
+
+class SubjectChildren(models.Model):
+    subject_parent = models.ForeignKey(SubjectParents, on_delete=models.CASCADE)
+    subject_child_name = models.CharField(max_length=255)
+    enabled = models.BooleanField(default=1)
+    timestamps = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.subject_child_name
+    
+
+class Question(models.Model):
+    subject = models.ForeignKey(SubjectMain, on_delete=models.CASCADE)
+    # subject_parent = models.ForeignKey(SubjectParents, on_delete=models.CASCADE)
+    # subject_child = models.ForeignKey(SubjectChildren, on_delete=models.CASCADE)
+    question_text = models.TextField(max_length=600)
+    question_group = models.IntegerField(default=0)
+    question_points = models.IntegerField()
+    question_type = models.IntegerField()
+
+    def __str__(self):
+        return self.question_text[:10]
+
+
 
 class CustomUser(AbstractUser):
     open_password = models.CharField(max_length=255, verbose_name='Пароль')

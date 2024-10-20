@@ -13,13 +13,54 @@
 {% endif %}
 
 <div class="text-center">
-<h1>Добавление теста</h1>
+<div class="h1">Добавление теста</div>
+{% if subjects_main %}
+<div class="h3">Выберите предмет:</div>
+{% for subject in subjects_main %}
+<div><a href="{% url 'subject-main' subject.pk %}">{{ subject }}</a></div>
+{% endfor %}
+{% endif %}
 
+{% if subjects_parents %}
+<div class="h3">Выберите тему:</div>
+<div class="text-left">|{{ subject_main_name }}|</div>
+{% for subject in subjects_parents %}
+<div><a href="{% url 'subject-parents' subject_main_id subject.pk %}">{{ subject }}</a></div>
+{% endfor %}
+{% endif %}
+
+{% if subjects_children %}
+<div class="h3">Выберите направление:</div>
+<div class="text-left">|{{ subject_main_name }}|{{ subject_parent_name }}|</div>
+{% for subject in subjects_children %}
+<div><a href="{% url 'subject-children' subject_main_id subject_parent_id subject.pk %}">{{ subject }}</a></div>
+{% endfor %}
+{% endif %}
+
+{% if questions %}
+<div class="h3">Выберите задания:</div>
+<div class="text-left">|{{ subject_main_name }}|{{ subject_parent_name }}|{{ subject_children_name }}|</div>
+{% for question in questions %}
+<div><a href="{% url 'question' subject_main_id subject_parent_id subject_child_id question.pk %}">{{ question }}</a></div>
+{% endfor %}
+{% endif %}
+
+{% if question %}
+<div class="h3">Задание id={{ question.pk }}:</div>
+{% if question.question_text|slice:"-4:" == '.gif' or question.question_text|slice:"-4:" == '.png' or question.question_text|slice:"-4:" == '.jpg' %}
+<img src="{{ question.question_text }}" alt="Задание id={{ question.pk }}">
+{% else %}
+<div class="">{{ question.question_text|safe }}</div>
+{% endif %}
+
+{% endif %}
+
+<!-- <h1>Добавление теста</h1>
 <form class="checkbox-container" action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form|crispy }}
     <button type="submit" class="btn btn-warning col-12">Добавить</button>
-</form>
+</form> -->
 </div>
 
 <div style="height: 100px;"></div>
