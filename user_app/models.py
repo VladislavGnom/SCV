@@ -77,9 +77,9 @@ class SubjectChildren(models.Model):
     
 
 class Question(models.Model):
-    subject = models.ForeignKey(SubjectMain, on_delete=models.CASCADE)
-    # subject_parent = models.ForeignKey(SubjectParents, on_delete=models.CASCADE)
-    # subject_child = models.ForeignKey(SubjectChildren, on_delete=models.CASCADE)
+    subject = models.ForeignKey(SubjectMain, on_delete=models.CASCADE, default=0)
+    subject_parent = models.ForeignKey(SubjectParents, on_delete=models.CASCADE, default=0)
+    subject_child = models.ForeignKey(SubjectChildren, on_delete=models.CASCADE, default=0)
     question_text = models.TextField(max_length=600)
     question_group = models.IntegerField(default=0)
     question_points = models.IntegerField()

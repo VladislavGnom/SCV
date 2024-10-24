@@ -4,8 +4,11 @@ from teacher_app.forms import TaskForm, TestForm
 from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+
+from utils.utils import extract_filename_substring
 
 #------------------Teachers Functional----------------------#
 
@@ -55,7 +58,7 @@ def add_test(request):
         'title': 'Добавление теста',
         # 'form': form,
         'active_block': 'Добавить к/р',
-        'subjects_main': SubjectMain.objects.all(),
+        'subjects_main': SubjectMain.objects.filter(enabled=1),
     }
 
     return render(request, "teacher_app/add_test.html", context=context)
@@ -69,7 +72,7 @@ def add_task_subject(request,  subject_main_id):
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
-        'subjects_parents': SubjectParents.objects.filter(subject_main_id=subject_main_id),
+        'subjects_parents': SubjectParents.objects.filter(subject_main_id=subject_main_id, enabled=1),
     }
 
     return render(request, "teacher_app/add_test.html", context=context)
@@ -84,7 +87,7 @@ def add_task_subject_parents(request, subject_main_id, subject_parent_id):
         'subject_parent_id': subject_parent_id,
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
         'subject_parent_name': SubjectParents.objects.get(pk=subject_parent_id).subject_parent_name,
-        'subjects_children': SubjectChildren.objects.filter(subject_parent_id=subject_parent_id),
+        'subjects_children': SubjectChildren.objects.filter(subject_parent_id=subject_parent_id, enabled=1),
     }
 
     return render(request, "teacher_app/add_test.html", context=context)
@@ -102,7 +105,7 @@ def add_task_subject_children(request, subject_main_id, subject_parent_id, subje
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
         'subject_parent_name': SubjectParents.objects.get(pk=subject_parent_id).subject_parent_name,
         'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
-        'questions': Question.objects.filter(subject_id=subject_main_id),
+        'questions': Question.objects.filter(Q(subject_child_id=subject_children_id) | Q(subject_id=subject_main_id) | Q(subject_parent_id=subject_parent_id)),
     }
 
     return render(request, "teacher_app/add_test.html", context=context)
@@ -110,6 +113,8 @@ def add_task_subject_children(request, subject_main_id, subject_parent_id, subje
 
 @login_required
 def add_task_question(request, subject_main_id, subject_parent_id, subject_children_id, question_id):
+    question = Question.objects.get(pk=question_id)
+    filename = extract_filename_substring(question.question_text),
     context = {
         'title': 'Добавление теста',
         # 'form': form,
@@ -120,8 +125,11 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
         'subject_parent_name': SubjectParents.objects.get(pk=subject_parent_id).subject_parent_name,
         'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
-        'question': Question.objects.get(pk=question_id),
+        'question': question,
+        'filename': filename[0],
+        'text_task': " ".join([i for i in question.question_text.split() if i != filename[0]])
     }
+    print([i for i in question.question_text.split()])
 
     return render(request, "teacher_app/add_test.html", context=context)
 
