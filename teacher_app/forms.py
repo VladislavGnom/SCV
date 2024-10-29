@@ -1,5 +1,5 @@
 from django import forms
-from user_app.models import Task, Test, SubjectMain
+from user_app.models import Task, Test, SubjectMain, Question
 from django.core.exceptions import ValidationError
 
 
@@ -38,21 +38,27 @@ class TaskForm(forms.ModelForm):
         return data
     
 
+# class TestForm(forms.ModelForm):
+
+#     class Meta:
+#         model = Test
+#         fields = ('title', 'group', 'task_numbers', 'number_of_attempts')
+#         widgets = {
+#             'task_numbers': forms.CheckboxSelectMultiple(choices=TASK_CHOICES),
+#         }
+#         labels = {
+#             'title': 'Название', 
+#             'group': 'Класс', 
+#             'task_numbers': 'Типы заданий',
+#             'number_of_attempts': 'Количество попыток',
+#             }
+
 class TestForm(forms.ModelForm):
+    # questions = forms.ModelMultipleChoiceField(queryset=Question.objects.all(), widget=forms.CheckboxSelectMultiple)
 
     class Meta:
         model = Test
         fields = ('title', 'group', 'task_numbers', 'number_of_attempts')
-        widgets = {
-            'task_numbers': forms.CheckboxSelectMultiple(choices=TASK_CHOICES),
-        }
-        labels = {
-            'title': 'Название', 
-            'group': 'Класс', 
-            'task_numbers': 'Типы заданий',
-            'number_of_attempts': 'Количество попыток',
-            }
-        
 
 # class TestFormTeacher(forms.ModelForm):
 

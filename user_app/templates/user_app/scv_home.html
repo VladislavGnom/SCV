@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load remove_backslashes %}
+
 {% block main %}
 <h1 class="text-center">SCV Home</h1>
 
@@ -78,12 +80,31 @@
                 <input name="{{ title }}" class="d-none">
                 {% csrf_token %}
                 {% for t in task %}
-                    <div>
+                    <!-- <div>
                         {{ t.type_task }}
-                    </div>
+                    </div> -->
                     <div>
-                    <div class="multi">
-                        <img src="{{ t.photo.url }}" alt="Задание {{ t.type_task }}">
+                    <div class="multi text-center"">
+                        <div id="task-div-{{ t.pk }}">
+                        </div>
+                        <script>
+                            // Отправка GET-запроса
+                            fetch("http://{{ request.get_host }}/media/imgs/{{ t.question_text }}", {
+                                method: "GET", // Метод запроса
+                            })
+                            .then(response => {
+                                if (!response.ok) { // Проверка на успешный ответ
+                                    document.getElementById("task-div-{{ t.pk }}").innerHTML = "{{ t.question_text|remove_backslashes|escapejs }}"
+                                } else {
+                                    const img = document.createElement('img');
+                                    const a = document.createElement('a');
+                                    a.href = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
+                                    img.src = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
+                                    document.getElementById('task-div-{{ t.pk }}').appendChild(a);
+                                    a.appendChild(img);
+                                }
+                            });
+                        </script>
                     </div>
                     </div>
                     <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off">

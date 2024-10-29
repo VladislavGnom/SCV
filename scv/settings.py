@@ -58,6 +58,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'remove_backslashes': 'templatetags.custom_filters',
+                'cut': 'templatetags.custom_filters',
+            }
         },
     },
 ]
