@@ -77,17 +77,27 @@ class SubjectChildren(models.Model):
     
 
 class Question(models.Model):
-    subject = models.ForeignKey(SubjectMain, on_delete=models.CASCADE, default=0)
-    subject_parent = models.ForeignKey(SubjectParents, on_delete=models.CASCADE, default=0)
-    subject_child = models.ForeignKey(SubjectChildren, on_delete=models.CASCADE, default=0)
+    # subject = models.ForeignKey(SubjectMain, on_delete=models.CASCADE, default=0)
+    subject_id = models.IntegerField()
+    # subject_parent = models.ForeignKey(SubjectParents, on_delete=models.CASCADE, default=0)
+    subject_parent_id = models.IntegerField()
+    # subject_child = models.ForeignKey(SubjectChildren, on_delete=models.CASCADE, default=0)
+    subject_child_id = models.IntegerField()
     question_text = models.TextField(max_length=600)
-    question_group = models.IntegerField(default=0)
-    question_points = models.IntegerField()
-    question_type = models.IntegerField()
+    enabled = models.BooleanField(default=1)
+    # question_group = models.IntegerField(default=0)
+    # question_points = models.IntegerField()
+    # question_type = models.IntegerField()
 
     def __str__(self):
         return self.question_text[:10]
 
+class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    answer_text = models.CharField(max_length=255)
+
+    def __str__(self):
+        return str(self.pk)
 
 
 class CustomUser(AbstractUser):

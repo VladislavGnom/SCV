@@ -6,7 +6,7 @@
 {% if tests %}
 <ul>
 {% for test in tests %}
-    <li><a href="{% url 'show-result-detail' class_id test.title %}">{{ test.title }}</a></li>
+    <li><a href="{% url 'show-result-detail' class_id test %}">{{ test }}</a></li>
 {% endfor %}
 </ul>
 {% else %}

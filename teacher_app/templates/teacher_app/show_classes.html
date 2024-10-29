@@ -6,7 +6,7 @@
 {% if classes %}
 <ul>
 {% for class in classes %}
-    {% if class.name != 'Teachers' %}
+    {% if class.name != 'Администратор' %}
         <li><a href="{% url 'show-tests' class.id %}">{{ class.name }}</a></li>
     {% endif %}
 {% endfor %}

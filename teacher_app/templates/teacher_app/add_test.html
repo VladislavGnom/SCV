@@ -1,6 +1,7 @@
 {% extends 'base-special.html' %}
 
 {% load crispy_forms_tags %}
+{% load remove_backslashes %}
 
 {% block main %}
 
@@ -26,6 +27,15 @@
 <div class="text-left">|{{ subject_main_name }}|</div>
 {% for subject in subjects_parents %}
 <div><a href="{% url 'subject-parents' subject_main_id subject.pk %}">{{ subject }}</a></div>
+{% endfor %}
+{% endif %}
+
+{% if subject_questions and not subjects_parents %}
+<div class="h3">Выберите задания:</div>
+<div class="text-left">|{{ subject_main_name }}|</div>
+{% for question in subject_questions %}
+<div><a href="{% url 'question-safe' subject_main_id question.pk %}"><img src="http://{{ request.get_host }}/media/imgs/{{ question.question_text }}" alt="Задание {{question.pk}}"></a></div>
+<hr>
 {% endfor %}
 {% endif %}
 
@@ -72,13 +82,22 @@
 {% endif %}
 
 {% if question %}
+
+<form action="{{ request.path }}" method="post">
+    {% csrf_token %}
+    <input type="text" name="task" value="{{ question.pk }}" style="display: none;">
+    {{ request.session.tasks }}
+    <button type="submit">Добавить задание</button>
+</form>
+
+
 <div class="h3">Задание id={{ question.pk }}:</div>
 {% if filename and 'reshuege.ru' not in filename%}
-<img src="http://{{ request.get_host }}/media/imgs/{{ filename }}" alt="Задание id={{ question.pk }}">
-<br><div class="mt-1">{% for s in text_task %}{% if s == '\\' %}{% else %}{{ s }}{% endif %}{% endfor %}</div>
+<img src="http://{{ request.get_host }}/media/imgs/{{ question.question_text }}" alt="Задание id={{ question.pk }}" {{text_task|remove_backslashes|safe}}>
 {% else %}
 <div class="">
-    {% for s in question.question_text %}{% if s == '\\' %}{% else %}{{ s }}{% endif %}{% endfor %}
+    {{ question.question_text|remove_backslashes|safe }}
+    <!-- {% for s in question.question_text %}{% if s == '\\' %}{% else %}{{ s }}{% endif %}{% endfor %} -->
 </div>
 
 {% endif %}
@@ -87,6 +106,19 @@
 
 
 </div>
+
+{% if form_test %}
+<form action="{% url 'add-test' %}" method="post">
+    {% csrf_token %}
+    {{ form_test.as_p }}
+    <button>Создать тест</button>
+</form>
+
+<script>
+    document.getElementById("id_task_numbers").value = "{{ request.session.tasks|escapejs }}";
+</script>
+
+{% endif %}
 
 <div style="height: 100px;"></div>
 {% endblock %}

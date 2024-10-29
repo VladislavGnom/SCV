@@ -1,7 +1,7 @@
 import ast
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from user_app.forms import ImageForm, TaskForm, TestForm
-from user_app.models import Image, Task, Test, UserTest, CustomUser
+from user_app.models import Image, Task, Test, UserTest, CustomUser, Question, Answer
 from django.http import Http404
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
@@ -88,7 +88,7 @@ def scv_home(request):
                 gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
                 # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
                 for gen_task in gen_tasks_for_type:
-                    variant = [Task.objects.get(pk=pk) for pk in gen_task]
+                    variant = [Question.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 
                 merge_title_and_task = list(zip(all_title_tests, all_tasks))
@@ -125,7 +125,7 @@ def scv_home(request):
                 # генерация варианта, перебираем список состоящий из списков типов заданий 
                 for indx, gen_task in enumerate(gen_tasks_for_type):
                         # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
-                        variant = [Task.objects.filter(type_task=type).order_by('?').first() for type in gen_task]
+                        variant = [Question.objects.get(pk=pk) for pk in gen_task]
                         # добавляем в список всех обьектов заданий для отображения в шаблоне
                         all_tasks.append(variant)
                         # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
@@ -135,7 +135,7 @@ def scv_home(request):
                 gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
                 # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
                 for gen_task in gen_tasks_for_type:
-                    variant = [Task.objects.get(pk=pk) for pk in gen_task]
+                    variant = [Question.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 
 
@@ -158,7 +158,8 @@ def scv_home(request):
                 'usertests': usertests,
                 'completed_usertests': completed_usertests,
                 }
-            
+        
+        print(f'{Answer.objects.get(question_id=290).answer_text=}')
         
         return render(request, 'user_app/scv_home.html', context=context)
     
@@ -195,7 +196,8 @@ def show_result(request):
             for task_id, user_answer in data.items():
                 if task_id != 'csrfmiddlewaretoken':  
                     id = task_id.split('-')[2]
-                    right_answer = Task.objects.get(pk=id).answer
+                    right_answer = Answer.objects.get(question_id=id).answer_text
+                    print(f'{right_answer}')
 
                     user_answer = user_answer[0].strip()
 
@@ -229,7 +231,7 @@ def show_result(request):
 
             task_id = list(map(str_to_int, ast.literal_eval(test_obj.tasks_id)))
 
-            tasks = [Task.objects.get(pk=id) for id in task_id]
+            tasks = [Question.objects.get(pk=id) for id in task_id]
 
 
             merge_user_and_right_answers = list(zip(user_answers, right_answers))
@@ -282,7 +284,7 @@ def refresh_func(request):
     # генерация варианта, перебираем список состоящий из списков типов заданий 
     for indx, gen_task in enumerate(gen_tasks_for_type):
         # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
-        variant = [Task.objects.filter(type_task=type).order_by('?').first() for type in gen_task]
+        variant = [Question.objects.get(pk=pk) for pk in gen_task]
         # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
         UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant], number_of_attempts=tests.get(title=f'{name_for_test[indx]}').number_of_attempts)
 

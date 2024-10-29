@@ -6,6 +6,7 @@ urlpatterns = [
     path('add_task', views.add_task, name='add-task'),
     path('add_test', views.add_test, name='add-test'),
     path('add_test/<int:subject_main_id>/', views.add_task_subject, name='subject-main'),
+    path('add_testq/<int:subject_main_id>/<int:question_id>/', views.add_task_question_safe, name='question-safe'),
     path('add_test/<int:subject_main_id>/<int:subject_parent_id>/', views.add_task_subject_parents, name='subject-parents'),
     path('add_test/<int:subject_main_id>/<int:subject_parent_id>/<int:subject_children_id>/', views.add_task_subject_children, name='subject-children'),
     path('add_test/<int:subject_main_id>/<int:subject_parent_id>/<int:subject_children_id>/<int:question_id>/', views.add_task_question, name='question'),

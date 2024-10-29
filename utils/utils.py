@@ -16,3 +16,13 @@ def extract_filename_substring(input_string):
 # input_str = "Путь к файлу: /папка/файл_пример.txt"
 # result = extract_filename_substring(input_str)
 # print(result)  # Выведет: файл_пример.txt
+
+
+from bs4 import BeautifulSoup
+
+def clean_html(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    return str(soup)
+
+# raw_html = "<div><p>Some text"
+# cleaned_html = clean_html(raw_html)
