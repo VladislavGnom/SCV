@@ -109,7 +109,9 @@
     {% csrf_token %}
     <input type="text" name="task" value="{{ question.pk }}" style="display: none;">
     <!-- {{ request.session.tasks }} -->
-    <button type="submit" class="btn btn-warning btn-sm">Добавить задание</button>
+    <div class="block" style="margin-bottom: 5px;">
+        <button type="submit" class="btn-default btn-default-sm"><span>Добавить задание</span></button>
+    </div>
 </form>
 
 
@@ -133,7 +135,7 @@
 <form action="{% url 'add-test' %}" method="post">
     {% csrf_token %}
     {{ form_test|crispy }}
-    <button class="btn btn-warning col-12">Создать тест</button>
+    <button class="btn-default col-12"><span>Создать тест</span></button>
 </form>
 
 <script>
