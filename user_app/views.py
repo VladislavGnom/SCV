@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 
 from teacher_app.views import teachers_home
 
@@ -197,7 +198,6 @@ def show_result(request):
                 if task_id != 'csrfmiddlewaretoken':  
                     id = task_id.split('-')[2]
                     right_answer = Answer.objects.get(question_id=id).answer_text
-                    print(f'{right_answer}')
 
                     user_answer = user_answer[0].strip()
 
@@ -244,6 +244,12 @@ def show_result(request):
 
             for indx, val in enumerate(tasks):
                 new_merge_user_and_right_answers[indx].append(val)
+
+            
+            with open(f'{settings.BASE_DIR}/data_tests/homeworks/{title_test.replace('/', '\\')}-{request.user}.txt', mode='w+') as file:
+                file.write('Ответ пользователя: Правильный ответ\n')
+                for i in range(len(right_answers)):
+                    file.write(f'{user_answers[i]}: {right_answers[i]}\n')
 
 
             context = {

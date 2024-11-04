@@ -37,7 +37,29 @@
 <div><a href="{% url 'question-safe' subject_main_id question.pk %}"><img src="http://{{ request.get_host }}/media/imgs/{{ question.question_text }}" alt="Задание {{question.pk}}"></a></div>
 <hr>
 {% endfor %}
+<!-- <nav>
+    <ul>
+        {% for p in subject_questions.paginator.page_range %}
+        <li>
+            <a href="?page={{ p }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</nav> -->
+<nav class="container">
+    <ul class="pagination">
+{% for p in subject_questions.paginator.page_range %}
+                   {% if subject_questions.number == p %}
+        <li class="page-item disabled"><a class="page-link">{{ p }}</a></li>
+                   {% elif p >= subject_questions.number|add:-2 and p <= subject_questions.number|add:2  %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+        </li>
+                   {% endif %}
+        {% endfor %}
 {% endif %}
+    </ul>
+</nav>
 
 {% if subjects_children %}
 <div class="h3">Выберите направление:</div>
@@ -86,8 +108,10 @@
 <form action="{{ request.path }}" method="post">
     {% csrf_token %}
     <input type="text" name="task" value="{{ question.pk }}" style="display: none;">
-    {{ request.session.tasks }}
-    <button type="submit">Добавить задание</button>
+    <!-- {{ request.session.tasks }} -->
+    <div class="block" style="margin-bottom: 5px;">
+        <button type="submit" class="btn-default btn-default-sm"><span>Добавить задание</span></button>
+    </div>
 </form>
 
 
@@ -110,8 +134,8 @@
 {% if form_test %}
 <form action="{% url 'add-test' %}" method="post">
     {% csrf_token %}
-    {{ form_test.as_p }}
-    <button>Создать тест</button>
+    {{ form_test|crispy }}
+    <button class="btn-default col-12"><span>Создать тест</span></button>
 </form>
 
 <script>

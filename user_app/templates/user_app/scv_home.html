@@ -22,7 +22,7 @@
             <form class="mt-2" action="" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form.as_p }}
-                <button class="btn btn-warning" type="submit">Upload</button>
+                <button class="btn-header-default" type="submit">Upload</button>
             </form>
 
             {% if img_obj %}
@@ -48,7 +48,7 @@
     <ul class="list-group">
     {% if usertests %}
         {% for test in usertests %}
-            <li class="list-group-item list-group-item-warning"><span class="text-muted">Тест:</span> {{ test.title }}. <span class="text-muted">Попытки:</span> {{ test.current_attempts }}/{{ test.number_of_attempts }}. <span class="text-muted">Статус:</span> {% if test.current_attempts == 0 %} Работа в процессе решения{% else %} Работа в процессе решения, попробуй решить на максимум баллов{% endif %}</li>
+            <li class="list-group-item list-group-item-warning" style="background: #fdf91eb2; opacity: .8;"><span class="text-muted">Тест:</span> {{ test.title }}. <span class="text-muted">Попытки:</span> {{ test.current_attempts }}/{{ test.number_of_attempts }}. <span class="text-muted">Статус:</span> {% if test.current_attempts == 0 %} Работа в процессе решения{% else %} Работа в процессе решения, попробуй решить на максимум баллов{% endif %}</li>
         {% endfor %}
     {% endif %}
     </ul>
@@ -58,7 +58,7 @@
     <ul class="list-group">
     {% if completed_usertests %}
         {% for test in completed_usertests %}
-            <li class="list-group-item list-group-item-success"><span class="text-muted">Тест:</span> {{ test.title }}. <span class="text-muted">Попытки:</span> {{ test.current_attempts }}/{{ test.number_of_attempts }}. <span class="text-muted">Статус:</span> Работа выполнена и загружена</li>
+            <li class="list-group-item list-group-item-success" style="background: #68ff42b4; opacity: .8;"><span class="text-muted">Тест:</span> {{ test.title }}. <span class="text-muted">Попытки:</span> {{ test.current_attempts }}/{{ test.number_of_attempts }}. <span class="text-muted">Статус:</span> Работа выполнена и загружена</li>
         {% endfor %}
     {% endif %}
     </ul>
@@ -67,7 +67,7 @@
 <div class="container mt-3">
     <form action="{% url 'refresh' %}" method="post">
         {% csrf_token %}
-        <button type="submit" class="btn btn-info btn-lg">Refresh</button>
+        <button type="submit" class="btn-default"><span>Refresh</span></button>
     </form>
 </div>
 
@@ -107,10 +107,10 @@
                         </script>
                     </div>
                     </div>
-                    <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off">
+                    <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
                     <hr>
                     {% endfor %}
-                    <br><button type="submit" class="btn btn-success btn-sm mt-4 col-12">Загрузить решение</button>
+                    <br><button type="submit" class="btn-default mt-4 col-12" style="border-radius: 0px;"><span>Загрузить решение</span></button>
             </form>
         </div>
         {% endfor %}

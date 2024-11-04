@@ -90,7 +90,7 @@ class Question(models.Model):
     # question_type = models.IntegerField()
 
     def __str__(self):
-        return self.question_text[:10]
+        return self.question_text[:20]
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)

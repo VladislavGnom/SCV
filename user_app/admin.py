@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.urls import reverse
 from django import forms
-from .models import Task, Image, Test, UserTest, CustomUser
+from .models import Task, Image, Test, UserTest, CustomUser, SubjectChildren, SubjectMain, SubjectParents, Question, Answer
 
 TASK_CHOICES = (
     ('1', '1'),
@@ -80,6 +80,27 @@ class TaskAdminForm(admin.ModelAdmin):
 @admin.register(UserTest)
 class UserTestAdmin(admin.ModelAdmin):
     list_display = ('title', 'user', 'right_answers', 'is_complete')
+
+
+@admin.register(SubjectMain)
+class SubjectMainAdmin(admin.ModelAdmin):
+    list_display = ('subject_main_name', 'enabled')
+
+@admin.register(SubjectParents)
+class SubjectParentsAdmin(admin.ModelAdmin):
+    list_display = ('subject_main', 'enabled')
+
+@admin.register(SubjectChildren)
+class SubjectChildrenAdmin(admin.ModelAdmin):
+    list_display = ('subject_parent', 'enabled')
+
+@admin.register(Question)
+class QuestionAdmin(admin.ModelAdmin):
+    list_display = ('question_text', 'enabled')
+
+@admin.register(Answer)
+class AnswerAdmin(admin.ModelAdmin):
+    list_display = ('question', 'answer_text')
 
 # admin.site.register(Task)
 admin.site.register(Image)
