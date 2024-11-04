@@ -30,6 +30,7 @@
                 <a class="nav-link" href="#">Features</a>
                 <a class="nav-link" href="#">Pricing</a> -->
             </div>
+            <div><a href="http://{{request.get_host}}/admin"><button class="btn btn-info">Админ Панель</button></a></div>
             <div class="">
                 {% if user.is_authenticated %}
                 <a class="nav-link " href="{% url 'profile' %}">Profile</a>
