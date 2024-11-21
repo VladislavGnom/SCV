@@ -1,13 +1,15 @@
 import ast
+from random import shuffle
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from user_app.forms import ImageForm, TaskForm, TestForm
 from user_app.models import Image, Task, Test, UserTest, CustomUser, Question, Answer
-from django.http import Http404
+from django.http import Http404, HttpResponseNotFound
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
+from django.core.paginator import Paginator
 
 from teacher_app.views import teachers_home
 
@@ -20,6 +22,33 @@ def get_user_groups(user):
 
 def str_to_int(obj):
     return int(obj)
+
+
+@login_required
+def user_test(request, user_test_id):
+    try:
+        test = UserTest.objects.get(user=request.user, pk=user_test_id, is_complete=False)
+    except ObjectDoesNotExist as error:
+        return HttpResponseNotFound("404 Page not Found")
+    
+    gen_tasks_for_type = list(map(str_to_int, ast.literal_eval(test.tasks_id)))
+
+    # создание списка variant из обьектов модели Question из уже имеющихся id задач в БД 
+    variant = [Question.objects.get(pk=pk) for pk in gen_tasks_for_type]
+
+    paginator = Paginator(variant, 1)
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'title': 'Выполнение теста', 
+        'tasks': page_obj,
+        'title_test': test.title,
+    }
+
+
+    return render(request, 'user_app/user_test.html', context=context)
 
 
 def index(request):
@@ -62,10 +91,16 @@ def scv_home(request):
             if not test.title in [test.title for test in UserTest.objects.filter(user=request.user, is_complete=True)]:
                 # проверка есть ли уже тест в таблице UserTest из таблицы Test
                 if not test.title in [test.title for test in data]:
-                    # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
-                    gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
-                    name_for_test.append(test.title)
-
+                    if test.generate_random_order_tasks:
+                        # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+                        lst_current_tasks = ast.literal_eval(test.task_numbers)
+                        shuffle(lst_current_tasks)
+                        gen_tasks_for_type.append(list(map(str_to_int, lst_current_tasks)))
+                        name_for_test.append(test.title)
+                    else:
+                        # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+                        gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
+                        name_for_test.append(test.title)
 
 
         # upload file
@@ -160,7 +195,7 @@ def scv_home(request):
                 'completed_usertests': completed_usertests,
                 }
         
-        print(f'{Answer.objects.get(question_id=290).answer_text=}')
+        # print(f'{Answer.objects.get(question_id=290).answer_text=}')
         
         return render(request, 'user_app/scv_home.html', context=context)
     
@@ -282,9 +317,16 @@ def refresh_func(request):
     for test in tests:
         # проверка есть ли уже тест в таблице UserTest из таблицы Test
         if not test.title in [test.title for test in data]:
-            # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
-            gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
-            name_for_test.append(test.title)
+            if test.generate_random_order_tasks:
+                # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+                lst_current_tasks = ast.literal_eval(test.task_numbers)
+                shuffle(lst_current_tasks)
+                gen_tasks_for_type.append(list(map(str_to_int, lst_current_tasks)))
+                name_for_test.append(test.title)
+            else:
+                # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+                gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
+                name_for_test.append(test.title)
 
 
     # генерация варианта, перебираем список состоящий из списков типов заданий 

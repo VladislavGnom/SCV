@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% load remove_backslashes %}
+
+{% block main %}
+<div class="container">
+    <div class="text-center h2">{{ title_test }}</div>
+
+    
+    <form action="{% url 'show-result' %}" method="post" class="mt-3">
+
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <nav class="list-pages" style="height: 40px;">
+                <ul class="pagination mx-auto col-10">
+                    {% for p in tasks.paginator.page_range %}
+                               {% if tasks.number == p %}
+                    <li class="page-item disabled"><a class="page-link" href="">{{ p }}</a></li>
+                               {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+                    </li>
+                               {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+            <div>
+                <button type="submit" class="btn-default btn-default-sm"><span>Завершить</span></button>
+            </div>
+        </div>
+
+
+        <input name="{{ title }}" class="d-none">
+        {% csrf_token %}
+        {% for t in tasks %}
+            <!-- <div>
+                {{ t.type_task }}
+            </div> -->
+            <div>
+            <div class="multi text-center">
+                <div id="task-div-{{ t.pk }}">
+                </div>
+                <script>
+                    // Отправка GET-запроса
+                    fetch("http://{{ request.get_host }}/media/imgs/{{ t.question_text }}", {
+                        method: "GET", // Метод запроса
+                    })
+                    .then(response => {
+                        if (!response.ok) { // Проверка на успешный ответ
+                            document.getElementById("task-div-{{ t.pk }}").innerHTML = "{{ t.question_text|remove_backslashes|escapejs }}"
+                        } else {
+                            const img = document.createElement('img');
+                            const a = document.createElement('a');
+                            a.href = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
+                            img.src = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
+                            document.getElementById('task-div-{{ t.pk }}').appendChild(a);
+                            a.appendChild(img);
+                        }
+                    });
+                </script>
+            </div>
+            </div>
+            <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
+            <hr>
+        {% endfor %}
+    </form>
+</div>
+{% endblock %}

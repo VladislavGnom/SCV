@@ -1,10 +1,10 @@
 import ast
 from django.shortcuts import render, redirect
 from teacher_app.forms import TaskForm, TestForm
-from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question
+from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
@@ -17,6 +17,31 @@ from utils.utils import extract_filename_substring, clean_html
 @login_required()
 def teachers_home(request):
     return render(request, 'teacher_app/teachers_home.html', context={'active_block': '', 'title': 'Главная страница'})
+
+
+@login_required
+def tests_page(request):
+    if request.method == "POST":
+        form = TestForm(request.POST, request.FILES)
+        if form.is_valid():
+            new_task = form.save(commit=False)
+            new_task.save()
+
+            messages.success(request, 'Тест успешно создан!')
+            request.session['tasks'] = []
+
+            return redirect('show-tests')
+    else:
+        form = TestForm()
+
+    context = {
+        'title': 'Тесты',
+        'active_block': 'Добавить к/р',
+        'form_test': form,
+        'subjects_main': SubjectMain.objects.filter(enabled=1),
+    }
+
+    return render(request, "teacher_app/tests_page.html", context=context)
 
 
 @login_required()
@@ -44,21 +69,8 @@ def add_task(request):
 
 @login_required()
 def add_test(request):
-    if request.method == "POST":
-        form = TestForm(request.POST, request.FILES)
-        if form.is_valid():
-            new_task = form.save(commit=False)
-            new_task.save()
-
-            messages.success(request, 'Тест успешно создан!')
-
-            return redirect('add-test')
-    else:
-        form = TestForm()
-
     context = {
         'title': 'Добавление теста',
-        'form_test': form,
         'active_block': 'Добавить к/р',
         'subjects_main': SubjectMain.objects.filter(enabled=1),
     }
@@ -142,6 +154,15 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
     else:
         ...
     question = Question.objects.get(pk=question_id, enabled=1)
+    answers_count = Answer.objects.filter(question_id=question_id).aggregate(count=Count("answer_text"))['count']
+    
+    is_warning_task = False
+    print(f'{answers_count}')
+
+    # check if task is warning
+    if answers_count > 1:
+        is_warning_task = True
+    
     filename = extract_filename_substring(question.question_text),
     context = {
         'title': 'Добавление теста',
@@ -155,7 +176,9 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
         'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
         'question': question,
         'filename': filename[0],
-        'text_task': clean_html(" ".join([i for i in question.question_text.split() if i != filename[0]]))
+        'text_task': clean_html(" ".join([i for i in question.question_text.split() if i != filename[0]])),
+    
+        'is_warning_task': is_warning_task,
     }
     #request.COOKIES['info'] = 'kkk'
     # request.COOKIES['tasks'].append('11')
@@ -193,6 +216,15 @@ def add_task_question_safe(request, subject_main_id, question_id):
     else:
         ...
     question = Question.objects.get(pk=question_id, enabled=1)
+    
+    answers_count = Answer.objects.filter(question_id=question_id).aggregate(count=Count("answer_text"))['count']
+    
+    is_warning_task = False
+
+    # check if task is warning
+    if answers_count > 1:
+        is_warning_task = True
+
     context = {
         'title': 'Добавление теста',
         # 'form': form,
@@ -202,7 +234,9 @@ def add_task_question_safe(request, subject_main_id, question_id):
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
         'question': question,
         'filename': question.question_text,
-        'text_task': clean_html(" ".join([i for i in question.question_text.split() if i != question.question_text]))
+        'text_task': clean_html(" ".join([i for i in question.question_text.split() if i != question.question_text])),
+    
+        'is_warning_task': is_warning_task,
     }
 
     return render(request, "teacher_app/add_test.html", context=context)

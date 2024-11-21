@@ -4,13 +4,19 @@
 <h1>Все классы:</h1>
 
 {% if classes %}
-<ul>
 {% for class in classes %}
     {% if class.name != 'Администратор' %}
-        <li><a href="{% url 'show-tests' class.id %}">{{ class.name }}</a></li>
+        <table class="table">
+            <thead>
+                <tr>
+                    <td class="text-center">
+                        <a href="{% url 'show-tests' class.id %}">{{ class.name }}</a>
+                    </td>
+                </tr>
+            </thead>
+        </table>
     {% endif %}
 {% endfor %}
-</ul>
 {% else %}
 <h2>Пока нет классов</h2>
 {% endif %}

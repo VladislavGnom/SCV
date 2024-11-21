@@ -15,7 +15,7 @@
                 <b class="h5">№{{ el.1.pk }}</b>
             </div>
             <div>
-                <div id="task-div-{{ el.1.pk }}" class="text-center"></div>
+                <div id="task-div-{{ el.1.pk }}" class="text-center" style="overflow-x: scroll;"></div>
                         <script>
                             // Отправка GET-запроса
                             fetch("http://{{ request.get_host }}/media/imgs/{{ el.1.question_text }}", {
@@ -48,7 +48,7 @@
 </div>
 
 <div class="text-center mt-3">
-<a href="{% url 'scv-home' %}"><button class="btn btn-warning">Вернуться к заданиям</button></a>
+<a href="{% url 'scv-home' %}"><button class="btn-header-default" style="width: 250px;">Вернуться к заданиям</button></a>
 </div>
 
 <div style="height:500px"></div>

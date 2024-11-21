@@ -47,9 +47,9 @@ class TestAdminForm(forms.ModelForm):
     class Meta:
         form = Task
         fields = ('title', 'group', 'is_complete', 'task_numbers', 'number_of_attempts')
-        widgets = {
-            'task_numbers': forms.CheckboxSelectMultiple(choices=TASK_CHOICES),
-        }
+        # widgets = {
+        #     'task_numbers': forms.CheckboxSelectMultiple(choices=TASK_CHOICES),
+        # }
         
     def clean_title(self):
         if self.cleaned_data['title'] == "No way!":
@@ -64,17 +64,17 @@ class TestAdmin(admin.ModelAdmin):
     list_display = ('title', 'group', 'is_complete')
 
 
-@admin.register(Task)
-class TaskAdminForm(admin.ModelAdmin):
-    list_display = ('pk', 'title', 'type_task', 'view_tasks_link',)
-    list_display_links = ('title', 'pk')
+# @admin.register(Task)
+# class TaskAdminForm(admin.ModelAdmin):
+#     list_display = ('pk', 'title', 'type_task', 'view_tasks_link',)
+#     list_display_links = ('title', 'pk')
     
-    def view_tasks_link(self, obj):
-        from django.utils.html import format_html
-        name = obj.link_to_answer
-        url = obj.link_to_answer
-        return format_html('<a href="{}">{}</a>', url, name)
-    view_tasks_link.short_description = "Links"
+#     def view_tasks_link(self, obj):
+#         from django.utils.html import format_html
+#         name = obj.link_to_answer
+#         url = obj.link_to_answer
+#         return format_html('<a href="{}">{}</a>', url, name)
+#     view_tasks_link.short_description = "Links"
     
 
 @admin.register(UserTest)

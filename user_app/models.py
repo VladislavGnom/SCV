@@ -25,12 +25,13 @@ class Task(models.Model):
 
 # хранит активные и завершённые тесты/работы
 class Test(models.Model):
-    title = models.CharField(max_length=255)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    task_numbers = models.CharField(max_length=255)
-    is_complete = models.BooleanField(default=False)
-    count_right_answers = models.IntegerField(blank=True, null=True)
-    number_of_attempts = models.IntegerField(blank=True, default=1)
+    title = models.CharField(max_length=255, verbose_name="Название теста")
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="Группа")
+    task_numbers = models.CharField(max_length=255, verbose_name="ID заданий")
+    is_complete = models.BooleanField(default=False, verbose_name="Завершён ли тест")
+    count_right_answers = models.IntegerField(blank=True, null=True, verbose_name="Количество верных ответов")
+    number_of_attempts = models.IntegerField(blank=True, default=1, verbose_name="Количество попыток")
+    generate_random_order_tasks = models.BooleanField(default=False, verbose_name="Генерировать вопросы в перемешку")
 
     def __str__(self):
         return self.title

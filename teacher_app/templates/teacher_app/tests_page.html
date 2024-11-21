@@ -1,0 +1,49 @@
+{% extends 'base-special.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block main %}
+
+{% if messages %}
+<ul class="messages col-12">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<!-- <h1>Все тесты:</h1> -->
+
+{% if form_test %}
+<div class="container">
+    <form action="" method="post">
+        {% csrf_token %}
+        <details id="add-test">
+            <summary>Добавить тест</summary>
+            {{ form_test|crispy }}
+            
+            <div class="text-center mb-3">
+                <a href="{% url 'add-test' %}">Наполнить тест заданиями</a>
+            </div>
+
+            <button class="btn-default col-12"><span>Создать тест</span></button>
+
+<script>
+    document.getElementById("id_task_numbers").value = "{{ request.session.tasks|escapejs }}";
+    let add_test_el = document.getElementById("add-test");
+    let params = (new URL(document.location)).searchParams; 
+    
+    // show open tag details
+    if (params.get("is_open")) {
+        add_test_el.setAttribute('open', '');
+    }
+
+</script>
+
+
+        </details>
+    </form>
+</div>
+{% endif %}
+
+{% endblock %}
