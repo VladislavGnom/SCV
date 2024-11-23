@@ -7,11 +7,11 @@
     <div class="text-center h2">{{ title_test }}</div>
 
     
-    <form action="{% url 'show-result' %}" method="post" class="mt-3">
+    <form id="form-request" action="{% url 'show-result' %}" method="post" class="mt-3">
 
         
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <nav class="list-pages" style="height: 40px;">
+            <nav id="pagination_tasks" class="list-pages" style="height: 40px;">
                 <ul class="pagination mx-auto col-10">
                     {% for p in tasks.paginator.page_range %}
                                {% if tasks.number == p %}
@@ -25,7 +25,7 @@
                 </ul>
             </nav>
             <div>
-                <button type="submit" class="btn-default btn-default-sm"><span>Завершить</span></button>
+                <button id="submit_to_server" type="submit" class="btn-default btn-default-sm"><span>Завершить</span></button>
             </div>
         </div>
 
@@ -41,6 +41,8 @@
                 <div id="task-div-{{ t.pk }}">
                 </div>
                 <script>
+                    //document.cookie = "saved_answers={}"
+                    let id_input_answer = 'task-id-{{ t.pk }}';
                     // Отправка GET-запроса
                     fetch("http://{{ request.get_host }}/media/imgs/{{ t.question_text }}", {
                         method: "GET", // Метод запроса
@@ -60,9 +62,112 @@
                 </script>
             </div>
             </div>
-            <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
+            <input id="task-id-{{ t.pk }}" name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
             <hr>
-        {% endfor %}
-    </form>
+            {% endfor %}
+        </form>
+    <button type="button" class="btn-header-default" style="width: 200px;" id="save-user-answer">Сохранить</button>
 </div>
+<script>
+    // del coockie func
+    function eraseCookie(name) {
+        document.cookie = name + '=; Max-Age=0';
+    }
+
+    // process clear coockie when user come in first time
+    let params = (new URL(document.location)).searchParams; 
+    is_open = params.get("open");
+    if (is_open) {
+        eraseCookie('saved_answers');
+        //alert("clear");
+    }
+
+    // get coockie func
+    function getCookie(name) {
+        let cookie = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+        return cookie ? cookie.split('=')[1] : null;
+    }
+
+    function saveAnswer() {
+        // get answer into input tag
+        var input_answer = document.getElementById(id_input_answer);
+
+        let saved_answers = getCookie('saved_answers');
+        saved_answers = JSON.parse(saved_answers);
+        saved_answers[id_input_answer] = input_answer.value;
+        document.cookie = `saved_answers=${JSON.stringify(saved_answers)}`;  
+    }
+
+    if (!getCookie('saved_answers')) {
+        document.cookie = `saved_answers={}`;
+    }
+
+    let btn_user_answer = document.getElementById("save-user-answer");
+
+    // display answer from cookie
+    var input_answer = document.getElementById(id_input_answer);
+
+    let answer_for_display = JSON.parse(getCookie('saved_answers'))[id_input_answer];
+    if (typeof answer_for_display === 'undefined' || typeof answer_for_display === 'null') {
+        input_answer.value = '';
+    } else {
+        input_answer.value = answer_for_display;
+    }
+
+   
+
+    btn_user_answer.onclick = function() {
+        document.getElementsByTagName('html')[0].focus();
+        
+        // saving answer
+        saveAnswer();
+        alert("Ответ сохранён!");
+    }
+
+</script>
+<script>
+    /*
+    Send form code
+    */ 
+
+    let submit_button = document.getElementById('submit_to_server');
+    let lentgth_tasks = document.getElementById('pagination_tasks').getElementsByTagName('li').length;
+    submit_button.onclick = function(event) {
+        event.preventDefault();
+        if (Object.keys(JSON.parse(getCookie('saved_answers'))).length != lentgth_tasks) {
+            alert("Заполните все поля и сохраните ответы");
+        } else {
+            // update coockie
+            if ((new URL(document.location)).searchParams.size == 0) {
+                fetch(`${location.href}?save_cookie=True`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json(); // Преобразуем ответ в JSON
+                }).then(data => {
+                    console.log(data); // Обрабатываем данные
+                })
+                .catch(error => {
+                    console.error('Ошибка при выполнении запроса:', error); // Обрабатываем ошибки
+                });
+            } else {
+                fetch(`${location.href}&save_cookie=True`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json(); // Преобразуем ответ в JSON
+                }).then(data => {
+                    console.log(data); // Обрабатываем данные
+                })
+                .catch(error => {
+                    console.error('Ошибка при выполнении запроса:', error); // Обрабатываем ошибки
+                });
+            }
+            document.getElementById('form-request').submit();
+        }
+    }
+
+</script>
 {% endblock %}

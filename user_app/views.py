@@ -1,9 +1,10 @@
+import json
 import ast
 from random import shuffle
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from user_app.forms import ImageForm, TaskForm, TestForm
 from user_app.models import Image, Task, Test, UserTest, CustomUser, Question, Answer
-from django.http import Http404, HttpResponseNotFound
+from django.http import Http404, HttpResponseNotFound, JsonResponse, HttpResponseServerError
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
@@ -26,6 +27,16 @@ def str_to_int(obj):
 
 @login_required
 def user_test(request, user_test_id):
+    # save answers from frontend js in backend for processing answer later
+    if request.COOKIES.get("saved_answers") or request.GET.get('save_cookie'):
+        request.session['saved_answers'] = request.COOKIES.get("saved_answers")
+        # if request.GET.get('save_cookie'):
+        #     return JsonResponse(data={"status": 200, "cookies": request.session['saved_answers']})
+    else:
+        request.session['saved_answers'] = {}
+
+
+
     try:
         test = UserTest.objects.get(user=request.user, pk=user_test_id, is_complete=False)
     except ObjectDoesNotExist as error:
@@ -42,7 +53,7 @@ def user_test(request, user_test_id):
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'title': 'Выполнение теста', 
+        'title': test.title, 
         'tasks': page_obj,
         'title_test': test.title,
     }
@@ -175,10 +186,10 @@ def scv_home(request):
                     all_tasks.append(variant)
 
 
-            merge_title_and_task = list(zip(all_title_tests, all_tasks))
-
-
             usertests = data
+
+
+            merge_title_and_task = list(zip(all_title_tests, usertests))
 
             completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
             
@@ -208,6 +219,10 @@ def show_result(request):
         count = 0
         data = dict(request.POST)
 
+        # get data from frontend js
+        data_answers = json.loads(request.session['saved_answers'])
+        print(data_answers)
+
         # получаю первый ключ в словаре, который соответствует названию теста
         title_test = list(data.keys())[0]
 
@@ -229,12 +244,11 @@ def show_result(request):
             right_answers = []
             user_answers = []
 
-            for task_id, user_answer in data.items():
+            for task_id, user_answer in data_answers.items():
                 if task_id != 'csrfmiddlewaretoken':  
                     id = task_id.split('-')[2]
                     right_answer = Answer.objects.get(question_id=id).answer_text
-
-                    user_answer = user_answer[0].strip()
+                    user_answer = user_answer.strip()
 
                     right_answers.append(right_answer)
                     user_answers.append(user_answer)
@@ -277,8 +291,16 @@ def show_result(request):
             for el in merge_user_and_right_answers:
                 new_merge_user_and_right_answers.append([el])
 
-            for indx, val in enumerate(tasks):
-                new_merge_user_and_right_answers[indx].append(val)
+            try:
+                for indx, val in enumerate(tasks):
+                    new_merge_user_and_right_answers[indx].append(val)
+            except IndexError as error:
+                # увеличиваю число текущих попыток
+                test_obj.current_attempts -= 1
+
+                test_obj.save()
+                return HttpResponseServerError("Error, please come back and reload page!")
+
 
             
             with open(f'{settings.BASE_DIR}/data_tests/homeworks/{title_test.replace('/', '\\')}-{request.user}.txt', mode='w+') as file:
@@ -293,8 +315,7 @@ def show_result(request):
                 'tasks': tasks,
                 'title': title_test,
                 'new_merge_user_and_right_answers': new_merge_user_and_right_answers,
-            }
-                    
+            }  
             
             return render(request, 'user_app/show_result.html', context=context) 
     else:
