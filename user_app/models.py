@@ -11,6 +11,10 @@ class Image(models.Model):
     def __str__(self):
         return self.title
     
+    class Meta:
+        verbose_name = 'Изображение пользователя'
+        verbose_name_plural = 'Изображения пользователей'
+
 
 class Task(models.Model):
     title = models.CharField(max_length=255, default='Задание ')
@@ -22,6 +26,10 @@ class Task(models.Model):
     def __str__(self):
         return str(self.title)
     
+    class Meta:
+        verbose_name = 'Задание'
+        verbose_name_plural = 'Задания'
+    
 
 # хранит активные и завершённые тесты/работы
 class Test(models.Model):
@@ -32,9 +40,14 @@ class Test(models.Model):
     count_right_answers = models.IntegerField(blank=True, null=True, verbose_name="Количество верных ответов")
     number_of_attempts = models.IntegerField(blank=True, default=1, verbose_name="Количество попыток")
     generate_random_order_tasks = models.BooleanField(default=False, verbose_name="Генерировать вопросы в перемешку")
+    is_show_answers = models.BooleanField(default=False, verbose_name="Показывать ответы")
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        verbose_name = 'Тест'
+        verbose_name_plural = 'Тесты'
 
 
 class UserTest(models.Model):
@@ -49,12 +62,21 @@ class UserTest(models.Model):
     def __str__(self):
         return self.title
     
+    class Meta:
+        verbose_name = 'Тесты пользователя'
+        verbose_name_plural = 'Тесты пользователей'
+    
+
 class SubjectMain(models.Model):
     subject_main_name = models.CharField(max_length=100)
     enabled = models.BooleanField(default=1)
     
     def __str__(self):
         return self.subject_main_name
+    
+    class Meta:
+        verbose_name = 'Предмет'
+        verbose_name_plural = 'Предметы'
     
 
 class SubjectParents(models.Model):
@@ -66,6 +88,10 @@ class SubjectParents(models.Model):
     def __str__(self):
         return self.subject_parent_name
     
+    class Meta:
+        verbose_name = 'Направление'
+        verbose_name_plural = 'Направления'
+    
 
 class SubjectChildren(models.Model):
     subject_parent = models.ForeignKey(SubjectParents, on_delete=models.CASCADE)
@@ -75,6 +101,10 @@ class SubjectChildren(models.Model):
 
     def __str__(self):
         return self.subject_child_name
+    
+    class Meta:
+        verbose_name = 'Тема'
+        verbose_name_plural = 'Темы'
     
 
 class Question(models.Model):
@@ -92,6 +122,10 @@ class Question(models.Model):
 
     def __str__(self):
         return self.question_text[:20]
+    
+    class Meta:
+        verbose_name = 'Вопрос'
+        verbose_name_plural = 'Вопросы'
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
@@ -99,6 +133,10 @@ class Answer(models.Model):
 
     def __str__(self):
         return str(self.pk)
+    
+    class Meta:
+        verbose_name = 'Ответ'
+        verbose_name_plural = 'Ответы'
 
 
 class CustomUser(AbstractUser):

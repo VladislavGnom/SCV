@@ -58,7 +58,7 @@ class TestForm(forms.ModelForm):
 
     class Meta:
         model = Test
-        fields = ('title', 'group', 'task_numbers', 'number_of_attempts', 'generate_random_order_tasks')
+        fields = ('title', 'group', 'task_numbers', 'number_of_attempts', 'generate_random_order_tasks', 'is_show_answers')
 
 # class TestFormTeacher(forms.ModelForm):
 

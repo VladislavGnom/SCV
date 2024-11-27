@@ -1,7 +1,13 @@
 {% extends 'base-special.html' %}
 
+{% load static %}
+
 {% block main %}
 <h1>Все работы класса:</h1>
+
+<div class="mb-3">
+    <a download href="{% static 'excel_files/' %}{{ filename }}">Скачать файл в виде таблицы</a>
+</div>
 
 {% if usertests %}
 <table class="table">

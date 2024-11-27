@@ -3,6 +3,19 @@
 {% load remove_backslashes %}
 
 {% block main %}
+<script>
+    // del coockie func
+    function eraseCookie(name) {
+        document.cookie = name + '=; Max-Age=0';
+    }
+    
+    // process clear coockie when user come in first time
+    let params = (new URL(document.location)).searchParams; 
+    is_open = params.get("open");
+    if (is_open) {
+        eraseCookie('saved_answers');
+    }
+</script>
 <div class="container">
     <div class="text-center h2">{{ title_test }}</div>
 
@@ -10,9 +23,9 @@
     <form id="form-request" action="{% url 'show-result' %}" method="post" class="mt-3">
 
         
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <nav id="pagination_tasks" class="list-pages" style="height: 40px;">
-                <ul class="pagination mx-auto col-10">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <nav id="pagination_tasks" class="list-pages max-height-container" style="height: 40px;">
+                <ul class="pagination mx-auto" >
                     {% for p in tasks.paginator.page_range %}
                                {% if tasks.number == p %}
                     <li class="page-item disabled"><a class="page-link" href="">{{ p }}</a></li>
@@ -55,6 +68,7 @@
                             const a = document.createElement('a');
                             a.href = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
                             img.src = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
+                            img.setAttribute('style', 'max-height: 300px; overflow: auto;'); // Установливаем стили
                             document.getElementById('task-div-{{ t.pk }}').appendChild(a);
                             a.appendChild(img);
                         }
@@ -66,22 +80,9 @@
             <hr>
             {% endfor %}
         </form>
-    <button type="button" class="btn-header-default" style="width: 200px;" id="save-user-answer">Сохранить</button>
+    <button type="button" class="btn-header-default mb-5" style="width: 200px;" id="save-user-answer">Сохранить</button>
 </div>
 <script>
-    // del coockie func
-    function eraseCookie(name) {
-        document.cookie = name + '=; Max-Age=0';
-    }
-
-    // process clear coockie when user come in first time
-    let params = (new URL(document.location)).searchParams; 
-    is_open = params.get("open");
-    if (is_open) {
-        eraseCookie('saved_answers');
-        //alert("clear");
-    }
-
     // get coockie func
     function getCookie(name) {
         let cookie = document.cookie.split('; ').find(row => row.startsWith(name + '='));
@@ -122,6 +123,14 @@
         // saving answer
         saveAnswer();
         alert("Ответ сохранён!");
+
+        // fix bag with trash answers after reload page (open=True)
+        if (is_open) {
+            window.location.replace(`${location.origin}${location.pathname}`);
+        } else {
+            // fix bag by this contruction
+            window.location.replace(location);
+        }
     }
 
 </script>
@@ -137,37 +146,9 @@
         if (Object.keys(JSON.parse(getCookie('saved_answers'))).length != lentgth_tasks) {
             alert("Заполните все поля и сохраните ответы");
         } else {
-            // update coockie
-            if ((new URL(document.location)).searchParams.size == 0) {
-                fetch(`${location.href}?save_cookie=True`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json(); // Преобразуем ответ в JSON
-                }).then(data => {
-                    console.log(data); // Обрабатываем данные
-                })
-                .catch(error => {
-                    console.error('Ошибка при выполнении запроса:', error); // Обрабатываем ошибки
-                });
-            } else {
-                fetch(`${location.href}&save_cookie=True`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json(); // Преобразуем ответ в JSON
-                }).then(data => {
-                    console.log(data); // Обрабатываем данные
-                })
-                .catch(error => {
-                    console.error('Ошибка при выполнении запроса:', error); // Обрабатываем ошибки
-                });
-            }
-            document.getElementById('form-request').submit();
+            document.getElementById('form-request').requestSubmit();
         }
     }
-
+    //alert(document.cookie)
 </script>
 {% endblock %}

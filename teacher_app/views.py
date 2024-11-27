@@ -293,13 +293,36 @@ def show_result_detail(request, class_id, title):
     # отбираю записи из таблицы Test по названию и получаю строковое представление списка номеров заданий и с помощью функции ast.literal_eval() преобразую эту строку в список, а затем узнаю кол-во элеменотов с помощью len() 
     count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
 
+    from utils.utils import create_excel_table, restyles_excel_file
 
+    filename = f'{title}-{class_id}.xlsx'
+    data = {
+        "Ученик": [],
+        "Название теста": [],
+        "ID заданий": [],
+        "Кол-во правильных ответов": [],
+        "Процент выполнения работы": []
+    }
+
+    for usertest in usertests:
+        data['Ученик'].append(f"{usertest.user.first_name} {usertest.user.last_name}")
+        data['Название теста'].append(f"{usertest.title}")
+        data['ID заданий'].append(f"{usertest.tasks_id}")
+        data['Кол-во правильных ответов'].append(f"{usertest.right_answers}")
+        data['Процент выполнения работы'].append(f"{ (usertest.right_answers * 100) / count_tasks }%")
+
+
+    # создаём таблицу
+    create_excel_table(filename=filename, data=data)
+    # применяем стили к таблице
+    restyles_excel_file(filename=filename)
 
     context = {
         'title': 'Результаты класса',
         'usertests': usertests,
         'count_tasks': count_tasks, 
         'active_block': 'Мои классы',
+        'filename': filename,
     }
 
     return render(request, 'teacher_app/show_result_detail.html', context=context)

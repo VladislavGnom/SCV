@@ -27,16 +27,12 @@ def str_to_int(obj):
 
 @login_required
 def user_test(request, user_test_id):
-    # save answers from frontend js in backend for processing answer later
-    if request.COOKIES.get("saved_answers") or request.GET.get('save_cookie'):
-        request.session['saved_answers'] = request.COOKIES.get("saved_answers")
-        # if request.GET.get('save_cookie'):
-        #     return JsonResponse(data={"status": 200, "cookies": request.session['saved_answers']})
+    if request.COOKIES.get('saved_answers'):
+        request.session['saved_answers'] = request.COOKIES.get('saved_answers')
     else:
         request.session['saved_answers'] = {}
 
-
-
+    # print(json.loads([i[14:] for i in request.META.get('HTTP_COOKIE').split('; ') if i.startswith("saved_answers=")][0]))
     try:
         test = UserTest.objects.get(user=request.user, pk=user_test_id, is_complete=False)
     except ObjectDoesNotExist as error:
@@ -138,12 +134,11 @@ def scv_home(request):
                     variant = [Question.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 
-                merge_title_and_task = list(zip(all_title_tests, all_tasks))
-
                 usertests = data
 
-                completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
+                merge_title_and_task = list(zip(all_title_tests, usertests))
 
+                completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
 
                 context = {
                     'form': form, 
@@ -220,8 +215,8 @@ def show_result(request):
         data = dict(request.POST)
 
         # get data from frontend js
+        # data_answers = json.loads(request.session['saved_answers'])
         data_answers = json.loads(request.session['saved_answers'])
-        print(data_answers)
 
         # получаю первый ключ в словаре, который соответствует названию теста
         title_test = list(data.keys())[0]
@@ -316,6 +311,12 @@ def show_result(request):
                 'title': title_test,
                 'new_merge_user_and_right_answers': new_merge_user_and_right_answers,
             }  
+
+            # если не нужно показывать ответы то тогда просто редиректимся на главную
+            group = Group.objects.get(pk=get_user_groups(request.user)[0])
+            if not Test.objects.get(group=group, title=title_test).is_show_answers:
+                messages.info(request, 'Ваши ответы записаны и уже на проверке, за результатами обращайтесь к учителю')
+                return redirect('scv-home')
             
             return render(request, 'user_app/show_result.html', context=context) 
     else:
@@ -374,7 +375,7 @@ def profile(request):
         'active_block': '',
     }
 
-    if request.user.groups.filter(name='Teachers').exists():
+    if request.user.groups.filter(name='Администратор').exists():
         return render(request, 'teacher_app/profile_teach.html', context=context)
     else:
         return render(request, 'user_app/profile.html', context=context)

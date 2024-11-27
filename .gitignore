@@ -1,2 +1,5 @@
 db.sqlite3
 __pycache__/
+venv-django
+media/
+data_tests/
