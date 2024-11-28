@@ -39,10 +39,10 @@ import pandas as pd
 def create_excel_table(data: dict[str, list], filename: str, sheet_name: str = 'Sheet1'):
     df = pd.DataFrame(data)
 
-    if not os.path.exists('static/excel_files'):
-        os.makedirs('static/excel_files')
+    if not os.path.exists('excel_files'):
+        os.makedirs('excel_files')
 
-    filepath = os.path.join('static/excel_files', filename)
+    filepath = os.path.join('excel_files', filename)
     df.to_excel(filepath, index=False, sheet_name=sheet_name)
 
     return filepath

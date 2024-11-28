@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.contrib.auth.models import Group, AbstractUser
 
 
@@ -116,6 +117,8 @@ class Question(models.Model):
     subject_child_id = models.IntegerField()
     question_text = models.TextField(max_length=600)
     enabled = models.BooleanField(default=1)
+    image = models.ImageField(upload_to='imgs')
+    time_create = models.DateTimeField(auto_now_add=timezone.now(), blank=True, null=True)
     # question_group = models.IntegerField(default=0)
     # question_points = models.IntegerField()
     # question_type = models.IntegerField()

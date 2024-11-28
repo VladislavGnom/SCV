@@ -1,6 +1,6 @@
 import ast
 from django.shortcuts import render, redirect
-from teacher_app.forms import TaskForm, TestForm
+from teacher_app.forms import TaskForm, TestForm, AnswerForm
 from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
@@ -48,19 +48,29 @@ def tests_page(request):
 def add_task(request):
     if request.method == "POST":
         form = TaskForm(request.POST, request.FILES)
-        if form.is_valid():
+        form_answer = AnswerForm(request.POST)
+        if form.is_valid() and form_answer.is_valid():
             new_task = form.save(commit=False)
+            new_answer = form_answer.save(commit=False)
+
+            new_task.question_text = new_task.image
             new_task.save()
+            
+            new_answer.question = Question.objects.get(pk=new_task.pk)
+
+            new_answer.save()
 
             messages.success(request, 'Задание успешно добавлено!')
 
             return redirect('add-task')
     else:
         form = TaskForm()
+        form_answer = AnswerForm()
 
     context = {
         'title': 'Добавление задания',
         'form': form,
+        'form_answer': form_answer,
         'active_block': 'Добавить задание',
     }
 
@@ -126,7 +136,7 @@ def add_task_subject_children(request, subject_main_id, subject_parent_id, subje
         'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
         # 'questions': Question.objects.filter(Q(subject_child_id=subject_children_id) | Q(subject_id=subject_main_id) | Q(subject_parent_id=subject_parent_id)),
         # 'questions': (Question.objects.filter(subject_child_id=subject_children_id) or (Question.objects.filter(Q(subject_parent_id=subject_parent_id) | Q(subject_id=subject_main_id)))),
-        'questions': (Question.objects.filter(subject_child_id=subject_children_id, enabled=1) or (Question.objects.filter(Q(subject_parent_id=subject_parent_id, enabled=1)))),
+        'questions': (Question.objects.filter(subject_child_id=subject_children_id, enabled=1).order_by('-time_create') or (Question.objects.filter(Q(subject_parent_id=subject_parent_id, enabled=1).order_by('-time_create')))),
     }
     
     return render(request, "teacher_app/add_test.html", context=context)
