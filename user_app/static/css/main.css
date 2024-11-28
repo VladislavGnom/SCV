@@ -162,3 +162,31 @@
     justify-content: center;
     align-items: center;
 }
+
+.swal2-popup {
+    width: 600px; /* Установите желаемую ширину */
+    padding: 20px; /* Установите желаемые отступы */
+}
+
+.swal2-title {
+    font-size: 24px; /* Измените размер заголовка */
+}
+
+.swal2-content {
+    font-size: 18px; /* Измените размер текста сообщения */
+}
+
+@media (max-width: 480px) {
+    .swal2-popup {
+        width: 400px; /* Установите желаемую ширину */
+        padding: 20px; /* Установите желаемые отступы */
+    }
+    
+    .swal2-title {
+        font-size: 19px; /* Измените размер заголовка */
+    }
+    
+    .swal2-content {
+        font-size: 12px; /* Измените размер текста сообщения */
+    }
+}

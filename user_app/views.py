@@ -1,13 +1,16 @@
+import json
 import ast
+from random import shuffle
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from user_app.forms import ImageForm, TaskForm, TestForm
 from user_app.models import Image, Task, Test, UserTest, CustomUser, Question, Answer
-from django.http import Http404
+from django.http import Http404, HttpResponseNotFound, JsonResponse, HttpResponseServerError
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
+from django.core.paginator import Paginator
 
 from teacher_app.views import teachers_home
 
@@ -20,6 +23,39 @@ def get_user_groups(user):
 
 def str_to_int(obj):
     return int(obj)
+
+
+@login_required
+def user_test(request, user_test_id):
+    if request.COOKIES.get('saved_answers'):
+        request.session['saved_answers'] = request.COOKIES.get('saved_answers')
+    else:
+        request.session['saved_answers'] = {}
+
+    # print(json.loads([i[14:] for i in request.META.get('HTTP_COOKIE').split('; ') if i.startswith("saved_answers=")][0]))
+    try:
+        test = UserTest.objects.get(user=request.user, pk=user_test_id, is_complete=False)
+    except ObjectDoesNotExist as error:
+        return HttpResponseNotFound("404 Page not Found")
+    
+    gen_tasks_for_type = list(map(str_to_int, ast.literal_eval(test.tasks_id)))
+
+    # создание списка variant из обьектов модели Question из уже имеющихся id задач в БД 
+    variant = [Question.objects.get(pk=pk) for pk in gen_tasks_for_type]
+
+    paginator = Paginator(variant, 1)
+
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'title': test.title, 
+        'tasks': page_obj,
+        'title_test': test.title,
+    }
+
+
+    return render(request, 'user_app/user_test.html', context=context)
 
 
 def index(request):
@@ -62,10 +98,16 @@ def scv_home(request):
             if not test.title in [test.title for test in UserTest.objects.filter(user=request.user, is_complete=True)]:
                 # проверка есть ли уже тест в таблице UserTest из таблицы Test
                 if not test.title in [test.title for test in data]:
-                    # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
-                    gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
-                    name_for_test.append(test.title)
-
+                    if test.generate_random_order_tasks:
+                        # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+                        lst_current_tasks = ast.literal_eval(test.task_numbers)
+                        shuffle(lst_current_tasks)
+                        gen_tasks_for_type.append(list(map(str_to_int, lst_current_tasks)))
+                        name_for_test.append(test.title)
+                    else:
+                        # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+                        gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
+                        name_for_test.append(test.title)
 
 
         # upload file
@@ -92,12 +134,11 @@ def scv_home(request):
                     variant = [Question.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 
-                merge_title_and_task = list(zip(all_title_tests, all_tasks))
-
                 usertests = data
 
-                completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
+                merge_title_and_task = list(zip(all_title_tests, usertests))
 
+                completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
 
                 context = {
                     'form': form, 
@@ -140,10 +181,10 @@ def scv_home(request):
                     all_tasks.append(variant)
 
 
-            merge_title_and_task = list(zip(all_title_tests, all_tasks))
-
-
             usertests = data
+
+
+            merge_title_and_task = list(zip(all_title_tests, usertests))
 
             completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
             
@@ -160,7 +201,7 @@ def scv_home(request):
                 'completed_usertests': completed_usertests,
                 }
         
-        print(f'{Answer.objects.get(question_id=290).answer_text=}')
+        # print(f'{Answer.objects.get(question_id=290).answer_text=}')
         
         return render(request, 'user_app/scv_home.html', context=context)
     
@@ -172,6 +213,10 @@ def show_result(request):
         # counter right answers
         count = 0
         data = dict(request.POST)
+
+        # get data from frontend js
+        # data_answers = json.loads(request.session['saved_answers'])
+        data_answers = json.loads(request.session['saved_answers'])
 
         # получаю первый ключ в словаре, который соответствует названию теста
         title_test = list(data.keys())[0]
@@ -194,12 +239,11 @@ def show_result(request):
             right_answers = []
             user_answers = []
 
-            for task_id, user_answer in data.items():
+            for task_id, user_answer in data_answers.items():
                 if task_id != 'csrfmiddlewaretoken':  
                     id = task_id.split('-')[2]
                     right_answer = Answer.objects.get(question_id=id).answer_text
-
-                    user_answer = user_answer[0].strip()
+                    user_answer = user_answer.strip()
 
                     right_answers.append(right_answer)
                     user_answers.append(user_answer)
@@ -242,8 +286,16 @@ def show_result(request):
             for el in merge_user_and_right_answers:
                 new_merge_user_and_right_answers.append([el])
 
-            for indx, val in enumerate(tasks):
-                new_merge_user_and_right_answers[indx].append(val)
+            try:
+                for indx, val in enumerate(tasks):
+                    new_merge_user_and_right_answers[indx].append(val)
+            except IndexError as error:
+                # увеличиваю число текущих попыток
+                test_obj.current_attempts -= 1
+
+                test_obj.save()
+                return HttpResponseServerError("Error, please come back and reload page!")
+
 
             
             with open(f'{settings.BASE_DIR}/data_tests/homeworks/{title_test.replace('/', '\\')}-{request.user}.txt', mode='w+') as file:
@@ -258,8 +310,13 @@ def show_result(request):
                 'tasks': tasks,
                 'title': title_test,
                 'new_merge_user_and_right_answers': new_merge_user_and_right_answers,
-            }
-                    
+            }  
+
+            # если не нужно показывать ответы то тогда просто редиректимся на главную
+            group = Group.objects.get(pk=get_user_groups(request.user)[0])
+            if not Test.objects.get(group=group, title=title_test).is_show_answers:
+                messages.info(request, 'Ваши ответы записаны и уже на проверке, за результатами обращайтесь к учителю')
+                return redirect('scv-home')
             
             return render(request, 'user_app/show_result.html', context=context) 
     else:
@@ -282,9 +339,16 @@ def refresh_func(request):
     for test in tests:
         # проверка есть ли уже тест в таблице UserTest из таблицы Test
         if not test.title in [test.title for test in data]:
-            # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
-            gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
-            name_for_test.append(test.title)
+            if test.generate_random_order_tasks:
+                # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+                lst_current_tasks = ast.literal_eval(test.task_numbers)
+                shuffle(lst_current_tasks)
+                gen_tasks_for_type.append(list(map(str_to_int, lst_current_tasks)))
+                name_for_test.append(test.title)
+            else:
+                # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
+                gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
+                name_for_test.append(test.title)
 
 
     # генерация варианта, перебираем список состоящий из списков типов заданий 
@@ -311,7 +375,7 @@ def profile(request):
         'active_block': '',
     }
 
-    if request.user.groups.filter(name='Teachers').exists():
+    if request.user.groups.filter(name='Администратор').exists():
         return render(request, 'teacher_app/profile_teach.html', context=context)
     else:
         return render(request, 'user_app/profile.html', context=context)

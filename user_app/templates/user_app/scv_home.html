@@ -73,46 +73,12 @@
 
 <div class="container">
     {% if tasks %}
-        {% for title, task in merge_title_and_task %}
-        <div class="card mt-5">
-            <div class="h3 text-center mt-3">{{ title }}</div><hr>
-            <form action="{% url 'show-result' %}" method="post">
-                <input name="{{ title }}" class="d-none">
-                {% csrf_token %}
-                {% for t in task %}
-                    <!-- <div>
-                        {{ t.type_task }}
-                    </div> -->
-                    <div>
-                    <div class="multi text-center"">
-                        <div id="task-div-{{ t.pk }}">
-                        </div>
-                        <script>
-                            // Отправка GET-запроса
-                            fetch("http://{{ request.get_host }}/media/imgs/{{ t.question_text }}", {
-                                method: "GET", // Метод запроса
-                            })
-                            .then(response => {
-                                if (!response.ok) { // Проверка на успешный ответ
-                                    document.getElementById("task-div-{{ t.pk }}").innerHTML = "{{ t.question_text|remove_backslashes|escapejs }}"
-                                } else {
-                                    const img = document.createElement('img');
-                                    const a = document.createElement('a');
-                                    a.href = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
-                                    img.src = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
-                                    document.getElementById('task-div-{{ t.pk }}').appendChild(a);
-                                    a.appendChild(img);
-                                }
-                            });
-                        </script>
-                    </div>
-                    </div>
-                    <input name="task-id-{{ t.pk }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
-                    <hr>
-                    {% endfor %}
-                    <br><button type="submit" class="btn-default mt-4 col-12" style="border-radius: 0px;"><span>Загрузить решение</span></button>
-            </form>
-        </div>
+        {% for title, usertest in merge_title_and_task %}
+            <div class="card mt-5">
+                <div class="h3 text-center mt-3">{{ title }}</div>
+
+                <a class="btn-start-test" href="{% url 'user-test' usertest.pk %}?open=True" target="_blank" style="text-decoration: none; color: inherit;"><button class="btn-default col-12" style="border-radius: 0px;"><span>Начать тест</span></button></a>
+            </div>
         {% endfor %}
     {% else %}
     <div class="h3 mt-3 text-center">У вас нет активных тестов! :&#41;</div>
@@ -121,5 +87,32 @@
 
 <div style="height:100px"></div>
 
+<script>
+    let btn_start_test_list = document.querySelectorAll('.btn-start-test');
 
+    // Добавляем обработчик событий для каждого элемента
+    btn_start_test_list.forEach(element => {
+    element.addEventListener('click', function(event) {
+        event.preventDefault();
+        // `this` ссылается на элемент, на который нажали
+        // Использование SweetAlert2 для отображения уведомления
+        Swal.fire({
+            title: 'Требуется подтверждение',
+            text: 'Вы уверены?',
+            icon: 'warning',
+            confirmButtonText: 'ОК',
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Да, я уверен!",
+            cancelButtonText: "Отменить",
+            // color: "#fff",
+        }).then((result) => {
+            if (result.isConfirmed) {
+                location = this.href;
+            }
+        });
+    });
+    });
+</script>
 {% endblock %}

@@ -3,6 +3,7 @@ from . import views
 
 
 urlpatterns = [
+    path('tests', views.tests_page, name='show-tests'),
     path('add_task', views.add_task, name='add-task'),
     path('add_test', views.add_test, name='add-test'),
     path('add_test/<int:subject_main_id>/', views.add_task_subject, name='subject-main'),

@@ -1,5 +1,5 @@
 from django import forms
-from user_app.models import Task, Test, SubjectMain, Question
+from user_app.models import Task, Test, SubjectMain, SubjectChildren, SubjectParents, Question, Answer
 from django.core.exceptions import ValidationError
 
 
@@ -17,26 +17,44 @@ TASK_CHOICES = (
 )
 
 
+TASK_CHOICES_SUBJECT = [(i.pk, i) for i in SubjectMain.objects.all()]
+TASK_CHOICES_SUBJECT_PARENT = [(i.pk, i) for i in SubjectParents.objects.all()]
+TASK_CHOICES_SUBJECT_CHILD = [(i.pk, i) for i in SubjectChildren.objects.all()]
+
+
 class TaskForm(forms.ModelForm):
     class Meta:
-        model = Task
-        fields = '__all__'
+        model = Question
+        fields = ('image', 'subject_id', 'subject_parent_id', 'subject_child_id')
         labels = {
-            'title': 'Название задания (Образец: Задание <type_task>)',
-            'type_task': 'Тип задания',
-            'answer': 'Ответ на задание',
-            'photo': 'Изображение задания (Напр. Скрин)',
-            'link_to_answer': 'Ссылка на сайт с заданием и ответом (для проверки)',
+            'image': 'Изображение с заданием',
+            'subject_id': 'Предмет',
+            'subject_parent_id': 'Направление',
+            'subject_child_id': 'Тема',
+        }
+        widgets = {
+            'subject_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT),
+            'subject_parent_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT_PARENT),
+            'subject_child_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT_CHILD),
         }
 
-    def clean_type_task(self):
-        data = self.cleaned_data.get('type_task')
+    # def clean_type_task(self):
+    #     data = self.cleaned_data.get('type_task')
 
-        if data not in range(1, 16):
-            raise ValidationError("Введите верный тип задания")
+    #     if data not in range(1, 16):
+    #         raise ValidationError("Введите верный тип задания")
         
-        return data
+    #     return data
     
+
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = ("answer_text", )
+        labels = {
+            'answer_text': 'Ответ',
+        }
+
 
 # class TestForm(forms.ModelForm):
 
@@ -58,7 +76,7 @@ class TestForm(forms.ModelForm):
 
     class Meta:
         model = Test
-        fields = ('title', 'group', 'task_numbers', 'number_of_attempts')
+        fields = ('title', 'group', 'task_numbers', 'number_of_attempts', 'generate_random_order_tasks', 'is_show_answers')
 
 # class TestFormTeacher(forms.ModelForm):
 

@@ -14,11 +14,19 @@
 {% endif %}
 
 <div class="text-center">
-<div class="h1">Добавление теста</div>
+<div class="h1">Наполнение теста</div>
 {% if subjects_main %}
 <div class="h3">Выберите предмет:</div>
 {% for subject in subjects_main %}
-<div><a href="{% url 'subject-main' subject.pk %}">{{ subject }}</a></div>
+<table class="table">
+    <thead>
+        <tr>
+            <td class="text-center">
+                <a href="{% url 'subject-main' subject.pk %}">{{ subject }}</a>
+            </td>
+        </tr>
+    </thead>
+</table>
 {% endfor %}
 {% endif %}
 
@@ -26,7 +34,15 @@
 <div class="h3">Выберите тему:</div>
 <div class="text-left">|{{ subject_main_name }}|</div>
 {% for subject in subjects_parents %}
-<div><a href="{% url 'subject-parents' subject_main_id subject.pk %}">{{ subject }}</a></div>
+<table class="table">
+    <thead>
+        <tr>
+            <td class="text-center">
+                <a href="{% url 'subject-parents' subject_main_id subject.pk %}">{{ subject }}</a>
+            </td>
+        </tr>
+    </thead>
+</table>
 {% endfor %}
 {% endif %}
 
@@ -34,7 +50,7 @@
 <div class="h3">Выберите задания:</div>
 <div class="text-left">|{{ subject_main_name }}|</div>
 {% for question in subject_questions %}
-<div><a href="{% url 'question-safe' subject_main_id question.pk %}"><img src="http://{{ request.get_host }}/media/imgs/{{ question.question_text }}" alt="Задание {{question.pk}}"></a></div>
+<div style="width: 500px;"><a href="{% url 'question-safe' subject_main_id question.pk %}"><img src="http://{{ request.get_host }}/media/imgs/{{ question.question_text }}" alt="Задание {{question.pk}}"></a></div>
 <hr>
 {% endfor %}
 <!-- <nav>
@@ -65,7 +81,15 @@
 <div class="h3">Выберите направление:</div>
 <div class="text-left">|{{ subject_main_name }}|{{ subject_parent_name }}|</div>
 {% for subject in subjects_children %}
-<div><a href="{% url 'subject-children' subject_main_id subject_parent_id subject.pk %}">{{ subject }}</a></div>
+<table class="table">
+    <thead>
+        <tr>
+            <td class="text-center">
+                <a href="{% url 'subject-children' subject_main_id subject_parent_id subject.pk %}">{{ subject }}</a>
+            </td>
+        </tr>
+    </thead>
+</table>
 {% endfor %}
 {% endif %}
 
@@ -115,7 +139,14 @@
 </form>
 
 
+<a href="{% url 'show-tests' %}?is_open=True"><button class="btn-header-default mt-2 mb-2" style="width: 200px;">Вернуться к форме</button></a>
+
 <div class="h3">Задание id={{ question.pk }}:</div>
+
+{% if is_warning_task %}
+    <div class="mb-3" style="color: brown;">Лучше не добавлять это задание - оно может навредить правильному отображению теста!!!</div>
+{% endif %}
+
 {% if filename and 'reshuege.ru' not in filename%}
 <img src="http://{{ request.get_host }}/media/imgs/{{ question.question_text }}" alt="Задание id={{ question.pk }}" {{text_task|remove_backslashes|safe}}>
 {% else %}
@@ -131,7 +162,7 @@
 
 </div>
 
-{% if form_test %}
+<!-- {% if form_test %}
 <form action="{% url 'add-test' %}" method="post">
     {% csrf_token %}
     {{ form_test|crispy }}
@@ -142,7 +173,7 @@
     document.getElementById("id_task_numbers").value = "{{ request.session.tasks|escapejs }}";
 </script>
 
-{% endif %}
+{% endif %} -->
 
 <div style="height: 100px;"></div>
 {% endblock %}
