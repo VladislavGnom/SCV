@@ -18,23 +18,31 @@
 <form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form|crispy }}
-    <select required name="SUBJECT_MAIN">
+    <select required name="SUBJECT_MAIN" id="SUBJECT-MAIN">
+        <!-- Show default answer -->
+        <option value="---" selected>---</option>
         {% for task in TASK_CHOICES_SUBJECT %}
 
-                <option value="{{ task.1 }}">{{ task.1 }}</option>
-            {% endfor %}
+            <option value="{{ task.1 }}">{{ task.1 }}</option>
+        {% endfor %}
     </select>
-    <select required name="SUBJECT_PARENT">
+
+    <select required name="SUBJECT_PARENT" id="SUBJECT-PARENT" style="display: none">
+        <!-- Show default answer -->
+        <option value="---" selected>---</option>
         {% regroup TASK_CHOICES_SUBJECT_PARENT by 0 as TASK_CHOICES_SUBJECT_PARENTS %}
         {% for task in TASK_CHOICES_SUBJECT_PARENTS %}
-            <optgroup label="{{ task.0 }}">
+            <optgroup label="{{ task.0 }}" style="display: none;">
                 {% for t in task.1 %}
                     <option value="{{ t.1 }}">{{ t.1 }}</option>
                 {% endfor %}
             </optgroup>
         {% endfor %}
     </select>
-    <select required name="SUBJECT_CHILD">
+
+    <select required name="SUBJECT_CHILD" id="SUBJECT-CHILD" style="display: none">
+        <!-- Show default answer -->
+        <option value="---" selected>---</option>
         {% regroup TASK_CHOICES_SUBJECT_CHILD by 0 as TASK_CHOICES_SUBJECT_CHILDS %}
         {% for task in TASK_CHOICES_SUBJECT_CHILDS %}
             <optgroup label="{{ task.0 }}">
@@ -44,6 +52,66 @@
             </optgroup>
         {% endfor %}
     </select>
+
+    <script>
+        // блок получения всех select'ов
+        let subject_main_select_element = document.getElementById("SUBJECT-MAIN");
+        let subject_parent_select_element = document.getElementById("SUBJECT-PARENT");
+        let subject_child_select_element = document.getElementById("SUBJECT-CHILD");
+
+        // обработка изменения select'а предмета
+        subject_main_select_element.onchange = function() {
+            // убираем из зоны видимости подтему на случай если было раскрыто всё вплодь до подтем
+            subject_child_select_element.style.display = 'none';
+
+            // врубаем отображение следующего блока - тема
+            subject_parent_select_element.style.display = 'inline';
+            // Установить selected для первого элемента для корректного отображения при изменении без reload page
+            if (subject_parent_select_element.options.length > 0) {
+                subject_parent_select_element.options[0].selected = true;
+            }
+
+            // получаем значение выбранного предмета
+            subject_main_value = subject_main_select_element.value;
+
+            // получаем все HTML элементы предметов в виде массива
+            let task_choices_subject_parents = Array.prototype.slice.call(subject_parent_select_element.getElementsByTagName('optgroup'));
+
+            // выводим только элемент с выбранным предметом
+            task_choices_subject_parents.forEach(element => {
+                element.style.display = 'none';    // зануляем видимость всех блоков для корректного отображения без перезагрузки страницы
+
+                if (element.label == subject_main_value) {
+                    element.style.display = 'block';
+                }
+            });
+        }
+
+        // обработка изменения select'а темы
+        subject_parent_select_element.onchange = function() {
+            // врубаем отображение следующего блока - подтема
+            subject_child_select_element.style.display = 'inline';
+            // Установить selected для первого элемента для корректного отображения при изменении без reload page
+            if (subject_child_select_element.options.length > 0) {
+                subject_child_select_element.options[0].selected = true;
+            }
+
+            // получаем значение выбранной темы
+            subject_parent_value = subject_parent_select_element.value;
+
+            // получаем все HTML элементы подтем в виде массива
+            let task_choices_subject_childs = Array.prototype.slice.call(subject_child_select_element.getElementsByTagName('optgroup'));
+
+            // выводим только элемент с выбранной подтемой
+            task_choices_subject_childs.forEach(element => {
+                element.style.display = 'none';    // зануляем видимость всех блоков для корректного отображения без перезагрузки страницы
+
+                if (element.label == subject_parent_value) {
+                    element.style.display = 'block';
+                }
+            });
+        }
+    </script>
     {{ form_answer|crispy }}
     <button type="submit" class="btn-default col-12"><span>Добавить</span></button>
 </form>
