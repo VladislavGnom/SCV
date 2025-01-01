@@ -12,6 +12,8 @@ from django.core.paginator import Paginator
 
 from utils.utils import extract_filename_substring, clean_html
 
+from .forms import TASK_CHOICES_SUBJECT, TASK_CHOICES_SUBJECT_PARENT, TASK_CHOICES_SUBJECT_CHILD
+
 #------------------Teachers Functional----------------------#
 
 @login_required()
@@ -47,11 +49,20 @@ def tests_page(request):
 @login_required()
 def add_task(request):
     if request.method == "POST":
+        print(request.POST)
         form = TaskForm(request.POST, request.FILES)
         form_answer = AnswerForm(request.POST)
         if form.is_valid() and form_answer.is_valid():
             new_task = form.save(commit=False)
             new_answer = form_answer.save(commit=False)
+
+            SUBJECT_MAIN = request.POST.get("SUBJECT_MAIN")
+            SUBJECT_PARENT = request.POST.get("SUBJECT_PARENT")
+            SUBJECT_CHILD = request.POST.get("SUBJECT_CHILD")
+
+            new_task.subject_id = SubjectMain.objects.get(subject_main_name=SUBJECT_MAIN).pk
+            new_task.subject_parent_id = SubjectParents.objects.get(subject_parent_name=SUBJECT_PARENT).pk
+            new_task.subject_child_id = SubjectChildren.objects.get(subject_child_name=SUBJECT_CHILD).pk
 
             new_task.question_text = new_task.image
             new_task.save()
@@ -66,12 +77,16 @@ def add_task(request):
     else:
         form = TaskForm()
         form_answer = AnswerForm()
+    # print(TASK_CHOICES_SUBJECT_PARENT)
 
     context = {
         'title': 'Добавление задания',
         'form': form,
         'form_answer': form_answer,
         'active_block': 'Добавить задание',
+        'TASK_CHOICES_SUBJECT': TASK_CHOICES_SUBJECT,
+        'TASK_CHOICES_SUBJECT_PARENT': sorted(TASK_CHOICES_SUBJECT_PARENT, key=lambda x: (x[0], x[1])),
+        'TASK_CHOICES_SUBJECT_CHILD': sorted(TASK_CHOICES_SUBJECT_CHILD, key=lambda x: (x[0], x[1])),
     }
 
     return render(request, "teacher_app/add_task.html", context=context)
@@ -136,7 +151,7 @@ def add_task_subject_children(request, subject_main_id, subject_parent_id, subje
         'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
         # 'questions': Question.objects.filter(Q(subject_child_id=subject_children_id) | Q(subject_id=subject_main_id) | Q(subject_parent_id=subject_parent_id)),
         # 'questions': (Question.objects.filter(subject_child_id=subject_children_id) or (Question.objects.filter(Q(subject_parent_id=subject_parent_id) | Q(subject_id=subject_main_id)))),
-        'questions': (Question.objects.filter(subject_child_id=subject_children_id, enabled=1).order_by('-time_create') or (Question.objects.filter(Q(subject_parent_id=subject_parent_id, enabled=1).order_by('-time_create')))),
+        'questions': (Question.objects.filter(subject_child_id=subject_children_id, enabled=1).order_by('-time_create') or (Question.objects.filter(Q(subject_parent_id=subject_parent_id, enabled=1)).order_by('-time_create'))),
     }
     
     return render(request, "teacher_app/add_test.html", context=context)

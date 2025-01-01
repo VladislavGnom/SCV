@@ -6,7 +6,7 @@
 <h1>Все работы класса:</h1>
 
 <div class="mb-3">
-    <a download href="https://{{ request.get_host }}/excel_files/{{ filename }}">Скачать файл в виде таблицы</a>
+    <a download href="https://{{ request.get_host }}/static/excel_files/{{ filename }}">Скачать файл в виде таблицы</a>
 </div>
 
 <div class="dropdown show mb-3">
@@ -17,7 +17,7 @@
     <div class="dropdown-menu" aria-labelledby="dropdownResultsByUserLink">
       {% for el in usertests %}
         {% if el.number_of_attempts %}
-            <a class="dropdown-item" href="https://{{ request.get_host }}/data_tests/homeworks/{{ el.title }}-{{ el.user.username }}.txt" download>{{ el.user.first_name }} {{ el.user.last_name }}</a>
+            <a download="" class="dropdown-item" href="https://{{ request.get_host }}/static/data_tests/homeworks/{{ el.title }}-{{ el.user.username }}.txt">{{ el.user.first_name }} {{ el.user.last_name }}</a>
         {% else %}
             <div class="dropdown-item" href="">Пока нет данных</div>
         {% endif %}

@@ -17,26 +17,27 @@ TASK_CHOICES = (
 )
 
 
-TASK_CHOICES_SUBJECT = [(i.pk, i) for i in SubjectMain.objects.all()]
-TASK_CHOICES_SUBJECT_PARENT = [(i.pk, i) for i in SubjectParents.objects.all()]
-TASK_CHOICES_SUBJECT_CHILD = [(i.pk, i) for i in SubjectChildren.objects.all()]
+TASK_CHOICES_SUBJECT = [(i.pk, i) for i in SubjectMain.objects.exclude(subject_main_name="Несуществующий")]
+TASK_CHOICES_SUBJECT_PARENT = [(i.subject_main.subject_main_name, i.subject_parent_name) for i in SubjectParents.objects.exclude(subject_parent_name="Несуществующий")]
+TASK_CHOICES_SUBJECT_CHILD = [(i.subject_parent.subject_parent_name, i.subject_child_name) for i in SubjectChildren.objects.exclude(subject_child_name="Несуществующий")]
 
 
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ('image', 'subject_id', 'subject_parent_id', 'subject_child_id')
+        # fields = ('image', 'subject_id', 'subject_parent_id', 'subject_child_id')
+        fields = ('image', )
         labels = {
             'image': 'Изображение с заданием',
             'subject_id': 'Предмет',
             'subject_parent_id': 'Направление',
             'subject_child_id': 'Тема',
         }
-        widgets = {
-            'subject_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT),
-            'subject_parent_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT_PARENT),
-            'subject_child_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT_CHILD),
-        }
+        # widgets = {
+        #     'subject_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT),
+        #     'subject_parent_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT_PARENT),
+        #     'subject_child_id': forms.RadioSelect(choices=TASK_CHOICES_SUBJECT_CHILD),
+        # }
 
     # def clean_type_task(self):
     #     data = self.cleaned_data.get('type_task')

@@ -1,3 +1,4 @@
+import os
 import json
 import ast
 from random import shuffle
@@ -177,6 +178,7 @@ def scv_home(request):
                 gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
                 # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
                 for gen_task in gen_tasks_for_type:
+                    print(gen_task)
                     variant = [Question.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 
@@ -296,9 +298,13 @@ def show_result(request):
                 test_obj.save()
                 return HttpResponseServerError("Error, please come back and reload page!")
 
+            # путь до бэкапа к/р
+            directory_path_to_save_homeworks = f'{settings.BASE_DIR}/static/data_tests/homeworks/'
 
+            # Создание директории, если она не существует
+            os.makedirs(directory_path_to_save_homeworks, exist_ok=True)
             
-            with open(f'{settings.BASE_DIR}/data_tests/homeworks/{title_test.replace('/', '\\')}-{request.user}.txt', mode='w+') as file:
+            with open(f'{settings.BASE_DIR}/static/data_tests/homeworks/{title_test.replace('/', '\\')}-{request.user}.txt', mode='w+') as file:
                 file.write('Ответ пользователя: Правильный ответ\n')
                 for i in range(len(right_answers)):
                     file.write(f'{user_answers[i]}: {right_answers[i]}\n')
