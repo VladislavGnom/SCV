@@ -177,6 +177,7 @@ def scv_home(request):
                 gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
                 # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
                 for gen_task in gen_tasks_for_type:
+                    print(gen_task)
                     variant = [Question.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 

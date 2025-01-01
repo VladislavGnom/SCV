@@ -96,7 +96,7 @@ class SubjectChildrenAdmin(admin.ModelAdmin):
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
-    list_display = ('question_text', 'enabled')
+    list_display = ('pk', 'question_text', 'enabled')
 
 @admin.register(Answer)
 class AnswerAdmin(admin.ModelAdmin):
