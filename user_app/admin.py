@@ -88,11 +88,11 @@ class SubjectMainAdmin(admin.ModelAdmin):
 
 @admin.register(SubjectParents)
 class SubjectParentsAdmin(admin.ModelAdmin):
-    list_display = ('subject_main', 'enabled')
+    list_display = ('subject_parent_name', 'subject_main', 'enabled')
 
 @admin.register(SubjectChildren)
 class SubjectChildrenAdmin(admin.ModelAdmin):
-    list_display = ('subject_parent', 'enabled')
+    list_display = ('subject_child_name', 'subject_parent', 'enabled')
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
