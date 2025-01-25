@@ -1,5 +1,6 @@
 import ast
 from django.shortcuts import render, redirect
+from django.http import HttpRequest
 from teacher_app.forms import TaskForm, TestForm, AnswerForm
 from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer
 from django.contrib.auth.models import Group
@@ -352,3 +353,12 @@ def show_result_detail(request, class_id, title):
 
     return render(request, 'teacher_app/show_result_detail.html', context=context)
 
+# NEW UPDATE
+# ---------------------------------------
+@login_required
+def add_test_new_format_view(request: HttpRequest):
+    context = {
+
+    }
+    
+    return render(request, 'teacher_app/add_test_new_format.html', context=context)

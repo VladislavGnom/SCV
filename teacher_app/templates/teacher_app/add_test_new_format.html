@@ -1,0 +1,92 @@
+{% extends 'base-special.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block main %}
+
+{% if messages %}
+<ul class="messages col-12">
+    {% for message in messages %}
+    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+
+<form action="" method="post">
+    {% csrf_token %}
+    <div class="text-center">
+        <hr>
+        <label for="add-file-work-field" class="h5">Файл с заданиями для работы</label><br>
+        <input id="add-file-work-field" type="file">
+        <hr>
+    </div>
+    <div class="text-center">
+        <hr>
+        <label for="add-files-work-field" class="h5">Файлы необходимые для выполнения заданий</label><br>
+        <input class="add-files-work-field" type="file" multiple>
+        <hr>
+    </div>
+    <div class="text-center">
+        <hr>
+        <label for="add-input-tags-field" class="h5">Кол-во полей ввода для теста</label><br>
+        <input id="add-input-tags-field" type="number" placeholder="Введите число"> 
+        <button id="add-input-tags-button" type="button">Check</button>
+        <hr>
+    </div>
+    <div class="text-center" id="add-title-input-tags-div" style="display: none;">
+        <script>
+            let add_input_tags_button = document.getElementById('add-input-tags-button');
+
+            add_input_tags_button.onclick = function() {
+                let add_input_tags_field = document.querySelector('#add-input-tags-field');
+                let number_of_inputs = add_input_tags_field.value;
+                console.log(number_of_inputs)
+                alert(number_of_inputs)
+
+                if (+number_of_inputs === NaN) {
+                    alert('Вы ввели не корректное кол-во полей!');
+                }
+                
+                let div_with_inputs = document.getElementById('add-title-input-tags-div');
+                div_with_inputs.innerHTML = '';
+                for (let i = 1; i <= number_of_inputs; i++) 
+                {
+                    let input = document.createElement('input');
+                    let input_help = document.createElement('input');
+
+                    // input settings
+                    input.className = '';
+                    input.innerHTML = '';
+                    input.style.margin = '5px 0px';
+                    input.disabled = true;
+
+                    // input_help settings
+                    input_help.className = '';
+                    input_help.innerHTML = '';
+                    input_help.value = i;    // default values
+                    input_help.style.margin = '5px 0px';
+                    input_help.style.width = '28px';
+                    input_help.style.height = '28px';
+
+                    div_with_inputs.append(input_help);
+                    div_with_inputs.append(input);
+                    input.insertAdjacentHTML('afterend', '<br>');
+                }
+
+                document.getElementById('add-title-input-tags-div').style.display = 'block';
+            }
+        </script>
+    </div>
+    <div class="text-center">
+        <hr>
+        <label for="add-answers-field" class="h5">Ответы для теста(в виде файла)</label><br>
+        <input id="add-answers-field" type="file"><br>
+        <hr>
+    </div> 
+    <div class="text-center" style="display: flex; justify-content: center;">
+        <button class="btn-default btn-default-sm" type="submit"><span>Создать тест</span></button>
+    </div>
+</form>
+
+{% endblock %}
