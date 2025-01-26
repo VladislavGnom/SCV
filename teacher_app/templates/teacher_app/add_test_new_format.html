@@ -1,5 +1,6 @@
 {% extends 'base-special.html' %}
 
+{% load static %}
 {% load crispy_forms_tags %}
 
 {% block main %}
@@ -24,7 +25,8 @@
     <div class="text-center">
         <hr>
         <label for="add-files-work-field" class="h5">Файлы необходимые для выполнения заданий</label><br>
-        <input class="add-files-work-field" type="file" multiple>
+        <input id="add-files-work-field" type="file" multiple>
+        <ul id="file-list"></ul>
         <hr>
     </div>
     <div class="text-center">
@@ -41,8 +43,6 @@
             add_input_tags_button.onclick = function() {
                 let add_input_tags_field = document.querySelector('#add-input-tags-field');
                 let number_of_inputs = add_input_tags_field.value;
-                console.log(number_of_inputs)
-                alert(number_of_inputs)
 
                 if (+number_of_inputs === NaN) {
                     alert('Вы ввели не корректное кол-во полей!');
@@ -56,7 +56,7 @@
                     let input_help = document.createElement('input');
 
                     // input settings
-                    input.className = '';
+                    input.className = 'input-show-answer';
                     input.innerHTML = '';
                     input.style.margin = '5px 0px';
                     input.disabled = true;
@@ -88,5 +88,14 @@
         <button class="btn-default btn-default-sm" type="submit"><span>Создать тест</span></button>
     </div>
 </form>
+<!-- LOAD SOME STYLES -->
+<!---------------------------------------------------->
+<link rel="stylesheet" href="{% static 'css/add_test_new_format_styles.css' %}">
+<!---------------------------------------------------->
 
+<!-- LOAD SOME SCRIPTS -->
+<!---------------------------------------------------->
+<script src="{% static 'js/load_answers_to_site.js' %}"></script>
+<script src="{% static 'js/beautifull_show_files.js' %}"></script>
+<!---------------------------------------------------->
 {% endblock %}
