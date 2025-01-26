@@ -357,8 +357,20 @@ def show_result_detail(request, class_id, title):
 # ---------------------------------------
 @login_required
 def add_test_new_format_view(request: HttpRequest):
-    context = {
+    if request.method == "POST":
+        data = request.POST
+        file_with_tasks = data.get('file_with_tasks')
+        file_for_done_tasks = data.get('file_for_done_tasks')
+        input_with_number_task = data.get('input_with_number_task')
+        input_with_answer = data.get('input_with_answer')
 
+        
+
+    else:
+        ...
+
+    context = {
+        'title': 'Тест нового образца - Добавление',
     }
     
     return render(request, 'teacher_app/add_test_new_format.html', context=context)

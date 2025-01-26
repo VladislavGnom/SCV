@@ -19,20 +19,20 @@
     <div class="text-center">
         <hr>
         <label for="add-file-work-field" class="h5">Файл с заданиями для работы</label><br>
-        <input id="add-file-work-field" type="file">
+        <input name="file_with_tasks" id="add-file-work-field" type="file" required>
         <hr>
     </div>
     <div class="text-center">
         <hr>
         <label for="add-files-work-field" class="h5">Файлы необходимые для выполнения заданий</label><br>
-        <input id="add-files-work-field" type="file" multiple>
+        <input name="file_for_done_tasks" id="add-files-work-field" type="file" multiple>
         <ul id="file-list"></ul>
         <hr>
     </div>
     <div class="text-center">
         <hr>
         <label for="add-input-tags-field" class="h5">Кол-во полей ввода для теста</label><br>
-        <input id="add-input-tags-field" type="number" placeholder="Введите число"> 
+        <input id="add-input-tags-field" type="number" placeholder="Введите число" required> 
         <button id="add-input-tags-button" type="button">Check</button>
         <hr>
     </div>
@@ -57,12 +57,14 @@
 
                     // input settings
                     input.className = 'input-show-answer';
+                    input.name = 'input_with_answer';
                     input.innerHTML = '';
                     input.style.margin = '5px 0px';
-                    input.disabled = true;
+                    input.readOnly = true;
 
                     // input_help settings
                     input_help.className = '';
+                    input_help.name = 'input_with_number_task';
                     input_help.innerHTML = '';
                     input_help.value = i;    // default values
                     input_help.style.margin = '5px 0px';
@@ -81,7 +83,7 @@
     <div class="text-center">
         <hr>
         <label for="add-answers-field" class="h5">Ответы для теста(в виде файла)</label><br>
-        <input id="add-answers-field" type="file"><br>
+        <input id="add-answers-field" type="file" required><br>
         <hr>
     </div> 
     <div class="text-center" style="display: flex; justify-content: center;">
