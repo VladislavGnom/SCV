@@ -14,8 +14,26 @@
 {% endif %}
 
 
-<form action="" method="post">
+<form action="" method="post" enctype="multipart/form-data">
     {% csrf_token %}
+    <div class="text-center">
+        <hr>
+        <label for="title-test" class="h5">Название теста: </label><br>
+        <input name="title-test" id="title-test" type="text" placeholder="Введите название" required>
+        <hr>
+    </div>
+    <div class="text-center">
+        <hr>
+        <label for="selected-group" class="h5">Группа: </label><br>
+        <select name="selected-group">
+            <option value="default" selected>---</option>
+            {% for group in groups %}
+                <option value="{{ group }}">{{ group }}</option>
+            {% endfor %}
+        </select>
+            <!-- <input name="selected-group" id="selected-group" type="text" required> -->
+        <hr>
+    </div>
     <div class="text-center">
         <hr>
         <label for="add-file-work-field" class="h5">Файл с заданиями для работы</label><br>
@@ -86,6 +104,12 @@
         <input id="add-answers-field" type="file" required><br>
         <hr>
     </div> 
+    <div class="text-center">
+        <hr>
+        <label for="number-of-attempts" class="h5">Кол-во попыток: </label><br>
+        <input name="number-of-attempts" id="number-of-attempts" type="number" placeholder="Введите число" required>
+        <hr>
+    </div>
     <div class="text-center" style="display: flex; justify-content: center;">
         <button class="btn-default btn-default-sm" type="submit"><span>Создать тест</span></button>
     </div>

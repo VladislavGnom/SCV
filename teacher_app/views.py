@@ -1,3 +1,4 @@
+import os
 import ast
 from django.shortcuts import render, redirect
 from django.http import HttpRequest
@@ -8,12 +9,14 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Count
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 
 from django.core.paginator import Paginator
 
-from utils.utils import extract_filename_substring, clean_html
+from utils.utils import extract_filename_substring, clean_html, get_group_by_name
 
 from .forms import TASK_CHOICES_SUBJECT, TASK_CHOICES_SUBJECT_PARENT, TASK_CHOICES_SUBJECT_CHILD
+from .models import TestNewFormat
 
 #------------------Teachers Functional----------------------#
 
@@ -357,20 +360,57 @@ def show_result_detail(request, class_id, title):
 # ---------------------------------------
 @login_required
 def add_test_new_format_view(request: HttpRequest):
+    groups = Group.objects.all().exclude(name='Администратор')
     if request.method == "POST":
         data = request.POST
-        file_with_tasks = data.get('file_with_tasks')
-        file_for_done_tasks = data.get('file_for_done_tasks')
+        files = request.FILES
+        title_test = data.get('title-test')
+        selected_group = data.get('selected-group')
+        number_of_attempts = data.get('number-of-attempts')
+        file_with_tasks = files.get('file_with_tasks')
+        file_for_done_tasks = files.get('file_for_done_tasks')
         input_with_number_task = data.get('input_with_number_task')
         input_with_answer = data.get('input_with_answer')
+        print(input_with_answer)
 
-        
+        # preparation
+        # ---------------------------------------------
+        number_of_inputs = len(input_with_number_task)
+        BASE_DIR = settings.BASE_DIR
+        with open(os.path.join(BASE_DIR, 'media/files_with_answers/answers.txt'), 'w') as file: 
+            print(input_with_answer)
+            for ans in input_with_answer:
+                print(ans)
+                file.write(ans + '\n')
+            
+        # ---------------------------------------------
+
+        # validation 
+        # ---------------------------------------------
+        if selected_group == 'default':
+            messages.error(request, "Вы не заполнили поле c group")
+            return redirect('add-test-new-format')
+        # ---------------------------------------------
+
+        print(data)
+
+        test = TestNewFormat.objects.create(
+            title=title_test,
+            group=get_group_by_name(selected_group),
+            file_with_tasks=file_with_tasks,
+            files_for_test=file_for_done_tasks,
+            number_of_inputs=number_of_inputs,
+            file_with_answers=input_with_answer,
+            number_of_attempts=number_of_attempts,
+        )
+        print(test)
 
     else:
         ...
 
     context = {
         'title': 'Тест нового образца - Добавление',
+        'groups': groups,
     }
     
     return render(request, 'teacher_app/add_test_new_format.html', context=context)
