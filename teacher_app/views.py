@@ -16,7 +16,7 @@ from django.core.paginator import Paginator
 from utils.utils import extract_filename_substring, clean_html, get_group_by_name
 
 from .forms import TASK_CHOICES_SUBJECT, TASK_CHOICES_SUBJECT_PARENT, TASK_CHOICES_SUBJECT_CHILD
-from .models import TestNewFormat
+from .models import TestNewFormat, FilesForTestModel
 
 #------------------Teachers Functional----------------------#
 
@@ -368,19 +368,15 @@ def add_test_new_format_view(request: HttpRequest):
         selected_group = data.get('selected-group')
         number_of_attempts = data.get('number-of-attempts')
         file_with_tasks = files.get('file_with_tasks')
-        file_for_done_tasks = files.get('file_for_done_tasks')
         input_with_number_task = data.get('input_with_number_task')
         input_with_answer = data.get('input_with_answer')
-        print(input_with_answer)
 
         # preparation
         # ---------------------------------------------
         number_of_inputs = len(input_with_number_task)
         BASE_DIR = settings.BASE_DIR
         with open(os.path.join(BASE_DIR, 'media/files_with_answers/answers.txt'), 'w') as file: 
-            print(input_with_answer)
             for ans in input_with_answer:
-                print(ans)
                 file.write(ans + '\n')
             
         # ---------------------------------------------
@@ -392,19 +388,20 @@ def add_test_new_format_view(request: HttpRequest):
             return redirect('add-test-new-format')
         # ---------------------------------------------
 
-        print(data)
-
         test = TestNewFormat.objects.create(
             title=title_test,
             group=get_group_by_name(selected_group),
             file_with_tasks=file_with_tasks,
-            files_for_test=file_for_done_tasks,
             number_of_inputs=number_of_inputs,
             file_with_answers=input_with_answer,
             number_of_attempts=number_of_attempts,
         )
-        print(test)
 
+        # -------- SAVE FILES FOR COMPLETING TEST -------------
+        if request.method == 'POST' and files:
+            for file in request.FILES.getlist('file_for_done_tasks'):
+                FilesForTestModel.objects.create(test_new_format=test, file=file)
+        # -----------------------------------------------------
     else:
         ...
 
