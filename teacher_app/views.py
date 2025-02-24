@@ -368,18 +368,20 @@ def add_test_new_format_view(request: HttpRequest):
         selected_group = data.get('selected-group')
         number_of_attempts = data.get('number-of-attempts')
         file_with_tasks = files.get('file_with_tasks')
-        input_with_number_task = data.get('input_with_number_task')
-        input_with_answer = data.get('input_with_answer')
+        input_with_number_task = data.getlist('input_with_number_task')
+        # input_with_answer = data.get('input_with_answer')
 
         # preparation
         # ---------------------------------------------
         number_of_inputs = len(input_with_number_task)
-        BASE_DIR = settings.BASE_DIR
-        with open(os.path.join(BASE_DIR, 'media/files_with_answers/answers.txt'), 'w') as file: 
-            for ans in input_with_answer:
-                file.write(ans + '\n')
+        # BASE_DIR = settings.BASE_DIR
+        # with open(os.path.join(BASE_DIR, f'media/files_with_answers/{title_test}-answers.txt'), 'w') as file: 
+        #     for ans in input_with_answer:
+        #         file.write(ans + '\n')
             
         # ---------------------------------------------
+        # file with answers
+        answers_file = request.FILES.get('answers-field')
 
         # validation 
         # ---------------------------------------------
@@ -393,7 +395,7 @@ def add_test_new_format_view(request: HttpRequest):
             group=get_group_by_name(selected_group),
             file_with_tasks=file_with_tasks,
             number_of_inputs=number_of_inputs,
-            file_with_answers=input_with_answer,
+            file_with_answers=answers_file,
             number_of_attempts=number_of_attempts,
         )
 
@@ -402,6 +404,9 @@ def add_test_new_format_view(request: HttpRequest):
             for file in request.FILES.getlist('file_for_done_tasks'):
                 FilesForTestModel.objects.create(test_new_format=test, file=file)
         # -----------------------------------------------------
+
+        messages.success(request, "Тест успешно создан!")
+        return redirect('add-test-new-format')
     else:
         ...
 

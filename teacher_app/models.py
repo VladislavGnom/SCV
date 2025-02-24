@@ -11,7 +11,8 @@ class TestNewFormat(models.Model):
     number_of_attempts = models.IntegerField(blank=True, default=1, verbose_name="Количество попыток")
     count_right_answers = models.IntegerField(blank=True, null=True, verbose_name="Количество верных ответов")
     is_complete = models.BooleanField(default=False, verbose_name="Завершён ли тест")
-    generate_random_order_tasks = models.BooleanField(default=False, verbose_name="Генерировать вопросы в перемешку")
+    input_with_number_task = models.CharField(max_length=255, null=True, blank=True)    # порядок именования инпутов (соотношение их с номерами заданий)
+    # generate_random_order_tasks = models.BooleanField(default=False, verbose_name="Генерировать вопросы в перемешку")
     is_show_answers = models.BooleanField(default=False, verbose_name="Показывать ответы")
 
     def __str__(self):
@@ -29,3 +30,8 @@ class FilesForTestModel(models.Model):
 
     def __str__(self):
         return f"Test's file for called is {self.test_new_format.title}"
+    
+
+    class Meta:
+        verbose_name = 'Файл для теста нового образца'
+        verbose_name_plural = 'Файлы для теста нового образца'

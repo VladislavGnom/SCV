@@ -54,7 +54,7 @@ class Test(models.Model):
 class UserTest(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
-    tasks_id = models.CharField(max_length=255)
+    tasks_id = models.CharField(max_length=255, null=True, blank=True)
     is_complete = models.BooleanField(default=False)
     right_answers = models.IntegerField(blank=True, default=0)
     number_of_attempts = models.IntegerField(blank=True, default=1)

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% load remove_backslashes %}
+
+{% block main %}
+<div class="container">
+    <div class="text-center h2">{{ title_test }}</div>
+
+    <!-- FILES FOR TEST -->
+    <hr>
+    <div class="">
+        <div class="h4">Файл с заданиями</div>
+        <a download href="https://{{ request.get_host }}/media/{{ file_with_tasks }}">ФАЙЛ</a>
+    </div>
+    <hr>
+    <div class="">
+        <div class="h4">Файлы для выполнения заданий</div>
+        {% for help_file in file_for_done_tasks %}
+            <a download href="https://{{ request.get_host }}{{ help_file.file.url }}">ФАЙЛ</a>
+        {% endfor %}
+    </div>
+    <hr>
+    <!-- -------------- -->
+
+    <form id="form-request" action="{% url 'show-result' %}" method="post" class="mt-3">
+
+        <input name="{{ title }}" class="d-none">
+        {% csrf_token %}
+        {% for i in iterator %}
+            <div>
+            <div class="multi text-center">
+                <div id="task-div-{{ i }}">
+                </div>
+            </div>
+            </div>
+            <input id="task-id-{{ i }}" name="task-id-{{ i }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
+            <hr>
+            {% endfor %}
+        </form>
+    <button type="button" class="btn-header-default mb-5" style="width: 200px;" id="save-user-answer">Сохранить</button>
+</div>
+{% endblock %}

@@ -14,35 +14,35 @@ from django.conf import settings
 from django.core.paginator import Paginator
 
 from teacher_app.views import teachers_home
+from utils.utils import get_user_groups, str_to_int
+from teacher_app.models import TestNewFormat, FilesForTestModel
 
-
-# help function 
-# отбирает все группы в которые входит пользователь, который был передан как аргумент
-def get_user_groups(user):
-    return [group.id for group in user.groups.all()]
-
-
-def str_to_int(obj):
-    return int(obj)
 
 
 @login_required
 def user_test(request, user_test_id):
+    try:
+        test = UserTest.objects.get(user=request.user, pk=user_test_id, is_complete=False)
+    except ObjectDoesNotExist as error:
+        return HttpResponseNotFound("404 Page not Found")
+    
+    # redirect to test new format process
+    if not test.tasks_id:
+        return user_test_new_format(request, user_test_id)
+    # --------------------------------------
+
     if request.COOKIES.get('saved_answers'):
         request.session['saved_answers'] = request.COOKIES.get('saved_answers')
     else:
         request.session['saved_answers'] = {}
 
     # print(json.loads([i[14:] for i in request.META.get('HTTP_COOKIE').split('; ') if i.startswith("saved_answers=")][0]))
-    try:
-        test = UserTest.objects.get(user=request.user, pk=user_test_id, is_complete=False)
-    except ObjectDoesNotExist as error:
-        return HttpResponseNotFound("404 Page not Found")
     
     gen_tasks_for_type = list(map(str_to_int, ast.literal_eval(test.tasks_id)))
+    
 
     # создание списка variant из обьектов модели Question из уже имеющихся id задач в БД 
-    variant = [Question.objects.get(pk=pk) for pk in gen_tasks_for_type]
+    variant = [Question.objects.get(pk=pk) for pk in gen_tasks_for_type]   
 
     paginator = Paginator(variant, 1)
 
@@ -57,6 +57,31 @@ def user_test(request, user_test_id):
 
 
     return render(request, 'user_app/user_test.html', context=context)
+
+
+@login_required
+def user_test_new_format(request, user_test_id):
+    try:
+        test = UserTest.objects.get(user=request.user, pk=user_test_id, is_complete=False)
+    except ObjectDoesNotExist as error:
+        return HttpResponseNotFound("404 Page not Found")
+    
+    # данные для варианта берутся на основе производной модели TestNewFormat
+    # TODO: заменить на выборку по ID вместо названия
+    base_data_for_variant = TestNewFormat.objects.get(title=test.title)
+    file_with_tasks = base_data_for_variant.file_with_tasks
+    number_of_inputs = base_data_for_variant.number_of_inputs
+    file_for_done_tasks = base_data_for_variant.files.all()
+    
+    context = {
+        'title': test.title, 
+        'file_with_tasks': file_with_tasks,
+        'iterator': range(number_of_inputs),
+        'file_for_done_tasks': file_for_done_tasks,
+        'title_test': test.title,
+    }
+
+    return render(request, 'user_app/user_test_new_format.html', context=context)
 
 
 def index(request):
@@ -175,10 +200,9 @@ def scv_home(request):
                         UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant], number_of_attempts=tests.get(title=f'{name_for_test[indx]}').number_of_attempts)
             else:
                 # список из id заданий для отображения сгенерированного варианта
-                gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
+                gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data if obj.tasks_id]
                 # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
                 for gen_task in gen_tasks_for_type:
-                    print(gen_task)
                     variant = [Question.objects.get(pk=pk) for pk in gen_task]
                     all_tasks.append(variant)
 
@@ -190,7 +214,7 @@ def scv_home(request):
 
             completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
             
-
+            print(merge_title_and_task)
 
             context = {
                 'title': 'Главная страница',
@@ -340,11 +364,12 @@ def refresh_func(request):
     # имена для тестов
     name_for_test = []
 
-    data = UserTest.objects.filter(user=request.user)
+    all_user_tests = UserTest.objects.filter(user=request.user)
+
     # перебираем тесты для пользователя и добавляем в gen_tasks_for_type список из типов заданий, которые были заданы через админ панель
     for test in tests:
         # проверка есть ли уже тест в таблице UserTest из таблицы Test
-        if not test.title in [test.title for test in data]:
+        if not test.title in [test.title for test in all_user_tests]:
             if test.generate_random_order_tasks:
                 # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
                 lst_current_tasks = ast.literal_eval(test.task_numbers)
@@ -357,12 +382,31 @@ def refresh_func(request):
                 name_for_test.append(test.title)
 
 
+    # ------------------- TEST NEW FORMAT PROCESS -----------------------
+    test_new_format = TestNewFormat.objects.filter(group=get_user_groups(request.user)[0], is_complete=False)
+    for test in test_new_format:
+        # проверка есть ли уже тест в таблице UserTest из таблицы TestNewFormat
+        if test.title not in [test.title for test in all_user_tests]:
+            UserTest.objects.create(
+                title=test.title, 
+                user=request.user, 
+                number_of_attempts=test.number_of_attempts,
+                )
+
+
     # генерация варианта, перебираем список состоящий из списков типов заданий 
     for indx, gen_task in enumerate(gen_tasks_for_type):
         # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
         variant = [Question.objects.get(pk=pk) for pk in gen_task]
+        
+        current_number_of_attempts = tests.get(title=f'{name_for_test[indx]}').number_of_attempts
+
         # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
-        UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant], number_of_attempts=tests.get(title=f'{name_for_test[indx]}').number_of_attempts)
+        UserTest.objects.create(
+            title=f'{name_for_test[indx]}',
+            user=request.user, tasks_id=[v.pk for v in variant], 
+            number_of_attempts=current_number_of_attempts,
+            )
 
     return redirect('scv-home')
 

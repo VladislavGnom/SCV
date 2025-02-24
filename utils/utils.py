@@ -131,3 +131,13 @@ def get_group_by_name(name_of_group: str) -> Group | None:
         return group 
     except ObjectDoesNotExist as exc:
         return None
+
+# -------------------- USER APP ---------------
+# help function 
+# отбирает все группы в которые входит пользователь, который был передан как аргумент
+def get_user_groups(user):
+    return [group.id for group in user.groups.all()]
+
+
+def str_to_int(obj):
+    return int(obj)
