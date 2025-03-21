@@ -369,6 +369,7 @@ def add_test_new_format_view(request: HttpRequest):
         number_of_attempts = data.get('number-of-attempts')
         file_with_tasks = files.get('file_with_tasks')
         input_with_number_task = data.getlist('input_with_number_task')
+
         # input_with_answer = data.get('input_with_answer')
 
         # preparation

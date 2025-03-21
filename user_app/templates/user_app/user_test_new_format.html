@@ -26,16 +26,19 @@
 
         <input name="{{ title }}" class="d-none">
         {% csrf_token %}
-        {% for i in iterator %}
+        {% for i, number_of_input in input_with_number_task %}
             <div>
             <div class="multi text-center">
                 <div id="task-div-{{ i }}">
                 </div>
             </div>
             </div>
-            <input id="task-id-{{ i }}" name="task-id-{{ i }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
+            <div style="display: flex; justify-content: space-between;">
+                <input type="text" readonly="true" style="width: 29px; height: 29px;" value="{{ number_of_input }}">
+                <input id="task-id-{{ i }}" name="task-id-{{ i }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
+            </div>
             <hr>
-            {% endfor %}
+        {% endfor %}
             <div style="display: flex; justify-content: center;">
                 <button type="submit" class="btn-header-default mb-5" style="width: 90%;" id="save-user-answer">Загрузить ответы</button>
             </div>

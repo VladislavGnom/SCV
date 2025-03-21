@@ -71,14 +71,17 @@ def user_test_new_format(request, user_test_id):
     base_data_for_variant = TestNewFormat.objects.get(title=test.title)
     file_with_tasks = base_data_for_variant.file_with_tasks
     number_of_inputs = base_data_for_variant.number_of_inputs
+    input_with_number_task = eval(base_data_for_variant.input_with_number_task)
     file_for_done_tasks = base_data_for_variant.files.all()
-    
+
+    indx_and_numbers_of_inputs = zip(range(1, number_of_inputs + 1), input_with_number_task)
+
     context = {
         'title': test.title, 
         'file_with_tasks': file_with_tasks,
-        'iterator': range(number_of_inputs),
         'file_for_done_tasks': file_for_done_tasks,
         'title_test': test.title,
+        'input_with_number_task': indx_and_numbers_of_inputs,
     }
 
     return render(request, 'user_app/user_test_new_format.html', context=context)
