@@ -397,6 +397,7 @@ def add_test_new_format_view(request: HttpRequest):
             number_of_inputs=number_of_inputs,
             file_with_answers=answers_file,
             number_of_attempts=number_of_attempts,
+            input_with_number_task=input_with_number_task,
         )
 
         # -------- SAVE FILES FOR COMPLETING TEST -------------

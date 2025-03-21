@@ -36,7 +36,9 @@
             <input id="task-id-{{ i }}" name="task-id-{{ i }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
             <hr>
             {% endfor %}
+            <div style="display: flex; justify-content: center;">
+                <button type="submit" class="btn-header-default mb-5" style="width: 90%;" id="save-user-answer">Загрузить ответы</button>
+            </div>
         </form>
-    <button type="button" class="btn-header-default mb-5" style="width: 200px;" id="save-user-answer">Сохранить</button>
 </div>
 {% endblock %}

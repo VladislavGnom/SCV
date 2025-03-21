@@ -351,6 +351,10 @@ def show_result(request):
             return render(request, 'user_app/show_result.html', context=context) 
     else:
         return redirect('scv-home')
+    
+@login_required()
+def show_result_test_new_format(request):
+    ...
 
 
 @login_required()
