@@ -44,4 +44,55 @@
             </div>
         </form>
 </div>
+<script>
+    let number_of_inputs = JSON.parse("{{ number_of_inputs_for_js|safe }}");
+
+    // get coockie func
+    function getCookie(name) {
+        let cookie = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+        return cookie ? cookie.split('=')[1] : null;
+    }
+
+    function saveAnswer() {
+        for (let id_input_answer of number_of_inputs) {
+            // get answer into input tag
+            var input_answer = document.getElementById(`task-id-${id_input_answer}`);
+
+            let saved_answers = getCookie('saved_answers');
+            saved_answers = JSON.parse(saved_answers);
+            saved_answers[id_input_answer] = input_answer.value;
+            document.cookie = `saved_answers=${JSON.stringify(saved_answers)}`;  
+        }
+    }
+
+    if (!getCookie('saved_answers')) {
+        document.cookie = `saved_answers={}`;
+    }
+
+    let btn_user_answer = document.getElementById("save-user-answer");
+
+    // // display answer from cookie
+    // var input_answer = document.getElementById(id_input_answer);
+
+    // let answer_for_display = JSON.parse(getCookie('saved_answers'))[id_input_answer];
+    // if (typeof answer_for_display === 'undefined' || typeof answer_for_display === 'null') {
+    //     input_answer.value = '';
+    // } else {
+    //     input_answer.value = answer_for_display;
+    // }
+
+   
+
+    document.getElementById('form-request').addEventListener('submit', function(event) {
+        event.preventDefault(); 
+
+        document.getElementsByTagName('html')[0].focus();
+        
+        // saving answer
+        saveAnswer();
+
+        this.submit();
+    });
+
+</script>
 {% endblock %}

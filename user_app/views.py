@@ -66,6 +66,11 @@ def user_test_new_format(request, user_test_id):
     except ObjectDoesNotExist as error:
         return HttpResponseNotFound("404 Page not Found")
     
+    if request.COOKIES.get('saved_answers'):
+        request.session['saved_answers'] = request.COOKIES.get('saved_answers')
+    else:
+        request.session['saved_answers'] = {}
+    
     # данные для варианта берутся на основе производной модели TestNewFormat
     # TODO: заменить на выборку по ID вместо названия
     base_data_for_variant = TestNewFormat.objects.get(title=test.title)
@@ -82,6 +87,7 @@ def user_test_new_format(request, user_test_id):
         'file_for_done_tasks': file_for_done_tasks,
         'title_test': test.title,
         'input_with_number_task': indx_and_numbers_of_inputs,
+        'number_of_inputs_for_js': list(map(int, input_with_number_task)),
     }
 
     return render(request, 'user_app/user_test_new_format.html', context=context)
@@ -217,8 +223,6 @@ def scv_home(request):
 
             completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
             
-            print(merge_title_and_task)
-
             context = {
                 'title': 'Главная страница',
                 'form': form, 
@@ -260,6 +264,10 @@ def show_result(request):
 
             return redirect('scv-home')
         else:
+            # данные для варианта берутся на основе производной модели TestNewFormat
+            # TODO: заменить на выборку по ID вместо названия
+            base_data_from_variant = TestNewFormat.objects.get(title=test_obj.title)
+
             # удаляю пару ключ-значение из словаря, которая соответствует названию теста
             # это нужно для корректной работы следующего цикла!!!
             del data[title_test]
@@ -269,9 +277,20 @@ def show_result(request):
             user_answers = []
 
             for task_id, user_answer in data_answers.items():
-                if task_id != 'csrfmiddlewaretoken':  
-                    id = task_id.split('-')[2]
-                    right_answer = Answer.objects.get(question_id=id).answer_text
+                if task_id != 'csrfmiddlewaretoken': 
+                    if base_data_from_variant:
+                        right_answer = base_data_from_variant.file_with_answers
+                        if base_data_from_variant.file_with_answers and base_data_from_variant.file_with_answers.file:
+                            line_number = int(task_id)
+                            with base_data_from_variant.file_with_answers.file.open("rb") as f:
+                                for i, line in enumerate(f, start=1): 
+                                    if i == line_number:
+                                        right_answer = line.strip().decode('utf-8')
+                                        break
+                    else:
+                        id = task_id.split('-')[2]
+                        right_answer = Answer.objects.get(question_id=id).answer_text
+                    
                     user_answer = user_answer.strip()
 
                     right_answers.append(right_answer)
@@ -279,7 +298,6 @@ def show_result(request):
 
                     if right_answer == user_answer:
                         count += 1
-
             # отбираю запись с текущим тестом по его названию
             test_obj = UserTest.objects.get(user=request.user, title=title_test)
 
@@ -302,9 +320,12 @@ def show_result(request):
             # применяю изменения в таблице БД
             test_obj.save()
 
-            task_id = list(map(str_to_int, ast.literal_eval(test_obj.tasks_id)))
+            if not base_data_from_variant:
+                task_id = list(map(str_to_int, ast.literal_eval(test_obj.tasks_id)))
 
-            tasks = [Question.objects.get(pk=id) for id in task_id]
+                tasks = [Question.objects.get(pk=id) for id in task_id]
+            else:
+                tasks = []
 
 
             merge_user_and_right_answers = list(zip(user_answers, right_answers))
@@ -347,9 +368,15 @@ def show_result(request):
 
             # если не нужно показывать ответы то тогда просто редиректимся на главную
             group = Group.objects.get(pk=get_user_groups(request.user)[0])
-            if not Test.objects.get(group=group, title=title_test).is_show_answers:
-                messages.info(request, 'Ваши ответы записаны и уже на проверке, за результатами обращайтесь к учителю')
-                return redirect('scv-home')
+
+            try:
+                if not Test.objects.get(group=group, title=title_test).is_show_answers:
+                    messages.info(request, 'Ваши ответы записаны и уже на проверке, за результатами обращайтесь к учителю')
+                    return redirect('scv-home')
+            except Test.DoesNotExist as error:
+                if not TestNewFormat.objects.get(group=group, title=title_test).is_show_answers:
+                    messages.info(request, 'Ваши ответы записаны и уже на проверке, за результатами обращайтесь к учителю')
+                    return redirect('scv-home')
             
             return render(request, 'user_app/show_result.html', context=context) 
     else:
