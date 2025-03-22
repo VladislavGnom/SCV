@@ -66,17 +66,13 @@ def user_test_new_format(request, user_test_id):
     except ObjectDoesNotExist as error:
         return HttpResponseNotFound("404 Page not Found")
     
-    if request.COOKIES.get('saved_answers'):
-        request.session['saved_answers'] = request.COOKIES.get('saved_answers')
-    else:
-        request.session['saved_answers'] = {}
     
     # данные для варианта берутся на основе производной модели TestNewFormat
     # TODO: заменить на выборку по ID вместо названия
     base_data_for_variant = TestNewFormat.objects.get(title=test.title)
     file_with_tasks = base_data_for_variant.file_with_tasks
     number_of_inputs = base_data_for_variant.number_of_inputs
-    input_with_number_task = eval(base_data_for_variant.input_with_number_task)
+    input_with_number_task = ast.literal_eval(base_data_for_variant.input_with_number_task)
     file_for_done_tasks = base_data_for_variant.files.all()
 
     indx_and_numbers_of_inputs = zip(range(1, number_of_inputs + 1), input_with_number_task)
@@ -249,7 +245,10 @@ def show_result(request):
 
         # get data from frontend js
         # data_answers = json.loads(request.session['saved_answers'])
-        data_answers = json.loads(request.session['saved_answers'])
+        if data['json-data-answers']:
+            data_answers = json.loads(data['json-data-answers'][0])
+        else:
+            data_answers = json.loads(request.session['saved_answers'])
 
         # получаю первый ключ в словаре, который соответствует названию теста
         title_test = list(data.keys())[0]
@@ -324,7 +323,9 @@ def show_result(request):
                 task_id = list(map(str_to_int, ast.literal_eval(test_obj.tasks_id)))
 
                 tasks = [Question.objects.get(pk=id) for id in task_id]
+                number_of_inputs_for_js = []
             else:
+                number_of_inputs_for_js = list(map(int, ast.literal_eval(base_data_from_variant.input_with_number_task)))
                 tasks = []
 
 
@@ -360,15 +361,15 @@ def show_result(request):
 
             context = {
                 'count_right': count,
-                'percent': int(count * 100 / len(tasks)), # вычисляю процент выполнения всей работы, умножаю по математике количество верных ответов на 100 и делю на количество всех ответов => результат в процентах выполнения всей работы
+                'percent': int(count * 100 / len(right_answers)), # вычисляю процент выполнения всей работы, умножаю по математике количество верных ответов на 100 и делю на количество всех ответов => результат в процентах выполнения всей работы
                 'tasks': tasks,
                 'title': title_test,
                 'new_merge_user_and_right_answers': new_merge_user_and_right_answers,
+                'number_of_inputs_for_js': number_of_inputs_for_js,            
             }  
 
             # если не нужно показывать ответы то тогда просто редиректимся на главную
             group = Group.objects.get(pk=get_user_groups(request.user)[0])
-
             try:
                 if not Test.objects.get(group=group, title=title_test).is_show_answers:
                     messages.info(request, 'Ваши ответы записаны и уже на проверке, за результатами обращайтесь к учителю')

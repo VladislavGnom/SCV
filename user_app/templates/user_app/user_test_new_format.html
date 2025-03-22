@@ -3,6 +3,19 @@
 {% load remove_backslashes %}
 
 {% block main %}
+<script>
+    // del coockie func
+    function eraseCookie(name) {
+        document.cookie = name + '=; Max-Age=0';
+    }
+    
+    // process clear coockie when user come in first time
+    let params = (new URL(document.location)).searchParams; 
+    is_open = params.get("open");
+    if (is_open) {
+        eraseCookie('saved_answers');
+    }
+</script>
 <div class="container">
     <div class="text-center h2">{{ title_test }}</div>
 
@@ -39,6 +52,7 @@
             </div>
             <hr>
         {% endfor %}
+            <input type="text" style="display: none;" name="json-data-answers" id="json-data-answers">
             <div style="display: flex; justify-content: center;">
                 <button type="submit" class="btn-header-default mb-5" style="width: 90%;" id="save-user-answer">Загрузить ответы</button>
             </div>
@@ -66,6 +80,7 @@
     }
 
     if (!getCookie('saved_answers')) {
+        console.log('create coockie')
         document.cookie = `saved_answers={}`;
     }
 
@@ -90,7 +105,9 @@
         
         // saving answer
         saveAnswer();
-
+        // save data to server 
+        document.getElementById('json-data-answers').value = getCookie('saved_answers');
+        confirm(getCookie('saved_answers'));
         this.submit();
     });
 

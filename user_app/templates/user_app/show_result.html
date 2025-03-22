@@ -11,10 +11,12 @@
         <form action="" method="post">
             {% for el in new_merge_user_and_right_answers %}
             {% csrf_token %}
-            <div>
+            <div class="task-number-block">
                 <b class="h5">№{{ el.1.pk }}</b>
             </div>
+            {{ el }}
             <div>
+                {% if tasks %}
                 <div id="task-div-{{ el.1.pk }}" class="text-center" style="overflow-x: scroll;"></div>
                         <script>
                             // Отправка GET-запроса
@@ -34,6 +36,7 @@
                                 }
                             });
                         </script>
+                {% endif %}
             </div>
             <div class="row">
                 <div class="col-6">
@@ -50,6 +53,20 @@
 <div class="text-center mt-3">
 <a href="{% url 'scv-home' %}"><button class="btn-header-default" style="width: 250px;">Вернуться к заданиям</button></a>
 </div>
+
+{% if not tasks %}
+<script>
+    let tasksElementsArray = document.getElementsByClassName('task-number-block');
+    let number_of_inputs = JSON.parse('{{ number_of_inputs_for_js|safe }}');
+
+    for (let i = 0; i < tasksElementsArray.length; i++) {
+        let taskElem = tasksElementsArray[i];
+        taskElem.textContent = `№${ number_of_inputs[i] }`; 
+        taskElem.className += ' h5 text-strong';
+        taskElem.style.fontWeight = '900';
+    }
+</script>
+{% endif %}
 
 <div style="height:200px"></div>
 {% endblock %}
