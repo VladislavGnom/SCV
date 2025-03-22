@@ -86,17 +86,6 @@
 
     let btn_user_answer = document.getElementById("save-user-answer");
 
-    // // display answer from cookie
-    // var input_answer = document.getElementById(id_input_answer);
-
-    // let answer_for_display = JSON.parse(getCookie('saved_answers'))[id_input_answer];
-    // if (typeof answer_for_display === 'undefined' || typeof answer_for_display === 'null') {
-    //     input_answer.value = '';
-    // } else {
-    //     input_answer.value = answer_for_display;
-    // }
-
-   
 
     document.getElementById('form-request').addEventListener('submit', function(event) {
         event.preventDefault(); 
@@ -107,7 +96,6 @@
         saveAnswer();
         // save data to server 
         document.getElementById('json-data-answers').value = getCookie('saved_answers');
-        confirm(getCookie('saved_answers'));
         this.submit();
     });
 

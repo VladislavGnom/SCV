@@ -245,7 +245,7 @@ def show_result(request):
 
         # get data from frontend js
         # data_answers = json.loads(request.session['saved_answers'])
-        if data['json-data-answers']:
+        if data.get('json-data-answers')    :
             data_answers = json.loads(data['json-data-answers'][0])
         else:
             data_answers = json.loads(request.session['saved_answers'])
@@ -265,7 +265,10 @@ def show_result(request):
         else:
             # данные для варианта берутся на основе производной модели TestNewFormat
             # TODO: заменить на выборку по ID вместо названия
-            base_data_from_variant = TestNewFormat.objects.get(title=test_obj.title)
+            try:
+                base_data_from_variant = TestNewFormat.objects.get(title=test_obj.title)
+            except TestNewFormat.DoesNotExist as error:
+                base_data_from_variant = None
 
             # удаляю пару ключ-значение из словаря, которая соответствует названию теста
             # это нужно для корректной работы следующего цикла!!!
@@ -375,9 +378,13 @@ def show_result(request):
                     messages.info(request, 'Ваши ответы записаны и уже на проверке, за результатами обращайтесь к учителю')
                     return redirect('scv-home')
             except Test.DoesNotExist as error:
+                ...
+            try:
                 if not TestNewFormat.objects.get(group=group, title=title_test).is_show_answers:
                     messages.info(request, 'Ваши ответы записаны и уже на проверке, за результатами обращайтесь к учителю')
                     return redirect('scv-home')
+            except TestNewFormat.DoesNotExist as error:
+                ...
             
             return render(request, 'user_app/show_result.html', context=context) 
     else:
