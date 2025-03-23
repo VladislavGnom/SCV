@@ -5,7 +5,7 @@ from random import shuffle
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from user_app.forms import ImageForm, TaskForm, TestForm
 from user_app.models import Image, Task, Test, UserTest, CustomUser, Question, Answer
-from django.http import Http404, HttpResponseNotFound, JsonResponse, HttpResponseServerError
+from django.http import Http404, HttpResponseNotFound, JsonResponse, HttpResponseServerError, HttpRequest
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
@@ -452,9 +452,8 @@ def refresh_func(request):
 
     return redirect('scv-home')
 
-
 @login_required()
-def profile(request):
+def profile(request: HttpRequest):
     data = CustomUser.objects.get(username=request.user)
     user_id_group = get_user_groups(request.user)[0]
 
@@ -462,6 +461,7 @@ def profile(request):
 
 
     context = {
+        'title': 'Профиль',
         'data': data,
         'group': name_group,
         'active_block': '',
@@ -471,4 +471,28 @@ def profile(request):
         return render(request, 'teacher_app/profile_teach.html', context=context)
     else:
         return render(request, 'user_app/profile.html', context=context)
+
+@login_required
+def show_tests_user_profile(request: HttpRequest):
+    user = request.user
+
+    all_tests_of_user = UserTest.objects.filter(user=user)
+    count_of_questions_list = []
+
+    for test in UserTest.objects.filter(user=user):
+        if test.tasks_id:
+            count_of_questions_list.append(len(ast.literal_eval(test.tasks_id)))
+        else: 
+            # данные для варианта берутся на основе производной модели TestNewFormat
+            # TODO: заменить на выборку по ID вместо названия
+            count_of_questions_list.append(TestNewFormat.objects.get(title=test.title).number_of_inputs)
+
+    data_tests_of_user = zip(all_tests_of_user, count_of_questions_list)
+
+    context = {
+        'title': 'Все тесты',
+        'data_tests_of_user': data_tests_of_user,
+    }
+
+    return render(request, 'user_app/tests_user_profile.html', context=context)
 

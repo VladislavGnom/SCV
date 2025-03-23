@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block main %}
+<div class="container text-center">
+<h1 class="mb-3">Ваши тесты:</h1>
+    {% if data_tests_of_user %}
+    <table class="table">
+        <thead class="thead-dark">
+            <tr>
+            <th scope="col" style="width: 10%;">#</th>
+            <th scope="col">Название</th>
+            <th scope="col">Динамика</th>
+            <th scope="col">Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for test, count_of_questions in data_tests_of_user %}
+          <tr>
+            <th scope="row" class="number_of_test"></th>
+            <td style="overflow-x: clip;">{{ test.title }}</td>
+            <td>{% if test.is_complete %}{{ test.right_answers }}/{{ count_of_questions }}{% else %}-{% endif %}</td>
+            <td>{% if test.is_complete %}✅{% else %}❌{% endif %}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <script>
+        let number_of_test_elems = document.getElementsByClassName('number_of_test');
+
+        for (let i = 0; i < number_of_test_elems.length; i++) {
+            let elem = number_of_test_elems[i];
+            elem.textContent = i + 1;
+        }
+    </script>
+</div>
+{% endblock %}
