@@ -286,12 +286,14 @@ def show_classes(request):
 
 @login_required()
 def show_tests(request, class_id):
-    tests = Test.objects.filter(group_id=class_id)
+    tests = []
+    [tests.append(test.title) for test in Test.objects.filter(group_id=class_id)]
+    [tests.append(test.title) for test in TestNewFormat.objects.filter(group_id=class_id)]
 
 
     context = {
         'title': 'Тесты',
-        'tests': [t.title.replace("/", "\\") for t in tests],
+        'tests': [t.replace("/", "\\") for t in tests],
         'class_id': class_id,
         'active_block': 'Мои классы',
     }
@@ -320,7 +322,12 @@ def show_result_detail(request, class_id, title):
 
 
     # отбираю записи из таблицы Test по названию и получаю строковое представление списка номеров заданий и с помощью функции ast.literal_eval() преобразую эту строку в список, а затем узнаю кол-во элеменотов с помощью len() 
-    count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
+    try:
+        count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
+    except Test.DoesNotExist as error:
+        # данные для варианта берутся на основе производной модели TestNewFormat
+        # TODO: заменить на выборку по ID вместо названия
+        count_tasks = TestNewFormat.objects.get(title=title.replace('\\', '/')).number_of_inputs
 
     from utils.utils import create_excel_table, restyles_excel_file
 
