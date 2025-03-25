@@ -152,41 +152,6 @@ def scv_home(request):
 
                 messages.success(request, message='Успешно загружено!')
 
-                # ------------------------ BAD BLOCK CODE ---------------------
-                # # получаем экземпляр файла
-                # img_obj = form.instance
-                # # получаем список из загруженных фотографий в БД ДЛЯ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
-                # images = Image.objects.filter(user=request.user)
-
-                # # тесты пользователя (сгенерированные)
-                # data = UserTest.objects.filter(user=request.user, is_complete=False)
-
-                # # список из id заданий для отображения сгенерированного варианта
-                # gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data]
-                # # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
-                # for gen_task in gen_tasks_for_type:
-                #     variant = [Question.objects.get(pk=pk) for pk in gen_task]
-                #     all_tasks.append(variant)
-
-                # usertests = data
-
-                # merge_title_and_task = list(zip(all_title_tests, usertests))
-
-                # completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
-
-                # context = {
-                #     'form': form, 
-                #     'img_obj': img_obj, 
-                #     'images': images,
-                #     'tasks': all_tasks,
-                #     'all_title_tests': all_title_tests,
-                #     'merge_title_and_task': merge_title_and_task,
-                #     'usertests': usertests,
-                #     'completed_usertests': completed_usertests,
-                #     }
-
-                # return render(request, 'user_app/scv_home.html', context=context)
-                # ---------------------------------------------------------
                 return redirect('scv-home')
         else:
             # получаем список из загруженных фотографий в БД ДЛЯ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
