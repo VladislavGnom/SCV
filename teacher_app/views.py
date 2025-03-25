@@ -320,7 +320,8 @@ def show_result_detail(request, class_id, title):
     # тесты пользователей соответсвующие одному названию теста и разным пользователям входящих в эту группу
     usertests = UserTest.objects.filter(title=title.replace('\\', '/'), user_id__in=users_id)
 
-
+    print(title)
+    print(title.replace('\\', '/'))
     # отбираю записи из таблицы Test по названию и получаю строковое представление списка номеров заданий и с помощью функции ast.literal_eval() преобразую эту строку в список, а затем узнаю кол-во элеменотов с помощью len() 
     try:
         count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
@@ -353,12 +354,14 @@ def show_result_detail(request, class_id, title):
     # применяем стили к таблице
     restyles_excel_file(filename=filename)
 
+    print(filename.replace('\\', '%5c'))
+
     context = {
         'title': 'Результаты класса',
         'usertests': usertests,
         'count_tasks': count_tasks, 
         'active_block': 'Мои классы',
-        'filename': filename,
+        'filename': filename.replace('\\', '%5c'),
     }
 
     return render(request, 'teacher_app/show_result_detail.html', context=context)

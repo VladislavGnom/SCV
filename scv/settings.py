@@ -64,6 +64,7 @@ TEMPLATES = [
             'libraries': {
                 'remove_backslashes': 'templatetags.custom_filters',
                 'cut': 'templatetags.custom_filters',
+                'replace_to_backslashes': 'templatetags.custom_filters',
             }
         },
     },

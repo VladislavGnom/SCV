@@ -1,6 +1,7 @@
 {% extends 'base-special.html' %}
 
 {% load static %}
+{% load replace_to_backslashes %}
 
 {% block main %}
 <h1>Все работы класса:</h1>
@@ -17,7 +18,7 @@
     <div class="dropdown-menu" aria-labelledby="dropdownResultsByUserLink">
       {% for el in usertests %}
         {% if el.number_of_attempts %}
-            <a download="" class="dropdown-item" href="https://{{ request.get_host }}/static/data_tests/homeworks/{{ el.title }}-{{ el.user.username }}.txt">{{ el.user.first_name }} {{ el.user.last_name }}</a>
+            <a download="" class="dropdown-item" href="https://{{ request.get_host }}/static/data_tests/homeworks/{{ el.title|replace_to_backslashes }}-{{ el.user.username }}.txt">{{ el.user.first_name }} {{ el.user.last_name }}</a>
         {% else %}
             <div class="dropdown-item" href="">Пока нет данных</div>
         {% endif %}
