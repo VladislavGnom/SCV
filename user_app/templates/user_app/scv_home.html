@@ -3,6 +3,27 @@
 {% load remove_backslashes %}
 
 {% block main %}
+
+
+<!-- TODO NEED TO IMPROVE LATER -->
+    <div class="overlay" id="imageOverlay">
+        <span class="close-btn" onclick="closeImage()">✖</span>
+        <img id="fullImage" src="">
+    </div>
+
+    <script>
+        function showImage(src) {
+            let overlay = document.getElementById("imageOverlay");
+            let img = document.getElementById("fullImage");
+            img.src = src;
+            overlay.style.display = "flex";
+        }
+
+        function closeImage() {
+            document.getElementById("imageOverlay").style.display = "none";
+        }
+    </script>
+
 <h1 class="text-center">SCV Home</h1>
 
 
@@ -35,12 +56,17 @@
         <div class="card-body">
             {% if images %}
                 {% for image in images %}
-                    <a href="{{ image.image.url }}"><img src="{{ image.image.url }}" alt="connect" style="max-height:100px"></a>
+                    <!-- <a href="{{ image.image.url }}"> -->
+                        <img src="{{ image.image.url }}" alt="connect" style="max-height:100px" onclick='showImage("{{ image.image.url }}")' class="user-image">
+                    <!-- </a> -->
                 {% endfor %}
             {% else %}
                 <div class="h3">Нет загруженных файлов</div>
             {% endif %}
         </div>
+        <script>
+            
+        </script>
     </div>
 </div>
 
