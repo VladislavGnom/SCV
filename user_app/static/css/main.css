@@ -190,3 +190,48 @@
         font-size: 12px; /* Измените размер текста сообщения */
     }
 }
+
+
+.glide {
+    width: 100%;
+    max-width: 800px;
+    max-height: 500px;
+    margin: auto;
+  }
+  
+  .glide__slide img {
+    width: 100%;
+    height: 500px;
+    object-fit: cover;
+  }
+
+.glide__arrow {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+  
+.glide__bullet {
+    background: gray;
+    width: 10px;
+    height: 10px;
+    margin: 5px;
+    border-radius: 50%;
+    border: none;
+}
+  
+.glide__bullet--active {
+    background: black;
+}
+
+.glide__slide img {
+    transition: transform 0.3s ease-in-out;
+    cursor: pointer;
+  }
+  
+  .glide__slide img:active {
+    transform: scale(1.5); /* Увеличение на 50% */
+  }
+  

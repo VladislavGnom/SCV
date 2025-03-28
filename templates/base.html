@@ -8,6 +8,14 @@
     <!-- Pop up message (modal window) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+    <!--               GLIDEJS - START              -->
+    <!-- Подключение стилей Glide.js -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@glidejs/glide/dist/css/glide.core.min.css">
+    <!-- Дополнительные стили для стрелок и точек -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@glidejs/glide/dist/css/glide.theme.min.css">
+    <!--               GLIDEJS - END                -->
+
     <title>{% if title %}{{ title }}{% else %}Undefinded{% endif %}</title>
 </head>
 <body>
@@ -42,5 +50,8 @@
     <!-- Themes pop up -->
     <!-- <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-borderless@4/borderless.css" rel="stylesheet"> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script> -->
+
+    <!-- Подключение скрипта GLIDEJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@glidejs/glide/dist/glide.min.js"></script>
 </body>
 </html>

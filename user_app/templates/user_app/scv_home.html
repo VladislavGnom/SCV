@@ -5,10 +5,42 @@
 {% block main %}
 
 
-<!-- TODO NEED TO IMPROVE LATER -->
-    <div class="overlay" id="imageOverlay">
-        <span class="close-btn" onclick="closeImage()">✖</span>
-        <img id="fullImage" src="">
+
+<div class="glide">
+    <div class="glide__track" data-glide-el="track">
+      <ul class="glide__slides">
+        {% for image in images %}
+            <li class="glide__slide"><img src="{{ image.image.url }}" alt="connect" onclick='showImage("{{ image.image.url }}")' class="user-image"></li>
+        {% endfor %}
+      </ul>
+    </div>
+  
+    <!-- Навигация (стрелки) -->
+    <div class="glide__arrows" data-glide-el="controls">
+      <button class="glide__arrow glide__arrow--left" data-glide-dir="<">←</button>
+      <button class="glide__arrow glide__arrow--right" data-glide-dir=">">→</button>
+    </div>
+
+  </div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let glide = new Glide('.glide').mount();
+
+        document.querySelector('.glide__arrow--left').addEventListener('click', () => glide.go('<'));
+        document.querySelector('.glide__arrow--right').addEventListener('click', () => glide.go('>'));
+
+    });
+</script>
+<!-- TODO NEED TO IMPROVE LATER
+    <div class="glide">
+        <div class="glide__track" data-glide-el="track"></div>
+            <div class="overlay" id="imageOverlay">
+                <span class="close-btn" onclick="closeImage()">✖</span>
+                <img id="fullImage" src="">
+            </div>
+        </div>
     </div>
 
     <script>
@@ -16,13 +48,14 @@
             let overlay = document.getElementById("imageOverlay");
             let img = document.getElementById("fullImage");
             img.src = src;
+            img.className = 'horizontal-auto-center';
             overlay.style.display = "flex";
         }
 
         function closeImage() {
             document.getElementById("imageOverlay").style.display = "none";
         }
-    </script>
+    </script> -->
 
 <h1 class="text-center">SCV Home</h1>
 

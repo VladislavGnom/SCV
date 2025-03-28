@@ -190,3 +190,14 @@
         font-size: 12px; /* Измените размер текста сообщения */
     }
 }
+
+
+.horizontal-auto-center {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100px;
+    /* равномерное распределение отступов */
+    margin-left: auto;
+    margin-right: auto;
+  }

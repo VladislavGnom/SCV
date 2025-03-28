@@ -144,3 +144,4 @@ class Answer(models.Model):
 
 class CustomUser(AbstractUser):
     open_password = models.CharField(max_length=255, verbose_name='Пароль')
+    
