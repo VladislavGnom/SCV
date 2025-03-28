@@ -7,15 +7,19 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
     <!-- Pop up message (modal window) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- LIGHTBOX - START              -->
+<!-- Подключение стилей Lightbox -->
+<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/css/lightbox.min.css"> -->
+
+<!-- Подключение скрипта Lightbox -->
+<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script> -->
+<!--               LIGHTBOX - END                -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightbox2@2.11.5/dist/css/lightbox.min.css">
+    
+
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
 
-    <!--               GLIDEJS - START              -->
-    <!-- Подключение стилей Glide.js -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@glidejs/glide/dist/css/glide.core.min.css">
-    <!-- Дополнительные стили для стрелок и точек -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@glidejs/glide/dist/css/glide.theme.min.css">
-    <!--               GLIDEJS - END                -->
-
+    
     <title>{% if title %}{{ title }}{% else %}Undefinded{% endif %}</title>
 </head>
 <body>
@@ -50,8 +54,78 @@
     <!-- Themes pop up -->
     <!-- <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-borderless@4/borderless.css" rel="stylesheet"> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script> -->
+    <!-- jQuery (Должен быть подключен перед Lightbox) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightbox2@2.11.5/dist/js/lightbox.min.js"></script>
 
-    <!-- Подключение скрипта GLIDEJS -->
-    <script src="https://cdn.jsdelivr.net/npm/@glidejs/glide/dist/glide.min.js"></script>
+      <script>
+        $(document).ready(function(){
+            let next_arrow = document.getElementsByClassName('lb-next')[0];
+            let prev_arrow = document.getElementsByClassName('lb-prev')[0];
+            next_arrow.style = 'width: 100px';
+            prev_arrow.style = 'width: 100px';
+
+            let images = document.getElementsByClassName('lb-container');
+
+            next_arrow.onclick = function() {
+                for (let img of images) {
+                    if (this.classList.contains('zoomed')) {
+                        this.classList.remove('zoomed');
+                        this.style.transform = 'scale(1)';
+                        this.style.left = '0';
+                        this.style.top = '0';
+                    }
+                }
+            }
+
+            prev_arrow.onclick = function() {
+                for (let img of images) {
+                    this.classList.remove('zoomed');
+                    this.style.transform = 'scale(1)';
+                    this.style.left = '0';
+                    this.style.top = '0';
+                }
+            }
+
+            console.log(images)
+            for (let img of images) {
+                img.onclick = function(e) {
+                    // Получаем координаты клика
+                    const clickX = e.clientX;
+                    const clickY = e.clientY;
+                    const imgRect = this.getBoundingClientRect(); // Получаем размеры изображения
+                    const imgX = imgRect.left;  // Координаты левого края изображения
+                    const imgY = imgRect.top;   // Координаты верхнего края изображения
+
+                    // Рассчитываем относительные координаты клика относительно изображения
+                    const offsetX = clickX - imgX;
+                    const offsetY = clickY - imgY;
+
+                    // Если изображение уже увеличено
+                    if (this.classList.contains('zoomed')) {
+                        // Убираем класс 'zoomed' и возвращаем изображение в исходное состояние
+                        this.classList.remove('zoomed');
+                        this.style.transform = 'scale(1)';
+                        this.style.left = '0';
+                        this.style.top = '0';
+                    } else {
+                        // Добавляем класс 'zoomed' для увеличения изображения
+                        this.classList.add('zoomed');
+
+                        // Рассчитываем смещение для корректного увеличения
+                        const scaleFactor = 1.2; // Коэффициент увеличения
+                        const newX = -(offsetX * (scaleFactor - 1)); // Смещение по X
+                        const newY = -(offsetY * (scaleFactor - 1)); // Смещение по Y
+
+                        // Применяем смещение и масштабирование
+                        this.style.transform = `scale(${scaleFactor})`;
+                        this.style.left = `${newX}px`;
+                        this.style.top = `${newY}px`;
+                    }
+            }
+        }
+        });
+        
+    </script>
 </body>
 </html>
