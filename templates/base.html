@@ -67,63 +67,81 @@
 
             let images = document.getElementsByClassName('lb-container');
 
-            next_arrow.onclick = function() {
-                for (let img of images) {
-                    if (this.classList.contains('zoomed')) {
-                        this.classList.remove('zoomed');
-                        this.style.transform = 'scale(1)';
-                        this.style.left = '0';
-                        this.style.top = '0';
-                    }
-                }
-            }
+            // next_arrow.onclick = function() {
+            //     for (let img of images) {
+            //         if (this.classList.contains('zoomed')) {
+            //             this.classList.remove('zoomed');
+            //             this.style.transform = 'scale(1)';
+            //             this.style.left = '0';
+            //             this.style.top = '0';
+            //         }
+            //     }
+            // }
 
-            prev_arrow.onclick = function() {
-                for (let img of images) {
-                    this.classList.remove('zoomed');
-                    this.style.transform = 'scale(1)';
-                    this.style.left = '0';
-                    this.style.top = '0';
-                }
-            }
+            // prev_arrow.onclick = function() {
+            //     for (let img of images) {
+            //         this.classList.remove('zoomed');
+            //         this.style.transform = 'scale(1)';
+            //         this.style.left = '0';
+            //         this.style.top = '0';
+            //     }
+            // }
+            
+            // zoom functional 
+            let isZoomed = false;
+            let isDragging = false;
+            let startX, startY, imgX = 0, imgY = 0;
 
-            console.log(images)
             for (let img of images) {
-                img.onclick = function(e) {
-                    // Получаем координаты клика
-                    const clickX = e.clientX;
-                    const clickY = e.clientY;
-                    const imgRect = this.getBoundingClientRect(); // Получаем размеры изображения
-                    const imgX = imgRect.left;  // Координаты левого края изображения
-                    const imgY = imgRect.top;   // Координаты верхнего края изображения
+                // Увеличение изображения в точку клика
+                img.addEventListener("click", function(e) {
+                    if (isZoomed) return; // Если уже увеличено, не увеличиваем снова
 
-                    // Рассчитываем относительные координаты клика относительно изображения
-                    const offsetX = clickX - imgX;
-                    const offsetY = clickY - imgY;
+                    isZoomed = true;
+                    img.classList.add("zoomed");
 
-                    // Если изображение уже увеличено
-                    if (this.classList.contains('zoomed')) {
-                        // Убираем класс 'zoomed' и возвращаем изображение в исходное состояние
-                        this.classList.remove('zoomed');
-                        this.style.transform = 'scale(1)';
-                        this.style.left = '0';
-                        this.style.top = '0';
-                    } else {
-                        // Добавляем класс 'zoomed' для увеличения изображения
-                        this.classList.add('zoomed');
+                    const scaleFactor = 2; // Коэффициент увеличения
+                    const rect = img.getBoundingClientRect();
+                    const offsetX = e.clientX - rect.left;
+                    const offsetY = e.clientY - rect.top;
 
-                        // Рассчитываем смещение для корректного увеличения
-                        const scaleFactor = 1.2; // Коэффициент увеличения
-                        const newX = -(offsetX * (scaleFactor - 1)); // Смещение по X
-                        const newY = -(offsetY * (scaleFactor - 1)); // Смещение по Y
+                    const newX = -(offsetX * (scaleFactor - 1)); // Смещение по X
+                    const newY = -(offsetY * (scaleFactor - 1)); // Смещение по Y
 
-                        // Применяем смещение и масштабирование
-                        this.style.transform = `scale(${scaleFactor})`;
-                        this.style.left = `${newX}px`;
-                        this.style.top = `${newY}px`;
-                    }
+                    img.style.transform = `scale(${scaleFactor})`;
+                    img.style.left = `${newX}px`;
+                    img.style.top = `${newY}px`;
+                })
+                // Перетаскивание изображения после увеличения
+                img.addEventListener("mousedown", function(e) {
+                    if (!isZoomed) return;
+                    isDragging = true;
+                    startX = e.clientX - imgX;
+                    startY = e.clientY - imgY;
+                    img.style.cursor = "grabbing";
+                })
+
+                img.addEventListener("mousemove", function(e) {
+                    if (!isDragging) return;
+                    imgX = e.clientX - startX;
+                    imgY = e.clientY - startY;
+                    img.style.left = `${imgX}px`;
+                    img.style.top = `${imgY}px`;
+                })
+
+                img.addEventListener("mouseup", function(e) {
+                    isDragging = false;
+                    img.style.cursor = "grab";
+                })
+                // Сброс на двойной клик
+                img.addEventListener("dblclick", function(e) {
+                    isZoomed = false;
+                    img.style.transform = "scale(1)";
+                    img.style.left = "0";
+                    img.style.top = "0";
+                    img.classList.remove("zoomed");
+                })
             }
-        }
         });
         
     </script>
