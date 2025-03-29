@@ -36,7 +36,7 @@
         <div class="card-body">
             {% if images %}
                 {% for image in images %}
-                    <a href="{{ image.image.url }}" data-lightbox="gallery">
+                    <a href="{{ image.image.url }}" data-lightbox="gallery" data-title="{{ image.title }}">
                         <img src="{{ image.image.url }}" alt="connect" style="max-height:100px" class="user-image">
                     </a>
                 {% endfor %}

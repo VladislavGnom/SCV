@@ -15,7 +15,7 @@
         {{ user.last_name }}
     </div>
     {% for image in group.list %}
-        <a href="{{ image.image.url }}" data-lightbox="gallery">
+        <a href="{{ image.image.url }}" data-lightbox="gallery" data-title="{{ image.title }}">
             <img src="{{ image.image.url }}" alt="Изображение {{ group.grouper }}" style="max-height:100px" class="user-image">
         </a>
     {% endfor %}

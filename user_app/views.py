@@ -80,6 +80,7 @@ def user_test_new_format(request, user_test_id):
     context = {
         'title': test.title, 
         'file_with_tasks': file_with_tasks,
+        'file_with_tasks_filename': base_data_for_variant.task_filename,
         'file_for_done_tasks': file_for_done_tasks,
         'title_test': test.title,
         'input_with_number_task': indx_and_numbers_of_inputs,
@@ -148,7 +149,7 @@ def scv_home(request):
                 image = form.save(commit=False)
                 # устанавливаю пользователя который загружает фото - владельцем этого фото
                 image.user = request.user
-                image.group = has_user_group
+                image.group = Group.objects.get(pk=has_user_group)
                 image.save()
 
                 messages.success(request, message='Успешно загружено!')

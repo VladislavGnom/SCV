@@ -14,6 +14,9 @@ class TestNewFormat(models.Model):
     input_with_number_task = models.CharField(max_length=255, null=True, blank=True)    # порядок именования инпутов (соотношение их с номерами заданий)
     # generate_random_order_tasks = models.BooleanField(default=False, verbose_name="Генерировать вопросы в перемешку")
     is_show_answers = models.BooleanField(default=False, verbose_name="Показывать ответы")
+    
+    def task_filename(self):
+        return self.file_with_tasks.name.split("/")[-1]
 
     def __str__(self):
         return self.title
@@ -27,6 +30,9 @@ class FilesForTestModel(models.Model):
     test_new_format = models.ForeignKey(TestNewFormat, related_name='files', on_delete=models.CASCADE)
     file = models.FileField(upload_to='files_for_tasks', max_length=254, verbose_name="Файл для заданий")
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def filename(self):
+        return self.file.name.split("/")[-1]
 
     def __str__(self):
         return f"Test's file for called is {self.test_new_format.title}"

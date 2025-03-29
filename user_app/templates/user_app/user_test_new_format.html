@@ -23,13 +23,13 @@
     <hr>
     <div class="">
         <div class="h4">Файл с заданиями</div>
-        <a download href="https://{{ request.get_host }}/media/{{ file_with_tasks }}">ФАЙЛ</a>
+        <a download href="https://{{ request.get_host }}/media/{{ file_with_tasks }}">ФАЙЛ-{{ file_with_tasks_filename }}</a>
     </div>
     <hr>
     <div class="">
         <div class="h4">Файлы для выполнения заданий</div>
         {% for help_file in file_for_done_tasks %}
-            <a download href="https://{{ request.get_host }}{{ help_file.file.url }}">ФАЙЛ</a>
+            <a download href="https://{{ request.get_host }}{{ help_file.file.url }}">ФАЙЛ-{{ help_file.filename }}</a>
         {% endfor %}
     </div>
     <hr>
