@@ -192,7 +192,7 @@
 }
 
  /* Стиль для изображений */
- .lb-nav .lightbox .lb-image .lb-container {
+.lb-nav .lightbox .lb-image .lb-container {
     cursor: pointer;
     max-width: 100%;
     height: auto;
@@ -200,8 +200,8 @@
     position: relative;
 }
 
-  /* Увеличение изображения */
-  .zoomed {
+/* Увеличение изображения */
+.zoomed {
     transform: scale(1.5);  /* увеличиваем изображение в 1.5 раза */
     position: absolute;
-  }
+}

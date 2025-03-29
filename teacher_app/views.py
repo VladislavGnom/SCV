@@ -3,7 +3,7 @@ import ast
 from django.shortcuts import render, redirect
 from django.http import HttpRequest
 from teacher_app.forms import TaskForm, TestForm, AnswerForm
-from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer
+from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer, Image
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Count
@@ -13,7 +13,7 @@ from django.conf import settings
 
 from django.core.paginator import Paginator
 
-from utils.utils import extract_filename_substring, clean_html, get_group_by_name
+from utils.utils import extract_filename_substring, clean_html, get_group_by_name, get_user_groups
 
 from .forms import TASK_CHOICES_SUBJECT, TASK_CHOICES_SUBJECT_PARENT, TASK_CHOICES_SUBJECT_CHILD
 from .models import TestNewFormat, FilesForTestModel
@@ -285,7 +285,7 @@ def show_classes(request):
 
 
 @login_required()
-def show_tests(request, class_id):
+def show_tests(request: HttpRequest, class_id: int):
     tests = []
     [tests.append(test.title) for test in Test.objects.filter(group_id=class_id)]
     [tests.append(test.title) for test in TestNewFormat.objects.filter(group_id=class_id)]
@@ -428,3 +428,21 @@ def add_test_new_format_view(request: HttpRequest):
     }
     
     return render(request, 'teacher_app/add_test_new_format.html', context=context)
+
+# --------------- SHOW USER IMAGES ------------------
+@login_required
+def show_user_images(request: HttpRequest, class_id: int):
+    # один из пользователь входящих в конкретную группу
+    first_user = get_users_in_group(class_id)[0]
+
+    user_group = get_user_groups(first_user)[0]
+    user_images = Image.objects.filter(group=user_group)
+
+    context = {
+        'title': 'Изображения',
+        'user_images': user_images.order_by('user__username'),
+        'class_id': class_id,
+        'active_block': 'Мои классы',
+    }
+
+    return render(request, 'teacher_app/show_user_images.html', context=context)

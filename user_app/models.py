@@ -8,6 +8,7 @@ class Image(models.Model):
     title = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to='images')
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="Группа")
 
     def __str__(self):
         return self.title

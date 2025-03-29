@@ -1,0 +1,31 @@
+{% extends 'base-special.html' %}
+
+{% block main %}
+<h1>Изображения пользователей:</h1>
+
+{% if user_images %}
+<ul>
+{% regroup user_images by user.username as grouped_images %}
+<div class="card-body">
+{% for group in grouped_images %}
+    <hr>
+    {% with group.list.0.user as user %}
+    <div class="h3">
+        {{ user.first_name }}
+        {{ user.last_name }}
+    </div>
+    {% for image in group.list %}
+        <a href="{{ image.image.url }}" data-lightbox="gallery">
+            <img src="{{ image.image.url }}" alt="Изображение {{ group.grouper }}" style="max-height:100px" class="user-image">
+        </a>
+    {% endfor %}
+    {% endwith %}
+    <hr>
+{% endfor %}
+</div>
+</ul>
+{% else %}
+<h2>Пока нет изображений</h2>
+{% endif %}
+
+{% endblock %}

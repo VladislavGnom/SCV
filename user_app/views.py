@@ -148,6 +148,7 @@ def scv_home(request):
                 image = form.save(commit=False)
                 # устанавливаю пользователя который загружает фото - владельцем этого фото
                 image.user = request.user
+                image.group = has_user_group
                 image.save()
 
                 messages.success(request, message='Успешно загружено!')
