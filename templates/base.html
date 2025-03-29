@@ -67,25 +67,25 @@
 
             let images = document.getElementsByClassName('lb-container');
 
-            // next_arrow.onclick = function() {
-            //     for (let img of images) {
-            //         if (this.classList.contains('zoomed')) {
-            //             this.classList.remove('zoomed');
-            //             this.style.transform = 'scale(1)';
-            //             this.style.left = '0';
-            //             this.style.top = '0';
-            //         }
-            //     }
-            // }
+            next_arrow.onclick = function() {
+                for (let img of images) {
+                        isZoomed = false;
+                        img.style.transform = "scale(1)";
+                        img.style.left = "0";
+                        img.style.top = "0";
+                        img.classList.remove("zoomed");
+                }
+            }
 
-            // prev_arrow.onclick = function() {
-            //     for (let img of images) {
-            //         this.classList.remove('zoomed');
-            //         this.style.transform = 'scale(1)';
-            //         this.style.left = '0';
-            //         this.style.top = '0';
-            //     }
-            // }
+            prev_arrow.onclick = function() {
+                for (let img of images) {
+                    isZoomed = false;
+                    img.style.transform = "scale(1)";
+                    img.style.left = "0";
+                    img.style.top = "0";
+                    img.classList.remove("zoomed");
+                }
+            }
             
             // zoom functional 
             let isZoomed = false;
