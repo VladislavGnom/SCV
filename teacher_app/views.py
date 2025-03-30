@@ -3,7 +3,7 @@ import ast
 from django.shortcuts import render, redirect
 from django.http import HttpRequest
 from teacher_app.forms import TaskForm, TestForm, AnswerForm
-from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer, Image
+from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer, Image, CustomUser
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Count
@@ -446,3 +446,23 @@ def show_user_images(request: HttpRequest, class_id: int):
     }
 
     return render(request, 'teacher_app/show_user_images.html', context=context)
+
+# --------------- SHOW DATA OF USERS ------------------
+@login_required
+def show_data_users(request: HttpRequest, class_id: int):
+    # один из пользователь входящих в конкретную группу
+    first_user = get_users_in_group(class_id)[0]
+
+    user_group = get_user_groups(first_user)[0]
+    data_of_users = CustomUser.objects.exclude(is_active=False).filter(groups=user_group)
+    class_name = Group.objects.get(pk=user_group)
+
+    context = { 
+        'title': 'Данные пользователей',
+        'data_of_users': data_of_users,
+        'class_id': class_id,
+        'class_name': class_name,
+        'active_block': 'Мои классы',
+    }
+
+    return render(request, 'teacher_app/show_data_users.html', context=context)

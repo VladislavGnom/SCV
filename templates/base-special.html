@@ -134,37 +134,41 @@
         next_arrow.style = 'width: 100px';
         prev_arrow.style = 'width: 100px';
 
+        function resetZoomOptions(img) {
+            isZoomed = false;
+            img.style.transform = "scale(1)";
+            img.style.left = "0";
+            img.style.top = "0";
+            img.classList.remove("zoomed");
+        }
+
         let images = document.getElementsByClassName('lb-container');
 
         next_arrow.onclick = function() {
             for (let img of images) {
-                    isZoomed = false;
-                    img.style.transform = "scale(1)";
-                    img.style.left = "0";
-                    img.style.top = "0";
-                    img.classList.remove("zoomed");
+                resetZoomOptions(img);
             }
         }
 
         prev_arrow.onclick = function() {
             for (let img of images) {
-                isZoomed = false;
-                img.style.transform = "scale(1)";
-                img.style.left = "0";
-                img.style.top = "0";
-                img.classList.remove("zoomed");
+                resetZoomOptions(img);
             }
         }
 
         close_button.onclick = function() {
             for (let img of images) {
-                    isZoomed = false;
-                    img.style.transform = "scale(1)";
-                    img.style.left = "0";
-                    img.style.top = "0";
-                    img.classList.remove("zoomed");
+                resetZoomOptions(img);
             }
         }
+
+        document.addEventListener("keydown", function(e) {
+            if (e.code === "Escape") {
+                for (let img of images) {
+                    resetZoomOptions(img);
+                } 
+            }
+        })
         
         // zoom functional 
         let isZoomed = false;
@@ -214,11 +218,7 @@
             })
             // Сброс на двойной клик
             img.addEventListener("dblclick", function(e) {
-                isZoomed = false;
-                img.style.transform = "scale(1)";
-                img.style.left = "0";
-                img.style.top = "0";
-                img.classList.remove("zoomed");
+                resetZoomOptions(img);
             })
         }
     });

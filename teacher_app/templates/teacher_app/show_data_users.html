@@ -1,0 +1,50 @@
+{% extends 'base-special.html' %}
+
+{% block main %}
+<div class="h3">{{ class_name }}<div>
+<div class="h3 mb-3">Пользователи:</div>
+
+{% if data_of_users %}
+<div style="text-align: center;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th style="width: 10%;">#</th>
+                <th>Ученик</th>
+                <th>Логин</th>
+                <th>Пароль</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in data_of_users %}
+                <tr>
+                    <td class="text-center user-number"></td>
+                    <td class="text-center">{{ user.first_name }} {{ user.last_name }}</td>
+                    <td class="text-center">{{ user.username }}</td>
+                    <td class="text-center">{{ user.open_password }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        
+    </table>
+    </ul>
+    {% else %}
+    <h2>Пока нет тестов</h2>
+    {% endif %}
+    
+    <div class="text-center">
+        <hr>
+        <a href="{% url 'show-user-images' class_id %}">Изображения класса</a>
+    </div>
+</div>
+
+<script>
+    let user_number_elems = document.getElementsByClassName('user-number');
+
+    for (let i = 1; i <= user_number_elems.length; i++) {
+        user_number_elems[i - 1].textContent = i;
+    }
+</script>
+
+
+{% endblock %}
