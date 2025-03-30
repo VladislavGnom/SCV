@@ -289,12 +289,18 @@ def show_tests(request: HttpRequest, class_id: int):
     tests = []
     [tests.append(test.title) for test in Test.objects.filter(group_id=class_id)]
     [tests.append(test.title) for test in TestNewFormat.objects.filter(group_id=class_id)]
+    
+    # один из пользователь входящих в конкретную группу
+    first_user = get_users_in_group(class_id)[0]
+    user_group = get_user_groups(first_user)[0]
+    class_name = Group.objects.get(pk=user_group)
 
 
     context = {
         'title': 'Тесты',
         'tests': [t.replace("/", "\\") for t in tests],
         'class_id': class_id,
+        'class_name': class_name,
         'active_block': 'Мои классы',
     }
 
@@ -356,9 +362,15 @@ def show_result_detail(request, class_id, title):
 
     print(filename.replace('\\', '%5c'))
 
+    # один из пользователь входящих в конкретную группу
+    first_user = get_users_in_group(class_id)[0]
+    user_group = get_user_groups(first_user)[0]
+    class_name = Group.objects.get(pk=user_group)
+
     context = {
         'title': 'Результаты класса',
         'usertests': usertests,
+        'class_name': class_name,
         'count_tasks': count_tasks, 
         'active_block': 'Мои классы',
         'filename': filename.replace('\\', '%5c'),
@@ -437,11 +449,13 @@ def show_user_images(request: HttpRequest, class_id: int):
 
     user_group = get_user_groups(first_user)[0]
     user_images = Image.objects.filter(group=user_group)
+    class_name = Group.objects.get(pk=user_group)
 
     context = {
         'title': 'Изображения',
         'user_images': user_images.order_by('user__username'),
         'class_id': class_id,
+        'class_name': class_name,
         'active_block': 'Мои классы',
     }
 

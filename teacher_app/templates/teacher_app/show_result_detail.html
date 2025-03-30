@@ -4,7 +4,8 @@
 {% load replace_to_backslashes %}
 
 {% block main %}
-<h1>Все работы класса:</h1>
+<div class="h3">{{ class_name }}<div>
+<div class="h3 mb-3">Все работы класса:</div>
 
 <div class="mb-3">
     <a download href="https://{{ request.get_host }}/static/excel_files/{{ filename }}">Скачать файл в виде таблицы</a>
