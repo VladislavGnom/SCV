@@ -91,7 +91,30 @@ def user_test_new_format(request, user_test_id):
 
 
 def index(request):
-    return render(request, 'user_app/index.html', context={'title': 'Индексная страница', })
+    links = [
+        'https://sun9-75.userapi.com/impg/nKbCtYcTpQzvuUZOvbH-dGqHhJGt_W87WdnaOw/_hpU7o1XIIw.jpg?size=906x599&quality=95&sign=e73c7d8594ac5e9ec5e1a8aed56a093b&type=album',
+        # 'https://sun9-6.userapi.com/impg/RVQV5l3LJS-B7DpGKKt5kjNwMCjdhKZ2PDgSfQ/xKHd2IGitq4.jpg?size=868x1080&quality=95&sign=8448d5d8b88329a4a2062904bfc415ba&type=album',
+        # 'https://sun9-40.userapi.com/impg/oNabCu1WXHtDqfXniAyekXObx4-BxnvabUdyIw/84Qr2IpF4m4.jpg?size=1019x1080&quality=95&sign=d861604d5e5dfe19157f9c89d8183703&type=album',
+        # 'https://sun9-36.userapi.com/impg/9tdcKJH07hzPZ96FV_aPgUoYgX8k5v2G7BirBw/JJTQMXv2y0Q.jpg?size=993x1080&quality=95&sign=7c3da2c29397da7ddeab33744958a5ef&type=album',
+        # 'https://sun9-19.userapi.com/impg/9Y2r2ZISa9pQYSYnpF2ljzB0oV_h4wrzmNdtvg/4kV3QEFpIxI.jpg?size=951x1080&quality=95&sign=fb9165b8fffaa5fae1b38405a2d8e20c&type=album',
+        # 'https://sun9-73.userapi.com/impg/ydnA_1AFrV59F3Ip9AYdkE-c9Subo4GFBhFUvQ/UGTdI0BZyTc.jpg?size=1280x1168&quality=95&sign=2db9e8b87b5b6a4e3189bf8fda848fe7&type=album',
+        'https://sun9-30.userapi.com/impg/JXbB_lHjyAkiHKHZetzw9F7N6D3ZMQeyHazJbQ/-mwFlPHn0P8.jpg?size=1280x853&quality=95&sign=463fed56f999b612e89742689f68e415&type=album',
+        'https://sun9-74.userapi.com/impg/8O1eS5AOtnpRCnf1rpwswCEguGVLr8YdOGjq1A/L7Y_9jJob8Q.jpg?size=1280x853&quality=95&sign=4a5b3430d33ab6007cc840bfd2985df0&type=album',
+        'https://sun9-7.userapi.com/impg/bioaZB-lSCF_CLJMPy3ckc94ERzho43lyDfnaw/ijoOKi32a_s.jpg?size=1280x853&quality=95&sign=450f88fead938f2e960c0f434e5c3b87&type=album',
+        'https://sun9-64.userapi.com/impg/7kyn97Z9L6VcAqrBaUzX1Jt30hsvwv19edhPYw/2_8KhXpyhBQ.jpg?size=1280x853&quality=95&sign=a06ab877bd174edf33e39f12bfa10c3f&type=album',
+        'https://sun9-40.userapi.com/impg/TZhlDE8898MNxvV28TmhP2wlYBUNRWR-T-4XDA/JPl49TZduSs.jpg?size=1280x853&quality=95&sign=1bb558d3b173544be5da174d10a1312e&type=album',
+        'https://sun9-56.userapi.com/impg/X_0G_Xto5BVFWUVLNF9B3crhq6op9M0g8qspLw/YlpwkBOFo9E.jpg?size=1280x853&quality=95&sign=0d1f7d9c8e15c08bdd5d07af9c5f092d&type=album',
+        'https://sun9-35.userapi.com/impg/-m-387O42RW0y_JeaaKsuvWalcI_bUJ_YaPlnA/ZwQbBH-jnzw.jpg?size=1280x853&quality=95&sign=13b21fe2c7771f907f1ce4a0913d3b36&type=album',
+        'https://sun9-80.userapi.com/impg/6ux8BRhr5Lsc5vitkJ7olL25hamnM8Qn88Mlog/6-XHwX5mt2c.jpg?size=1280x1091&quality=95&sign=8204d7b3fcfad89a55948b141dc6838b&type=album',
+        'https://sun9-6.userapi.com/impg/5zTP6p4L6gK_cNgB-A_RAU6IQrmtCqPZPXdGVw/O_TsfG7tRqs.jpg?size=1280x853&quality=95&sign=6611285e6980edb9022b528ca8ad9706&type=album',
+    ]
+
+    context={
+        'title': 'Индексная страница', 
+        'links': links,
+    }
+
+    return render(request, 'user_app/index.html', context=context)
 
 
 @login_required()
