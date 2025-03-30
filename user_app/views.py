@@ -92,7 +92,7 @@ def user_test_new_format(request, user_test_id):
 
 def index(request):
     links = [
-        'https://sun9-75.userapi.com/impg/nKbCtYcTpQzvuUZOvbH-dGqHhJGt_W87WdnaOw/_hpU7o1XIIw.jpg?size=906x599&quality=95&sign=e73c7d8594ac5e9ec5e1a8aed56a093b&type=album',
+        # 'https://sun9-75.userapi.com/impg/nKbCtYcTpQzvuUZOvbH-dGqHhJGt_W87WdnaOw/_hpU7o1XIIw.jpg?size=906x599&quality=95&sign=e73c7d8594ac5e9ec5e1a8aed56a093b&type=album',
         # 'https://sun9-6.userapi.com/impg/RVQV5l3LJS-B7DpGKKt5kjNwMCjdhKZ2PDgSfQ/xKHd2IGitq4.jpg?size=868x1080&quality=95&sign=8448d5d8b88329a4a2062904bfc415ba&type=album',
         # 'https://sun9-40.userapi.com/impg/oNabCu1WXHtDqfXniAyekXObx4-BxnvabUdyIw/84Qr2IpF4m4.jpg?size=1019x1080&quality=95&sign=d861604d5e5dfe19157f9c89d8183703&type=album',
         # 'https://sun9-36.userapi.com/impg/9tdcKJH07hzPZ96FV_aPgUoYgX8k5v2G7BirBw/JJTQMXv2y0Q.jpg?size=993x1080&quality=95&sign=7c3da2c29397da7ddeab33744958a5ef&type=album',

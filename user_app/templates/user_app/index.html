@@ -79,11 +79,10 @@
 {% block main %}
 <div class="container text-center">
     <h1 class="">Index</h1>
-    <p>Interesting Fact: SCV - School Vlad. The first two letters of the word "school" and the first letter of the developer's name are taken here.</p>
 </div>
 
 {% if links %}
-<div class="glide">
+<div class="glide mt-3">
     <div class="glide__track" data-glide-el="track">
       <ul class="glide__slides">
         {% for link in links %}
@@ -113,6 +112,50 @@
     });
   </script>
 {% endif %}
-  
+
 <div style="height: 100px;"></div>
+<div class="text-muted text-center">
+    <p>Interesting Fact: SCV - School Vlad. The first two letters of the word "school" and the first letter of the developer's name are taken here.</p>
+</div>
+{% endblock %}
+
+
+{% block footer %}
+<footer class="my-5 pt-5 text-body-secondary text-center text-small">
+    <hr>
+    <p class="mb-1">Copyright © 2024-2025 Vladislav Gnom</p>
+    <div class="h6 mt-4">О багах и проблемах писать сюда:</div>
+    <ul class="list-inline">
+      <li class="list-inline-item">
+        <a href="https://t.me/Vladislav_5367" target="_blank">
+        <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+        <svg width="24px" height="24px" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="16" cy="16" r="14" fill="url(#paint0_linear_87_7225)"/>
+        <path d="M22.9866 10.2088C23.1112 9.40332 22.3454 8.76755 21.6292 9.082L7.36482 15.3448C6.85123 15.5703 6.8888 16.3483 7.42147 16.5179L10.3631 17.4547C10.9246 17.6335 11.5325 17.541 12.0228 17.2023L18.655 12.6203C18.855 12.4821 19.073 12.7665 18.9021 12.9426L14.1281 17.8646C13.665 18.3421 13.7569 19.1512 14.314 19.5005L19.659 22.8523C20.2585 23.2282 21.0297 22.8506 21.1418 22.1261L22.9866 10.2088Z" fill="white"/>
+        <defs>
+        <linearGradient id="paint0_linear_87_7225" x1="16" y1="2" x2="16" y2="30" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#37BBFE"/>
+        <stop offset="1" stop-color="#007DBB"/>
+        </linearGradient>
+        </defs>
+        </svg>
+        </a>
+      </li>
+      <li class="list-inline-item">
+        <a href="mailto:vladfatov1054@gmail.com?subject=Вопрос&body=Здравствуйте, хочу спросить..." target="_blank">
+            <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+            <svg fill="#000000" width="24px" height="24px" viewBox="0 0 24 24" id="email" data-name="Line Color" xmlns="http://www.w3.org/2000/svg" class="icon line-color"><rect id="primary" x="3" y="5" width="18" height="14" rx="1" style="fill: none; stroke: rgb(0, 0, 0); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></rect><path id="secondary" d="M20.62,5.22l-8,6.29a1,1,0,0,1-1.24,0l-8-6.29A1,1,0,0,1,4,5H20A1,1,0,0,1,20.62,5.22Z" style="fill: none; stroke: rgb(44, 169, 188); stroke-linecap: round; stroke-linejoin: round; stroke-width: 2;"></path></svg>
+        </a>
+      </li>
+      <li class="list-inline-item">
+        <a href="https://vk.com/vladfatov" target="_blank">
+            <?xml version="1.0" encoding="utf-8"?><!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+            <svg width="24px" height="24px" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="512" cy="512" r="512" style="fill:#2787f5"/>
+            <path d="M585.83 271.5H438.17c-134.76 0-166.67 31.91-166.67 166.67v147.66c0 134.76 31.91 166.67 166.67 166.67h147.66c134.76 0 166.67-31.91 166.67-166.67V438.17c0-134.76-32.25-166.67-166.67-166.67zm74 343.18h-35c-13.24 0-17.31-10.52-41.07-34.62-20.71-20-29.87-22.74-35-22.74-7.13 0-9.17 2-9.17 11.88v31.57c0 8.49-2.72 13.58-25.12 13.58-37 0-78.07-22.4-106.93-64.16-43.45-61.1-55.33-106.93-55.33-116.43 0-5.09 2-9.84 11.88-9.84h35c8.83 0 12.22 4.07 15.61 13.58 17.31 49.9 46.17 93.69 58 93.69 4.41 0 6.45-2 6.45-13.24v-51.6c-1.36-23.76-13.92-25.8-13.92-34.28 0-4.07 3.39-8.15 8.83-8.15h55c7.47 0 10.18 4.07 10.18 12.9v69.58c0 7.47 3.39 10.18 5.43 10.18 4.41 0 8.15-2.72 16.29-10.86 25.12-28.17 43.11-71.62 43.11-71.62 2.38-5.09 6.45-9.84 15.28-9.84h35c10.52 0 12.9 5.43 10.52 12.9-4.41 20.37-47.18 80.79-47.18 80.79-3.73 6.11-5.09 8.83 0 15.61 3.73 5.09 16 15.61 24.1 25.12 14.94 17 26.48 31.23 29.53 41.07 3.45 9.84-1.65 14.93-11.49 14.93z" style="fill:#fff"/>
+            </svg>
+        </a>
+      </li>
+    </ul>
+</footer>
 {% endblock %}
