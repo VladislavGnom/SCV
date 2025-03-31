@@ -463,7 +463,6 @@ def show_tests_user_profile(request: HttpRequest):
             count_of_questions_list.append(len(ast.literal_eval(test.tasks_id)))
         else: 
             # данные для варианта берутся на основе производной модели TestNewFormat
-            # TODO: заменить на выборку по ID вместо названия(i have fixed already)
             count_of_questions_list.append(TestNewFormat.objects.get(title=test.title).number_of_inputs)
 
     data_tests_of_user = zip(all_tests_of_user, count_of_questions_list)
