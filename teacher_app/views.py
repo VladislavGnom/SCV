@@ -53,7 +53,6 @@ def tests_page(request):
 @login_required()
 def add_task(request):
     if request.method == "POST":
-        print(request.POST)
         form = TaskForm(request.POST, request.FILES)
         form_answer = AnswerForm(request.POST)
         if form.is_valid() and form_answer.is_valid():
@@ -81,7 +80,6 @@ def add_task(request):
     else:
         form = TaskForm()
         form_answer = AnswerForm()
-    # print(TASK_CHOICES_SUBJECT_PARENT)
 
     context = {
         'title': 'Добавление задания',
@@ -115,7 +113,6 @@ def add_task_subject(request,  subject_main_id):
     page_obj = paginator.get_page(page_number)
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
@@ -129,7 +126,6 @@ def add_task_subject(request,  subject_main_id):
 def add_task_subject_parents(request, subject_main_id, subject_parent_id):
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_parent_id': subject_parent_id,
@@ -145,7 +141,6 @@ def add_task_subject_parents(request, subject_main_id, subject_parent_id):
 def add_task_subject_children(request, subject_main_id, subject_parent_id, subject_children_id):
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_parent_id': subject_parent_id,
@@ -153,8 +148,6 @@ def add_task_subject_children(request, subject_main_id, subject_parent_id, subje
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
         'subject_parent_name': SubjectParents.objects.get(pk=subject_parent_id).subject_parent_name,
         'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
-        # 'questions': Question.objects.filter(Q(subject_child_id=subject_children_id) | Q(subject_id=subject_main_id) | Q(subject_parent_id=subject_parent_id)),
-        # 'questions': (Question.objects.filter(subject_child_id=subject_children_id) or (Question.objects.filter(Q(subject_parent_id=subject_parent_id) | Q(subject_id=subject_main_id)))),
         'questions': (Question.objects.filter(subject_child_id=subject_children_id, enabled=1).order_by('-time_create') or (Question.objects.filter(Q(subject_parent_id=subject_parent_id, enabled=1)).order_by('-time_create'))),
     }
     
@@ -186,7 +179,6 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
     answers_count = Answer.objects.filter(question_id=question_id).aggregate(count=Count("answer_text"))['count']
     
     is_warning_task = False
-    print(f'{answers_count}')
 
     # check if task is warning
     if answers_count > 1:
@@ -195,7 +187,6 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
     filename = extract_filename_substring(question.question_text),
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_parent_id': subject_parent_id,
@@ -209,18 +200,8 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
     
         'is_warning_task': is_warning_task,
     }
-    #request.COOKIES['info'] = 'kkk'
-    # request.COOKIES['tasks'].append('11')
-    #request.session['tasks'] = [111]
-    print([i for i in question.question_text.split()])
 
     return render(request, "teacher_app/add_test.html", context=context)
-
-
-# @login_required
-# def add_question_to_task_list(request):
-#     request.COOKIES['tasks'].append('11')
-#     return
 
 
 @login_required
@@ -256,7 +237,6 @@ def add_task_question_safe(request, subject_main_id, question_id):
 
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'question_id': question_id,
@@ -264,7 +244,6 @@ def add_task_question_safe(request, subject_main_id, question_id):
         'question': question,
         'filename': question.question_text,
         'text_task': clean_html(" ".join([i for i in question.question_text.split() if i != question.question_text])),
-    
         'is_warning_task': is_warning_task,
     }
 
@@ -326,8 +305,6 @@ def show_result_detail(request, class_id, title):
     # тесты пользователей соответсвующие одному названию теста и разным пользователям входящих в эту группу
     usertests = UserTest.objects.filter(title=title.replace('\\', '/'), user_id__in=users_id)
 
-    print(title)
-    print(title.replace('\\', '/'))
     # отбираю записи из таблицы Test по названию и получаю строковое представление списка номеров заданий и с помощью функции ast.literal_eval() преобразую эту строку в список, а затем узнаю кол-во элеменотов с помощью len() 
     try:
         count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
@@ -360,8 +337,6 @@ def show_result_detail(request, class_id, title):
     # применяем стили к таблице
     restyles_excel_file(filename=filename)
 
-    print(filename.replace('\\', '%5c'))
-
     # один из пользователь входящих в конкретную группу
     first_user = get_users_in_group(class_id)[0]
     user_group = get_user_groups(first_user)[0]
@@ -378,6 +353,7 @@ def show_result_detail(request, class_id, title):
 
     return render(request, 'teacher_app/show_result_detail.html', context=context)
 
+
 # NEW UPDATE
 # ---------------------------------------
 @login_required
@@ -392,15 +368,9 @@ def add_test_new_format_view(request: HttpRequest):
         file_with_tasks = files.get('file_with_tasks')
         input_with_number_task = data.getlist('input_with_number_task')
 
-        # input_with_answer = data.get('input_with_answer')
-
         # preparation
         # ---------------------------------------------
         number_of_inputs = len(input_with_number_task)
-        # BASE_DIR = settings.BASE_DIR
-        # with open(os.path.join(BASE_DIR, f'media/files_with_answers/{title_test}-answers.txt'), 'w') as file: 
-        #     for ans in input_with_answer:
-        #         file.write(ans + '\n')
             
         # ---------------------------------------------
         # file with answers

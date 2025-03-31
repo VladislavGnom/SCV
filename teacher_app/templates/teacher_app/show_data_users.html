@@ -29,14 +29,10 @@
     </table>
     </ul>
     {% else %}
-    <h2>Пока нет тестов</h2>
+    <h2>Данные отсутствуют</h2>
     {% endif %}
-    
-    <div class="text-center">
-        <hr>
-        <a href="{% url 'show-user-images' class_id %}">Изображения класса</a>
-    </div>
 </div>
+<div style="height: 100px;"></div>
 
 <script>
     let user_number_elems = document.getElementsByClassName('user-number');

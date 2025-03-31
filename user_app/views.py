@@ -35,8 +35,6 @@ def user_test(request, user_test_id):
         request.session['saved_answers'] = request.COOKIES.get('saved_answers')
     else:
         request.session['saved_answers'] = {}
-
-    # print(json.loads([i[14:] for i in request.META.get('HTTP_COOKIE').split('; ') if i.startswith("saved_answers=")][0]))
     
     gen_tasks_for_type = list(map(str_to_int, ast.literal_eval(test.tasks_id)))
     
@@ -92,12 +90,6 @@ def user_test_new_format(request, user_test_id):
 
 def index(request):
     links = [
-        # 'https://sun9-75.userapi.com/impg/nKbCtYcTpQzvuUZOvbH-dGqHhJGt_W87WdnaOw/_hpU7o1XIIw.jpg?size=906x599&quality=95&sign=e73c7d8594ac5e9ec5e1a8aed56a093b&type=album',
-        # 'https://sun9-6.userapi.com/impg/RVQV5l3LJS-B7DpGKKt5kjNwMCjdhKZ2PDgSfQ/xKHd2IGitq4.jpg?size=868x1080&quality=95&sign=8448d5d8b88329a4a2062904bfc415ba&type=album',
-        # 'https://sun9-40.userapi.com/impg/oNabCu1WXHtDqfXniAyekXObx4-BxnvabUdyIw/84Qr2IpF4m4.jpg?size=1019x1080&quality=95&sign=d861604d5e5dfe19157f9c89d8183703&type=album',
-        # 'https://sun9-36.userapi.com/impg/9tdcKJH07hzPZ96FV_aPgUoYgX8k5v2G7BirBw/JJTQMXv2y0Q.jpg?size=993x1080&quality=95&sign=7c3da2c29397da7ddeab33744958a5ef&type=album',
-        # 'https://sun9-19.userapi.com/impg/9Y2r2ZISa9pQYSYnpF2ljzB0oV_h4wrzmNdtvg/4kV3QEFpIxI.jpg?size=951x1080&quality=95&sign=fb9165b8fffaa5fae1b38405a2d8e20c&type=album',
-        # 'https://sun9-73.userapi.com/impg/ydnA_1AFrV59F3Ip9AYdkE-c9Subo4GFBhFUvQ/UGTdI0BZyTc.jpg?size=1280x1168&quality=95&sign=2db9e8b87b5b6a4e3189bf8fda848fe7&type=album',
         'https://sun9-30.userapi.com/impg/JXbB_lHjyAkiHKHZetzw9F7N6D3ZMQeyHazJbQ/-mwFlPHn0P8.jpg?size=1280x853&quality=95&sign=463fed56f999b612e89742689f68e415&type=album',
         'https://sun9-74.userapi.com/impg/8O1eS5AOtnpRCnf1rpwswCEguGVLr8YdOGjq1A/L7Y_9jJob8Q.jpg?size=1280x853&quality=95&sign=4a5b3430d33ab6007cc840bfd2985df0&type=album',
         'https://sun9-7.userapi.com/impg/bioaZB-lSCF_CLJMPy3ckc94ERzho43lyDfnaw/ijoOKi32a_s.jpg?size=1280x853&quality=95&sign=450f88fead938f2e960c0f434e5c3b87&type=album',
@@ -185,9 +177,6 @@ def scv_home(request):
             # форма для загрузки фото
             form = ImageForm()
 
-            # # тесты пользователя (сгенерированные)
-            # data = UserTest.objects.filter(user=request.user)
-
             # усли нет сгенерированных тестов для пользователя, то генерируем их
             if not data:
                 # генерация варианта, перебираем список состоящий из списков типов заданий 
@@ -225,8 +214,6 @@ def scv_home(request):
                 'completed_usertests': completed_usertests,
                 }
         
-        # print(f'{Answer.objects.get(question_id=290).answer_text=}')
-        
         return render(request, 'user_app/scv_home.html', context=context)
     
 
@@ -239,7 +226,6 @@ def show_result(request):
         data = dict(request.POST)
 
         # get data from frontend js
-        # data_answers = json.loads(request.session['saved_answers'])
         if data.get('json-data-answers')    :
             data_answers = json.loads(data['json-data-answers'][0])
         else:
@@ -384,10 +370,6 @@ def show_result(request):
             return render(request, 'user_app/show_result.html', context=context) 
     else:
         return redirect('scv-home')
-    
-@login_required()
-def show_result_test_new_format(request):
-    ...
 
 
 @login_required()
@@ -447,6 +429,7 @@ def refresh_func(request):
 
     return redirect('scv-home')
 
+
 @login_required()
 def profile(request: HttpRequest):
     data = CustomUser.objects.get(username=request.user)
@@ -466,6 +449,7 @@ def profile(request: HttpRequest):
         return render(request, 'teacher_app/profile_teach.html', context=context)
     else:
         return render(request, 'user_app/profile.html', context=context)
+
 
 @login_required
 def show_tests_user_profile(request: HttpRequest):
