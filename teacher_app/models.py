@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 
 
 class TestNewFormat(models.Model):
-    title = models.CharField(max_length=255, verbose_name="Название теста")
+    title = models.CharField(max_length=255, verbose_name="Название теста", unique=True)
     group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="Группа")
     file_with_tasks = models.FileField(upload_to='files_with_tasks', max_length=254, verbose_name="Файл с заданиями")
     number_of_inputs = models.IntegerField(verbose_name="Кол-во полей ввода в тесте")

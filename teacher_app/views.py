@@ -310,7 +310,7 @@ def show_result_detail(request, class_id, title):
         count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
     except Test.DoesNotExist as error:
         # данные для варианта берутся на основе производной модели TestNewFormat
-        # TODO: заменить на выборку по ID вместо названия
+        # TODO: заменить на выборку по ID вместо названия(i have fixed already)
         count_tasks = TestNewFormat.objects.get(title=title.replace('\\', '/')).number_of_inputs
 
     from utils.utils import create_excel_table, restyles_excel_file
