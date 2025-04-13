@@ -8,6 +8,8 @@
     Ученик: {{ data.first_name }} {{ data.last_name }}<br>
     Класс: {{ group.name }}
     <hr>
+    <a href="{% url 'show-tests-user-profile' %}" class="alert-link">Активность</a>
+    <hr>
     <form action="{% url 'logout' %}" method="post">
         {% csrf_token %}
         <div class="block">

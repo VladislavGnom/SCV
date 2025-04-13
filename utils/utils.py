@@ -1,6 +1,8 @@
 import re
 from openpyxl import load_workbook
 from openpyxl.styles import Alignment, Font, PatternFill, Border, Side
+from django.contrib.auth.models import Group
+from django.core.exceptions import ObjectDoesNotExist
 
 def extract_filename_substring(input_string):
     # Шаблон для имени файла: допустим, это имя файла с расширением
@@ -123,3 +125,19 @@ def restyles_excel_file(filename: str, sheet_name: str = 'Sheet1'):
     # Сохраняем изменения
     wb.save(filepath)
 
+def get_group_by_name(name_of_group: str) -> Group | None:
+    try:
+        group = Group.objects.get(name=name_of_group)
+        return group 
+    except ObjectDoesNotExist as exc:
+        return None
+
+# -------------------- USER APP ---------------
+# help function 
+# отбирает все группы в которые входит пользователь, который был передан как аргумент
+def get_user_groups(user):
+    return [group.id for group in user.groups.all()]
+
+
+def str_to_int(obj):
+    return int(obj)

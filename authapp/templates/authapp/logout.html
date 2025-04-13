@@ -6,4 +6,24 @@
     <h1>Вы вышли из профиля!</h1>
 </div>
 
+<div id="show-information" class="container text-center">
+    Вы будете перенаправлены на главную страницу через <span id="span-info">...</span> 
+</div>
+
+<script>
+    let SECOND_WAIT_LIMIT = 3;
+    let show_information_el = document.getElementById('show-information');
+    let span_elem = document.getElementById('span-info');
+    
+    for (let i = SECOND_WAIT_LIMIT; i > 0; i--) {
+        setTimeout(() => {
+            span_elem.textContent = `${SECOND_WAIT_LIMIT + 1 - i}...`;
+        }, i * 1000);
+    }
+
+    setTimeout(() => {
+            document.location.href = '/'
+        }, (SECOND_WAIT_LIMIT + 1) * 1000);
+</script>
+
 {% endblock %}

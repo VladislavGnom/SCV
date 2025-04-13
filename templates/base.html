@@ -5,9 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    
+    {% block head %}{% endblock %}
+
     <!-- Pop up message (modal window) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!--        LIGHTBOX - START       -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightbox2@2.11.5/dist/css/lightbox.min.css">
+    <!--        LIGHTBOX - END         -->
+
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    
     <title>{% if title %}{{ title }}{% else %}Undefinded{% endif %}</title>
 </head>
 <body>
@@ -42,5 +51,111 @@
     <!-- Themes pop up -->
     <!-- <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-borderless@4/borderless.css" rel="stylesheet"> -->
     <!-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script> -->
+    <!-- jQuery (Должен быть подключен перед Lightbox) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightbox2@2.11.5/dist/js/lightbox.min.js"></script>
+
+    <!-- Process Showing Images -->
+    <script>
+    $(document).ready(function(){
+        let next_arrow = document.getElementsByClassName('lb-next')[0];
+        let prev_arrow = document.getElementsByClassName('lb-prev')[0];
+        let close_button = document.getElementsByClassName('lb-close')[0];
+        next_arrow.style = 'width: 100px';
+        prev_arrow.style = 'width: 100px';
+
+        let images = document.getElementsByClassName('lb-container');
+
+        function resetZoomOptions(img) {
+            isZoomed = false;
+            img.style.transform = "scale(1)";
+            img.style.left = "0";
+            img.style.top = "0";
+            img.classList.remove("zoomed");
+        }
+
+        next_arrow.onclick = function() {
+            for (let img of images) {
+                resetZoomOptions(img);
+            }
+        }
+
+        prev_arrow.onclick = function() {
+            for (let img of images) {
+                resetZoomOptions(img);
+            }
+        }
+
+        close_button.onclick = function() {
+            for (let img of images) {
+                resetZoomOptions(img);
+            }
+        }
+
+        document.addEventListener("keydown", function(e) {
+            if (e.code === "Escape") {
+                for (let img of images) {
+                    resetZoomOptions(img);
+                } 
+            }
+        })
+        
+        // zoom functional 
+        let isZoomed = false;
+        let isDragging = false;
+        let startX, startY, imgX = 0, imgY = 0;
+
+        for (let img of images) {
+            // Увеличение изображения в точку клика
+            img.addEventListener("click", function(e) {
+                if (isZoomed) return; // Если уже увеличено, не увеличиваем снова
+
+                isZoomed = true;
+                img.classList.add("zoomed");
+
+                const scaleFactor = 2; // Коэффициент увеличения
+                const rect = img.getBoundingClientRect();
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+
+                const newX = -(offsetX * (scaleFactor - 1)); // Смещение по X
+                const newY = -(offsetY * (scaleFactor - 1)); // Смещение по Y
+
+                img.style.transform = `scale(${scaleFactor})`;
+                img.style.left = `${newX}px`;
+                img.style.top = `${newY}px`;
+            })
+            // Перетаскивание изображения после увеличения
+            img.addEventListener("mousedown", function(e) {
+                if (!isZoomed) return;
+                isDragging = true;
+                startX = e.clientX - imgX;
+                startY = e.clientY - imgY;
+                img.style.cursor = "grabbing";
+            })
+
+            img.addEventListener("mousemove", function(e) {
+                if (!isDragging) return;
+                imgX = e.clientX - startX;
+                imgY = e.clientY - startY;
+                img.style.left = `${imgX}px`;
+                img.style.top = `${imgY}px`;
+            })
+
+            img.addEventListener("mouseup", function(e) {
+                isDragging = false;
+                img.style.cursor = "grab";
+            })
+            // Сброс на двойной клик
+            img.addEventListener("dblclick", function(e) {
+                resetZoomOptions(img)
+            })
+        }
+    });
+    
+    </script>
+
+{% block footer %}
+{% endblock %}
 </body>
 </html>

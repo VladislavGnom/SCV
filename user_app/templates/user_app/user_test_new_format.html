@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% load remove_backslashes %}
+
+{% block main %}
+<script>
+    // del coockie func
+    function eraseCookie(name) {
+        document.cookie = name + '=; Max-Age=0';
+    }
+    
+    // process clear coockie when user come in first time
+    let params = (new URL(document.location)).searchParams; 
+    is_open = params.get("open");
+    if (is_open) {
+        eraseCookie('saved_answers');
+    }
+</script>
+<div class="container">
+    <div class="text-center h2">{{ title_test }}</div>
+
+    <!-- FILES FOR TEST -->
+    <hr>
+    <div class="">
+        <div class="h4">Файл с заданиями</div>
+        <a download href="https://{{ request.get_host }}/media/{{ file_with_tasks }}">ФАЙЛ-{{ file_with_tasks_filename }}</a>
+    </div>
+    <hr>
+    <div class="">
+        <div class="h4">Файлы для выполнения заданий</div>
+        {% for help_file in file_for_done_tasks %}
+            <a download href="https://{{ request.get_host }}{{ help_file.file.url }}">ФАЙЛ-{{ help_file.filename }}</a>
+        {% endfor %}
+    </div>
+    <hr>
+    <!-- -------------- -->
+
+    <form id="form-request" action="{% url 'show-result' %}" method="post" class="mt-3">
+
+        <input name="{{ title }}" class="d-none">
+        {% csrf_token %}
+        {% for i, number_of_input in input_with_number_task %}
+            <div>
+            <div class="multi text-center">
+                <div id="task-div-{{ i }}">
+                </div>
+            </div>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <input type="text" readonly="true" style="width: 29px; height: 29px;" value="{{ number_of_input }}">
+                <input id="task-id-{{ i }}" name="task-id-{{ i }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
+            </div>
+            <hr>
+        {% endfor %}
+            <input type="text" style="display: none;" name="json-data-answers" id="json-data-answers">
+            <div style="display: flex; justify-content: center;">
+                <button type="submit" class="btn-header-default mb-5" style="width: 90%;" id="save-user-answer">Загрузить ответы</button>
+            </div>
+        </form>
+</div>
+<script>
+    let number_of_inputs = JSON.parse("{{ number_of_inputs_for_js|safe }}");
+
+    // get coockie func
+    function getCookie(name) {
+        let cookie = document.cookie.split('; ').find(row => row.startsWith(name + '='));
+        return cookie ? cookie.split('=')[1] : null;
+    }
+
+    function saveAnswer() {
+        for (let id_input_answer of number_of_inputs) {
+            // get answer into input tag
+            var input_answer = document.getElementById(`task-id-${id_input_answer}`);
+
+            let saved_answers = getCookie('saved_answers');
+            saved_answers = JSON.parse(saved_answers);
+            saved_answers[id_input_answer] = input_answer.value;
+            document.cookie = `saved_answers=${JSON.stringify(saved_answers)}`;  
+        }
+    }
+
+    if (!getCookie('saved_answers')) {
+        console.log('create coockie')
+        document.cookie = `saved_answers={}`;
+    }
+
+    let btn_user_answer = document.getElementById("save-user-answer");
+
+
+    document.getElementById('form-request').addEventListener('submit', function(event) {
+        event.preventDefault(); 
+
+        document.getElementsByTagName('html')[0].focus();
+        
+        // saving answer
+        saveAnswer();
+        // save data to server 
+        document.getElementById('json-data-answers').value = getCookie('saved_answers');
+        this.submit();
+    });
+
+</script>
+{% endblock %}

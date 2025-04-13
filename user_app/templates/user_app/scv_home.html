@@ -3,6 +3,7 @@
 {% load remove_backslashes %}
 
 {% block main %}
+
 <h1 class="text-center">SCV Home</h1>
 
 
@@ -35,7 +36,9 @@
         <div class="card-body">
             {% if images %}
                 {% for image in images %}
-                    <a href="{{ image.image.url }}"><img src="{{ image.image.url }}" alt="connect" style="max-height:100px"></a>
+                    <a href="{{ image.image.url }}" data-lightbox="gallery" data-title="{{ image.title }}">
+                        <img src="{{ image.image.url }}" alt="connect" style="max-height:100px" class="user-image">
+                    </a>
                 {% endfor %}
             {% else %}
                 <div class="h3">Нет загруженных файлов</div>
@@ -72,7 +75,7 @@
 </div>
 
 <div class="container">
-    {% if tasks %}
+    {% if merge_title_and_task %}
         {% for title, usertest in merge_title_and_task %}
             <div class="card mt-5">
                 <div class="h3 text-center mt-3">{{ title }}</div>

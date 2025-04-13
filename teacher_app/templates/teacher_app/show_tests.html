@@ -1,24 +1,37 @@
 {% extends 'base-special.html' %}
 
 {% block main %}
-<h1>Все тесты:</h1>
+<div class="h3">{{ class_name }}<div>
+<div class="h3 mb-3">Все тесты:</div>
 
 {% if tests %}
-<ul>
-{% for test in tests %}
-    <table class="table">
-        <thead>
-            <tr>
-                <td class="text-center">
-                    <a href="{% url 'show-result-detail' class_id test %}">{{ test }}</a>
-                </td>
-            </tr>
-        </thead>
-    </table>
-{% endfor %}
-</ul>
-{% else %}
-<h2>Пока нет тестов</h2>
-{% endif %}
+<div style="text-align: center;">
+    <ul style="display: inline-block; padding: 0; margin: 0;">
+    {% for test in tests %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <td class="text-center">
+                        <a href="{% url 'show-result-detail' class_id test %}">{{ test }}</a>
+                    </td>
+                </tr>
+            </thead>
+        </table>
+    {% endfor %}
+    </ul>
+    {% else %}
+    <h2>Пока нет тестов</h2>
+    {% endif %}
+    
+    <div class="text-center">
+        <hr>
+        <a href="{% url 'show-user-images' class_id %}">Изображения класса</a>
+    </div>
+    <div class="text-center">
+        <hr>
+        <a href="{% url 'show-data-users' class_id %}">Данные о классе</a>
+    </div>
+</div>
+
 
 {% endblock %}

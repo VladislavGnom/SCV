@@ -8,6 +8,7 @@ class Image(models.Model):
     title = models.CharField(max_length=200, blank=True)
     image = models.ImageField(upload_to='images')
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE, verbose_name="Группа")
 
     def __str__(self):
         return self.title
@@ -54,7 +55,7 @@ class Test(models.Model):
 class UserTest(models.Model):
     title = models.CharField(max_length=255)
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
-    tasks_id = models.CharField(max_length=255)
+    tasks_id = models.CharField(max_length=255, null=True, blank=True)
     is_complete = models.BooleanField(default=False)
     right_answers = models.IntegerField(blank=True, default=0)
     number_of_attempts = models.IntegerField(blank=True, default=1)
@@ -144,3 +145,4 @@ class Answer(models.Model):
 
 class CustomUser(AbstractUser):
     open_password = models.CharField(max_length=255, verbose_name='Пароль')
+    

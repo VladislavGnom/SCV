@@ -1,18 +1,22 @@
+import os
 import ast
 from django.shortcuts import render, redirect
+from django.http import HttpRequest
 from teacher_app.forms import TaskForm, TestForm, AnswerForm
-from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer
+from user_app.models import Test, UserTest, SubjectMain, SubjectParents, SubjectChildren, Question, Answer, Image, CustomUser
 from django.contrib.auth.models import Group
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Count
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 
 from django.core.paginator import Paginator
 
-from utils.utils import extract_filename_substring, clean_html
+from utils.utils import extract_filename_substring, clean_html, get_group_by_name, get_user_groups
 
 from .forms import TASK_CHOICES_SUBJECT, TASK_CHOICES_SUBJECT_PARENT, TASK_CHOICES_SUBJECT_CHILD
+from .models import TestNewFormat, FilesForTestModel
 
 #------------------Teachers Functional----------------------#
 
@@ -49,7 +53,6 @@ def tests_page(request):
 @login_required()
 def add_task(request):
     if request.method == "POST":
-        print(request.POST)
         form = TaskForm(request.POST, request.FILES)
         form_answer = AnswerForm(request.POST)
         if form.is_valid() and form_answer.is_valid():
@@ -77,7 +80,6 @@ def add_task(request):
     else:
         form = TaskForm()
         form_answer = AnswerForm()
-    # print(TASK_CHOICES_SUBJECT_PARENT)
 
     context = {
         'title': 'Добавление задания',
@@ -111,7 +113,6 @@ def add_task_subject(request,  subject_main_id):
     page_obj = paginator.get_page(page_number)
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
@@ -125,7 +126,6 @@ def add_task_subject(request,  subject_main_id):
 def add_task_subject_parents(request, subject_main_id, subject_parent_id):
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_parent_id': subject_parent_id,
@@ -141,7 +141,6 @@ def add_task_subject_parents(request, subject_main_id, subject_parent_id):
 def add_task_subject_children(request, subject_main_id, subject_parent_id, subject_children_id):
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_parent_id': subject_parent_id,
@@ -149,8 +148,6 @@ def add_task_subject_children(request, subject_main_id, subject_parent_id, subje
         'subject_main_name': SubjectMain.objects.get(pk=subject_main_id).subject_main_name,
         'subject_parent_name': SubjectParents.objects.get(pk=subject_parent_id).subject_parent_name,
         'subject_children_name': SubjectChildren.objects.get(pk=subject_children_id).subject_child_name,
-        # 'questions': Question.objects.filter(Q(subject_child_id=subject_children_id) | Q(subject_id=subject_main_id) | Q(subject_parent_id=subject_parent_id)),
-        # 'questions': (Question.objects.filter(subject_child_id=subject_children_id) or (Question.objects.filter(Q(subject_parent_id=subject_parent_id) | Q(subject_id=subject_main_id)))),
         'questions': (Question.objects.filter(subject_child_id=subject_children_id, enabled=1).order_by('-time_create') or (Question.objects.filter(Q(subject_parent_id=subject_parent_id, enabled=1)).order_by('-time_create'))),
     }
     
@@ -182,7 +179,6 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
     answers_count = Answer.objects.filter(question_id=question_id).aggregate(count=Count("answer_text"))['count']
     
     is_warning_task = False
-    print(f'{answers_count}')
 
     # check if task is warning
     if answers_count > 1:
@@ -191,7 +187,6 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
     filename = extract_filename_substring(question.question_text),
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'subject_parent_id': subject_parent_id,
@@ -205,18 +200,8 @@ def add_task_question(request, subject_main_id, subject_parent_id, subject_child
     
         'is_warning_task': is_warning_task,
     }
-    #request.COOKIES['info'] = 'kkk'
-    # request.COOKIES['tasks'].append('11')
-    #request.session['tasks'] = [111]
-    print([i for i in question.question_text.split()])
 
     return render(request, "teacher_app/add_test.html", context=context)
-
-
-# @login_required
-# def add_question_to_task_list(request):
-#     request.COOKIES['tasks'].append('11')
-#     return
 
 
 @login_required
@@ -252,7 +237,6 @@ def add_task_question_safe(request, subject_main_id, question_id):
 
     context = {
         'title': 'Добавление теста',
-        # 'form': form,
         'active_block': 'Добавить к/р',
         'subject_main_id': subject_main_id,
         'question_id': question_id,
@@ -260,7 +244,6 @@ def add_task_question_safe(request, subject_main_id, question_id):
         'question': question,
         'filename': question.question_text,
         'text_task': clean_html(" ".join([i for i in question.question_text.split() if i != question.question_text])),
-    
         'is_warning_task': is_warning_task,
     }
 
@@ -281,14 +264,22 @@ def show_classes(request):
 
 
 @login_required()
-def show_tests(request, class_id):
-    tests = Test.objects.filter(group_id=class_id)
+def show_tests(request: HttpRequest, class_id: int):
+    tests = []
+    [tests.append(test.title) for test in Test.objects.filter(group_id=class_id)]
+    [tests.append(test.title) for test in TestNewFormat.objects.filter(group_id=class_id)]
+    
+    # один из пользователь входящих в конкретную группу
+    first_user = get_users_in_group(class_id)[0]
+    user_group = get_user_groups(first_user)[0]
+    class_name = Group.objects.get(pk=user_group)
 
 
     context = {
         'title': 'Тесты',
-        'tests': [t.title.replace("/", "\\") for t in tests],
+        'tests': [t.replace("/", "\\") for t in tests],
         'class_id': class_id,
+        'class_name': class_name,
         'active_block': 'Мои классы',
     }
 
@@ -314,9 +305,12 @@ def show_result_detail(request, class_id, title):
     # тесты пользователей соответсвующие одному названию теста и разным пользователям входящих в эту группу
     usertests = UserTest.objects.filter(title=title.replace('\\', '/'), user_id__in=users_id)
 
-
     # отбираю записи из таблицы Test по названию и получаю строковое представление списка номеров заданий и с помощью функции ast.literal_eval() преобразую эту строку в список, а затем узнаю кол-во элеменотов с помощью len() 
-    count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
+    try:
+        count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
+    except Test.DoesNotExist as error:
+        # данные для варианта берутся на основе производной модели TestNewFormat
+        count_tasks = TestNewFormat.objects.get(title=title.replace('\\', '/')).number_of_inputs
 
     from utils.utils import create_excel_table, restyles_excel_file
 
@@ -342,13 +336,116 @@ def show_result_detail(request, class_id, title):
     # применяем стили к таблице
     restyles_excel_file(filename=filename)
 
+    # один из пользователь входящих в конкретную группу
+    first_user = get_users_in_group(class_id)[0]
+    user_group = get_user_groups(first_user)[0]
+    class_name = Group.objects.get(pk=user_group)
+
     context = {
         'title': 'Результаты класса',
         'usertests': usertests,
+        'class_name': class_name,
         'count_tasks': count_tasks, 
         'active_block': 'Мои классы',
-        'filename': filename,
+        'filename': filename.replace('\\', '%5c'),
     }
 
     return render(request, 'teacher_app/show_result_detail.html', context=context)
 
+
+# NEW UPDATE
+# ---------------------------------------
+@login_required
+def add_test_new_format_view(request: HttpRequest):
+    groups = Group.objects.all().exclude(name='Администратор')
+    if request.method == "POST":
+        data = request.POST
+        files = request.FILES
+        title_test = data.get('title-test')
+        selected_group = data.get('selected-group')
+        number_of_attempts = data.get('number-of-attempts')
+        file_with_tasks = files.get('file_with_tasks')
+        input_with_number_task = data.getlist('input_with_number_task')
+
+        # preparation
+        # ---------------------------------------------
+        number_of_inputs = len(input_with_number_task)
+            
+        # ---------------------------------------------
+        # file with answers
+        answers_file = request.FILES.get('answers-field')
+
+        # validation 
+        # ---------------------------------------------
+        if selected_group == 'default':
+            messages.error(request, "Вы не заполнили поле c group")
+            return redirect('add-test-new-format')
+        # ---------------------------------------------
+
+        test = TestNewFormat.objects.create(
+            title=title_test,
+            group=get_group_by_name(selected_group),
+            file_with_tasks=file_with_tasks,
+            number_of_inputs=number_of_inputs,
+            file_with_answers=answers_file,
+            number_of_attempts=number_of_attempts,
+            input_with_number_task=input_with_number_task,
+        )
+
+        # -------- SAVE FILES FOR COMPLETING TEST -------------
+        if request.method == 'POST' and files:
+            for file in request.FILES.getlist('file_for_done_tasks'):
+                FilesForTestModel.objects.create(test_new_format=test, file=file)
+        # -----------------------------------------------------
+
+        messages.success(request, "Тест успешно создан!")
+        return redirect('add-test-new-format')
+    else:
+        ...
+
+    context = {
+        'title': 'Тест нового образца - Добавление',
+        'groups': groups,
+    }
+    
+    return render(request, 'teacher_app/add_test_new_format.html', context=context)
+
+# --------------- SHOW USER IMAGES ------------------
+@login_required
+def show_user_images(request: HttpRequest, class_id: int):
+    # один из пользователь входящих в конкретную группу
+    first_user = get_users_in_group(class_id)[0]
+
+    user_group = get_user_groups(first_user)[0]
+    user_images = Image.objects.filter(group=user_group)
+    class_name = Group.objects.get(pk=user_group)
+
+    context = {
+        'title': 'Изображения',
+        'user_images': user_images.order_by('user__username'),
+        'class_id': class_id,
+        'class_name': class_name,
+        'active_block': 'Мои классы',
+    }
+
+    return render(request, 'teacher_app/show_user_images.html', context=context)
+
+# --------------- SHOW DATA OF USERS ------------------
+@login_required
+def show_data_users(request: HttpRequest, class_id: int):
+    # один из пользователь входящих в конкретную группу
+    first_user = get_users_in_group(class_id)[0]
+
+    user_group = get_user_groups(first_user)[0]
+    data_of_users = CustomUser.objects.exclude(is_active=False).filter(groups=user_group)
+    class_name = Group.objects.get(pk=user_group)
+
+    context = { 
+        'title': 'Данные пользователей',
+        'data_of_users': data_of_users,
+        'class_id': class_id,
+        'class_name': class_name,
+        'active_block': 'Мои классы',
+    }
+
+    return render(request, 'teacher_app/show_data_users.html', context=context)
