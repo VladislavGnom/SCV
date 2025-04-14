@@ -2,6 +2,148 @@
 
 {% load remove_backslashes %}
 
+{% block head %}
+  <!-- Bootstrap 4 CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <!-- Шрифты -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Иконки -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --dark-color: #2c3e50;
+      --light-gray: #f8f9fa;
+      --border-color: #dee2e6;
+      --success-color: #2ecc71;
+    }
+    
+    body {
+      background-color: var(--light-gray);
+      font-family: 'Roboto', sans-serif;
+      color: #333;
+    }
+    
+    .test-container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+    
+    .test-header {
+      background-color: var(--dark-color);
+      color: white;
+      padding: 20px;
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 0;
+    }
+    
+    .test-card {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+    }
+    
+    .file-section {
+      padding: 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 0;
+    }
+    
+    .file-icon {
+      font-size: 24px;
+      color: var(--primary-color);
+      margin-right: 15px;
+    }
+    
+    .file-name {
+      font-weight: 500;
+    }
+    
+    .download-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--primary-color);
+      cursor: pointer;
+    }
+    
+    .questions-section {
+      padding: 20px;
+    }
+    
+    .question-item {
+      margin-bottom: 25px;
+    }
+    
+    .question-number {
+      font-weight: 500;
+      color: var(--dark-color);
+      margin-bottom: 8px;
+    }
+    
+    .answer-input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+    
+    .answer-input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .submit-btn {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: block;
+      width: 100%;
+      margin-top: 20px;
+    }
+    
+    .submit-btn:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .submit-btn i {
+      margin-right: 8px;
+    }
+    
+    @media (max-width: 576px) {
+      .test-container {
+        padding: 0 10px;
+      }
+      
+      .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .download-btn {
+        margin-left: 0;
+        margin-top: 10px;
+      }
+    }
+  </style>
+{% endblock %}
+
 {% block main %}
 <script>
     // del coockie func
@@ -17,19 +159,29 @@
     }
 </script>
 <div class="container">
-    <div class="text-center h2">{{ title_test }}</div>
+    <div class="text-center h1 test-header">{{ title_test }}</div>
 
     <!-- FILES FOR TEST -->
-    <hr>
-    <div class="">
-        <div class="h4">Файл с заданиями</div>
-        <a download href="https://{{ request.get_host }}/media/{{ file_with_tasks }}">ФАЙЛ-{{ file_with_tasks_filename }}</a>
-    </div>
-    <hr>
-    <div class="">
-        <div class="h4">Файлы для выполнения заданий</div>
+
+    <div class="file-section">
+        <div class="h3">Файл с заданиями</div>
+        <div class="file-item">
+            <i class="fas fa-file-image file-icon"></i>
+            <span class="file-name">ФАЙЛ-{{ file_with_tasks_filename }}</span>
+            <a class="download-btn" download href="https://{{ request.get_host }}/media/{{ file_with_tasks }}">
+            <i class="fas fa-download"></i> Скачать
+            </a>
+        </div>
+
+        <div class="h3" style="margin-top: 15px;">Файлы для выполнения заданий</div>
         {% for help_file in file_for_done_tasks %}
-            <a download href="https://{{ request.get_host }}{{ help_file.file.url }}">ФАЙЛ-{{ help_file.filename }}</a>
+            <div class="file-item">
+                <i class="fas fa-file-excel file-icon"></i>
+                <span class="file-name">ФАЙЛ-{{ help_file.filename }}</span>
+                <a class="download-btn" download href="https://{{ request.get_host }}{{ help_file.file.url }}">
+                <i class="fas fa-download"></i> Скачать
+                </a>
+            </div>
         {% endfor %}
     </div>
     <hr>
@@ -39,22 +191,23 @@
 
         <input name="{{ title }}" class="d-none">
         {% csrf_token %}
+        <div class="questions-section">
         {% for i, number_of_input in input_with_number_task %}
-            <div>
+            <div class="question-item">
             <div class="multi text-center">
                 <div id="task-div-{{ i }}">
                 </div>
             </div>
             </div>
             <div style="display: flex; justify-content: space-between;">
-                <input type="text" readonly="true" style="width: 29px; height: 29px;" value="{{ number_of_input }}">
-                <input id="task-id-{{ i }}" name="task-id-{{ i }}" type="text" class="col-12 mb-2" placeholder="Введите ответ" autocomplete="off" required>
+                <input type="text" readonly="true" style="min-width: 40px; min-height: 40px;" class="mb-2 answer-input" value="{{ number_of_input }}">
+                <input id="task-id-{{ i }}" name="task-id-{{ i }}" type="text" class="col-12 mb-2 answer-input" placeholder="Ваш ответ..." autocomplete="off" required>
             </div>
             <hr>
         {% endfor %}
             <input type="text" style="display: none;" name="json-data-answers" id="json-data-answers">
             <div style="display: flex; justify-content: center;">
-                <button type="submit" class="btn-header-default mb-5" style="width: 90%;" id="save-user-answer">Загрузить ответы</button>
+                <button type="submit" class="submit-btn mb-5" id="save-user-answer"><i class="fas fa-cloud-upload-alt"></i> Загрузить ответы</button>
             </div>
         </form>
 </div>

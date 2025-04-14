@@ -30,9 +30,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'user_app',
     'teacher_app',
+    'test_api',
     'authapp',
-    "crispy_forms",
-    "crispy_bootstrap4",
+    'crispy_forms',
+    'crispy_bootstrap4',
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,7 @@ TEMPLATES = [
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
             BASE_DIR / 'templates',
+            BASE_DIR / 'react_app',
         ],
         'APP_DIRS': True,
         'OPTIONS': {

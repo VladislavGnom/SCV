@@ -2,17 +2,205 @@
 
 {% load remove_backslashes %}
 
+{% block head %}
+  <!-- Bootstrap 4 CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <!-- Шрифты -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Иконки -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --dark-color: #2c3e50;
+      --light-gray: #f8f9fa;
+      --success-color: #2ecc71;
+      --error-color: #e74c3c;
+      --border-color: #dee2e6;
+      --warning-color: #f7e300;
+    }
+    
+    body {
+      background-color: var(--light-gray);
+      font-family: 'Roboto', sans-serif;
+      color: #333;
+    }
+    
+    .results-container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+    
+    .results-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    
+    .score-card-error {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+      text-align: center;
+      border-top: 5px solid var(--error-color);
+    }
+    .score-card-success {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+      text-align: center;
+      border-top: 5px solid var(--success-color);
+    }
+    .score-card-between {
+      background: white;
+      border-radius: 10px;
+      padding: 25px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 30px;
+      text-align: center;
+      border-top: 5px solid var(--warning-color);
+    }
+    
+    .score-card.good-score {
+      border-top-color: var(--success-color);
+    }
+    
+    .score-value {
+      font-size: 48px;
+      font-weight: 500;
+      margin: 10px 0;
+    }
+    
+    .test-title {
+      color: var(--dark-color);
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    
+    .answers-list {
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .answer-item {
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+      margin-bottom: 15px;
+    }
+    
+    .answer-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    
+    .question-number {
+      font-weight: 500;
+      color: var(--dark-color);
+      margin-bottom: 8px;
+    }
+    
+    .user-answer-error {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 8px;
+      background-color: rgba(231, 76, 60, 0.05);
+      border-left: 3px solid var(--error-color);
+      border-radius: 4px;
+    }
+    .user-answer-success {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 8px;
+      background-color: rgba(128, 231, 60, 0.05);
+      border-left: 3px solid var(--success-color);
+      border-radius: 4px;
+    }
+    .user-answer-between {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      padding: 8px;
+      background-color: rgba(225, 231, 60, 0.05);
+      border-left: 3px solid var(--warning-color);
+      border-radius: 4px;
+    }
+    
+    .correct-answer {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      background-color: rgba(46, 204, 113, 0.05);
+      border-left: 3px solid var(--success-color);
+      border-radius: 4px;
+    }
+    
+    .answer-icon {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+    
+    .wrong-icon {
+      color: var(--error-color);
+    }
+    
+    .correct-icon {
+      color: var(--success-color);
+    }
+    
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 4px;
+      font-weight: 500;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      margin-top: 20px;
+    }
+    
+    .back-btn:hover {
+      background-color: #2980b9;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      color: white;
+    }
+    
+    .back-btn i {
+      margin-right: 8px;
+    }
+  </style>
+{% endblock %}
+
 {% block main %}
 
-<div class="container">
-    <div class="h2 mt-3 text-center">Количество правильных ответов: {{ count_right }} {% if percent > 70 %} 🏆{% endif %}</div> <!-- Если работа выполнена правильно более чем на 70% то появляется эмодзи кубка за труды ученика :)-->
-    <div class="card mt-5">
-        <div class="h3 text-center mt-3">{{ title }}</div><hr>
+<div class="results-container">
+    <div class="results-header">
+        <h1 class="test-title">{{ title }}</h1>
+    </div>
+        
+    <div class="h2 mt-3 text-center {% if percent < 20 %} score-card-error{% endif %}{% if percent > 20 and percent < 70 %} score-card-between{% endif %}{% if percent > 70 %} score-card-success{% endif %}">Количество правильных ответов: <div class="score-value">{{ count_right }} {% if percent > 70 %} 🏆{% endif %}</div></div> <!-- Если работа выполнена правильно более чем на 70% то появляется эмодзи кубка за труды ученика :)-->        
+    <div class="answers-list">
         <form action="" method="post">
-            {% for el in new_merge_user_and_right_answers %}
             {% csrf_token %}
-            <div class="task-number-block">
-                <b class="h5">№{{ el.1.pk }}</b>
+            {% for el in new_merge_user_and_right_answers %}
+            <div class="answer-item">
+            <div class="task-number-block question-number">
+                <b class="">№{{ el.1.pk }}</b>
             </div>
             <div>
                 {% if tasks %}
@@ -37,11 +225,12 @@
                         </script>
                 {% endif %}
             </div>
-            <div class="row">
+            <div class="row {% if el.0.0 == el.0.1 %} user-answer-success{% else %} user-answer-error{% endif %}">
                 <div class="col-6">
                 <input name="task-id-{{ el.1.pk }}" type="text" class="col-12 mb-2 ml-2" placeholder="Ваш ответ: {{ el.0.0 }}" disabled>
                 </div>
-                <div class="col-4"><!--Правильный ответ: <b>{{ el.0.1 }}</b>  -->{% if el.0.0 == el.0.1 %} ✅{% else %} ❌{% endif %}</div>
+                <div class="col-4"><!--Правильный ответ: <b>{{ el.0.1 }}</b>  -->{% if el.0.0 == el.0.1 %}  <i class="fas fa-check-circle answer-icon correct-icon"></i></i>{% else %} <i class="fas fa-times-circle answer-icon wrong-icon"></i>{% endif %}</div>
+            </div>
             </div>
             <hr>
             {% endfor %}
@@ -50,7 +239,7 @@
 </div>
 
 <div class="text-center mt-3">
-<a href="{% url 'scv-home' %}"><button class="btn-header-default" style="width: 250px;">Вернуться к заданиям</button></a>
+<a href="{% url 'scv-home' %}"><button class="back-btn" style="width: 250px;"><i class="fas fa-arrow-left"></i>Вернуться к заданиям</button></a>
 </div>
 
 {% if not tasks %}
