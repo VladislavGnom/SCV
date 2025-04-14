@@ -205,3 +205,15 @@
     transform: scale(1.5);  /* увеличиваем изображение в 1.5 раза */
     position: absolute;
 }
+.header {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0;
+}

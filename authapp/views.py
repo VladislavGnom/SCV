@@ -27,4 +27,4 @@ def login_view(request):
         else:
             messages.info(request, "Такой пользователь не найден, попробуйте ещё раз!")
 
-    return render(request, 'authapp/login.html', context={'form': form, 'title': 'Вход'})
+    return render(request, 'authapp/login.html', context={'form': form, 'title': 'Вход в систему | Учебный проект'})
