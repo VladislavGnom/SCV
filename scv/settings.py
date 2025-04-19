@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'authapp',
     'crispy_forms',
     'crispy_bootstrap4',
+    'quiz', 
+    'nested_admin',
 ]
 
 MIDDLEWARE = [
