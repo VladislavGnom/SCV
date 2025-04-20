@@ -43,21 +43,61 @@
 
 import nested_admin
 from django.contrib import admin
+from django import forms
 from .models import Test, Question, Answer
+from .forms import AnswerInlineFormSet
+
+
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = '__all__'
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if self.instance.pk and self.instance.answers.count() < 2:
+            raise forms.ValidationError("Вопрос должен содержать минимум 2 ответа")
+        return cleaned_data
+
 
 class AnswerInline(nested_admin.NestedStackedInline):
     model = Answer
-    extra = 1
+    form = AnswerForm
+    formset = AnswerInlineFormSet  # Подключаем наш FormSet
+    extra = 0
+    min_num = 2
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = '__all__'
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        # Дополнительная валидация вопроса при необходимости
+        return cleaned_data
+
 
 class QuestionInline(nested_admin.NestedStackedInline):
     model = Question
-    extra = 1
+    extra = 0
+    min_num = 1
+    form = QuestionForm
     inlines = [AnswerInline]
+    fields = ('text', 'question_type')
+
 
 class TestAdmin(nested_admin.NestedModelAdmin):
     list_display = ('title', 'test_type', 'is_timed', 'created_at')
     list_filter = ('test_type', )
-    search_fields =('title', 'description')
+    search_fields = ('title', 'description')
     fieldsets = (
         (None, {
             'fields': ('title', 'description', 'test_type')
@@ -70,10 +110,10 @@ class TestAdmin(nested_admin.NestedModelAdmin):
     inlines = [QuestionInline]
 
     def get_fieldsets(self, request, obj=None):
-        '''Динамически скрываем time_limit для нетестируемых типов'''
         fieldsets = super().get_fieldsets(request, obj)
         if obj and obj.test_type in (Test.TestType.PRACTISE, Test.TestType.SURVEY, Test.TestType.PSYCHO):
             fieldsets[1][1]['fields'] = ()
         return fieldsets
+
 
 admin.site.register(Test, TestAdmin)

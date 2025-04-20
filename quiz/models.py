@@ -58,6 +58,7 @@ User = get_user_model()
 #     results = models.JSONField(default=dict)  # Гибкое хранение результатов
 
 from django.db import models
+from django.core.exceptions import ValidationError
 from .validators import validate_test_type
 
 class Test(models.Model):
@@ -101,8 +102,20 @@ class Test(models.Model):
 
 
 class Question(models.Model):
+    class QuestionType(models.TextChoices):
+        SINGLE = 'SN', 'Один правильный ответ'
+        MULTIPLE = 'ML', 'Несколько правильных ответов'
+        TEXT = 'TX', 'Текстовый'
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='questions')
-    text = models.TextField()
+    question_type = models.CharField(
+        'Тип вопроса',
+        max_length=2,
+        choices=QuestionType.choices,
+        default=QuestionType.SINGLE
+        )
+    text = models.TextField('Текст вопроса')
+    # explanation = models.CharField('Пояснение')
+
 
 class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
