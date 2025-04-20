@@ -1,0 +1,14 @@
+{% extends "quiz/base.html" %}
+
+{% block content %}
+  <h2>{{ test.title }}</h2>
+  
+  {% if test.test_type == 'EX' %}
+    <!-- Особый интерфейс для экзамена -->
+    {% include "quiz/tests/exam_partial.html" %}
+  {% elif test.test_type == 'PS' %}
+    {% include "quiz/tests/psycho_partial.html" %}
+  {% else %}
+    <!-- Стандартный вид -->
+  {% endif %}
+{% endblock %}

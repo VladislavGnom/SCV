@@ -55,6 +55,25 @@ class QuestionInline(nested_admin.NestedStackedInline):
     inlines = [AnswerInline]
 
 class TestAdmin(nested_admin.NestedModelAdmin):
+    list_display = ('title', 'test_type', 'is_timed', 'created_at')
+    list_filter = ('test_type', )
+    search_fields =('title', 'description')
+    fieldsets = (
+        (None, {
+            'fields': ('title', 'description', 'test_type')
+        }),
+        ('Настройки', {
+            'fields': ('time_limit',),
+            'description': 'Параметры, специфичные для типа теста'
+        })
+    )
     inlines = [QuestionInline]
+
+    def get_fieldsets(self, request, obj=None):
+        '''Динамически скрываем time_limit для нетестируемых типов'''
+        fieldsets = super().get_fieldsets(request, obj)
+        if obj and obj.test_type in (Test.TestType.PRACTISE, Test.TestType.SURVEY, Test.TestType.PSYCHO):
+            fieldsets[1][1]['fields'] = ()
+        return fieldsets
 
 admin.site.register(Test, TestAdmin)

@@ -27,3 +27,14 @@
 #     #      login_required(views.QuestionDeleteView.as_view()), 
 #     #      name='question_delete'),
 # ]
+
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import TestViewSet
+
+router = DefaultRouter()
+router.register(r'tests', TestViewSet, basename='test')
+
+urlpatterns = [
+    path('api/', include(router.urls)),
+]

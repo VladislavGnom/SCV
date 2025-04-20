@@ -32,3 +32,32 @@
 #         context = super().get_context_data(**kwargs)
 #         context['question_types'] = QuestionType.objects.all()
 #         return context
+
+# from django.shortcuts import render
+
+# from .models import Test
+
+# def test_detail(request, test_id):
+#     test = Test.objects.get(pk=test_id)
+#     template = f"quiz/tests/{test.test_type.slug}_detail.html"  # Например: 'tests/exam_detail.html'
+#     return render(request, template, {'test': test})
+
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from .models import Test
+from .serializers import TestSerializer, TestTypeSerializer
+
+class TestViewSet(viewsets.ModelViewSet):
+    queryset = Test.objects.all()
+    serializer_class = TestSerializer
+
+    @action(detail=False, methods=['get'])
+    def types(self, request):
+        '''Получение всех возможных типов тестов'''
+        types = [
+            {'value': choice[0], 'display': choice[1]} 
+            for choice in Test.TestType.choices
+        ]
+        serializer = TestTypeSerializer(types, many=True)
+        return Response(serializer.data)

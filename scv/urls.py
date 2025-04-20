@@ -17,6 +17,6 @@ urlpatterns += static(settings.MEDIA_URL,
 urlpatterns += static(settings.STATIC_URL, 
                       document_root=settings.STATIC_ROOT)
 urlpatterns += [
-    # path('tests/', include('quiz.urls')),
+    path('tests/', include('quiz.urls')),
     re_path(r'^_nested_admin/', include('nested_admin.urls')),
 ]

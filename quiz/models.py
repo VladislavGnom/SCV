@@ -58,9 +58,47 @@ User = get_user_model()
 #     results = models.JSONField(default=dict)  # Гибкое хранение результатов
 
 from django.db import models
+from .validators import validate_test_type
 
 class Test(models.Model):
-    title = models.CharField(max_length=200)
+    class TestType(models.TextChoices):
+        EXAM = 'EX', 'Экзамен'
+        QUIZ = 'QZ', 'Быстрый тест'
+        PRACTISE = 'PR', 'Тренировка'
+        SURVEY = 'SR', 'Опрос'
+        PSYCHO = 'PS', 'Психологический тест'
+
+    title = models.CharField('Название', max_length=200)
+    description = models.TextField('Описание', blank=True)
+    test_type = models.CharField(
+        'Тип теста',
+        max_length=2,
+        choices=TestType.choices,
+        default=TestType.QUIZ
+    )
+    time_limit = models.PositiveIntegerField(
+        'Лимит времени (в мин)',
+        null=True,
+        blank=True,
+        help_text='Оставьте пустым, если без ограничений'
+    )
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    def is_exam(self) -> bool:
+        return self.test_type == self.TestType.EXAM
+
+    def clean(self):
+        super().clean()
+        validate_test_type(self)
+
+    def __str__(self):
+        return f"{self.title} ({self.get_test_type_display()})"
+
+    @property
+    def is_timed(self) -> bool:
+        '''Проверяет ограничен ли тест по времени'''
+        return self.time_limit is not None
+
 
 class Question(models.Model):
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='questions')
