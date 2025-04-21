@@ -42,22 +42,40 @@
 #     template = f"quiz/tests/{test.test_type.slug}_detail.html"  # Например: 'tests/exam_detail.html'
 #     return render(request, template, {'test': test})
 
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from .models import Test
-from .serializers import TestSerializer, TestTypeSerializer
+# from rest_framework import viewsets, status
+# from rest_framework.decorators import action
+# from rest_framework.response import Response
+# from .models import Test
+# from .serializers import TestSerializer, TestTypeSerializer
 
-class TestViewSet(viewsets.ModelViewSet):
-    queryset = Test.objects.all()
-    serializer_class = TestSerializer
+# class TestViewSet(viewsets.ModelViewSet):
+#     queryset = Test.objects.all()
+#     serializer_class = TestSerializer
 
-    @action(detail=False, methods=['get'])
-    def types(self, request):
-        '''Получение всех возможных типов тестов'''
-        types = [
-            {'value': choice[0], 'display': choice[1]} 
-            for choice in Test.TestType.choices
-        ]
-        serializer = TestTypeSerializer(types, many=True)
-        return Response(serializer.data)
+#     @action(detail=False, methods=['get'])
+#     def types(self, request):
+#         '''Получение всех возможных типов тестов'''
+#         types = [
+#             {'value': choice[0], 'display': choice[1]} 
+#             for choice in Test.TestType.choices
+#         ]
+#         serializer = TestTypeSerializer(types, many=True)
+#         return Response(serializer.data)
+    
+
+from django.views.generic import View
+from django.shortcuts import render, get_object_or_404
+from quiz.models import Test
+
+
+class TestHandleView(View):
+    def get(self, request, pk):
+        self.test_obj = get_object_or_404(Test, pk=pk)
+
+        context = self.get_context_data()
+        return render(request, 'quiz/main_test_page.html', context=context)
+    
+    def get_context_data(self, **kwargs):
+        context = {}
+        context['test'] = self.test_obj
+        return context

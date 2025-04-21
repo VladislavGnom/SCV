@@ -30,11 +30,13 @@
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import TestViewSet
+from .views import TestHandleView
 
-router = DefaultRouter()
-router.register(r'tests', TestViewSet, basename='test')
+# router = DefaultRouter()
+# router.register(r'tests', TestViewSet, basename='test')
 
 urlpatterns = [
-    path('api/', include(router.urls)),
+    path('user-test/<int:pk>/', TestHandleView.as_view(), name='test-main'),
+    path('handle-test/<int:pk>/', TestHandleView.as_view(), name='submit-test')
+    # path('api/', include(router.urls)),
 ]
