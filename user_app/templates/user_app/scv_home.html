@@ -251,10 +251,20 @@
                     <a class="btn-start-test" href="{% url 'user-test' usertest.pk %}?open=True" target="_blank" style="text-decoration: none; color: inherit;"><button class="btn btn-primary col-12" style="border-radius: 0px;"><span>Начать тест</span></button></a>
                 </div>
             {% endfor %}
-        {% else %}
+        {% endif %}
+        {% if not merge_title_and_task and not universal_tests %}
         <div class="no-tests">
             У вас нет активных тестов! :&#41;
         </div>
+        {% endif %}
+        {% if universal_tests %}
+          {% for test in universal_tests %}
+            <div class="card mt-5">
+              <div class="h3 text-center mt-3">{{ test.test.title }}</div>
+
+              <a class="btn-start-test" href="{% url 'test-main' test.pk %}" target="_blank" style="text-decoration: none; color: inherit;"><button class="btn btn-primary col-12" style="border-radius: 0px;"><span>Начать тест</span></button></a>
+            </div>
+          {% endfor %}
         {% endif %}
       </div>
     </div>

@@ -65,7 +65,8 @@
 
 from django.views.generic import View
 from django.shortcuts import render, get_object_or_404, redirect
-from quiz.models import Test
+from django.utils import timezone
+from quiz.models import Test, UserTestResult
 from quiz.forms import TestForm
 
 def test_view(request, test_id):
@@ -73,7 +74,13 @@ def test_view(request, test_id):
     if request.method == 'POST':
         form = TestForm(request.POST, questions=test.questions.all())
         if form.is_valid():
-            
+            user_test_result = UserTestResult.objects.get(user=request.user, test=test)
+            user_test_result.test = test
+            user_test_result.completed_at = timezone.now()
+            user_test_result.score = 0    # TODO: will need to add get scores
+            user_test_result.is_passed = True
+            user_test_result.save()
+
             return redirect('success')
     else:
         form = TestForm(questions=test.questions.all())

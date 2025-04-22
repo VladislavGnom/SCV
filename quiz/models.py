@@ -121,3 +121,23 @@ class Answer(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     text = models.CharField(max_length=200)
     is_correct = models.BooleanField(default=False)
+
+
+class UserTestResult(models.Model):
+    user = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='test_results'
+    )
+    test = models.ForeignKey(
+        Test,
+        on_delete=models.CASCADE,
+        related_name='user_results'
+    )
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True)
+    score = models.PositiveIntegerField(default=0)
+    is_passed = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = [['user', 'test']]

@@ -44,7 +44,7 @@
 import nested_admin
 from django.contrib import admin
 from django import forms
-from .models import Test, Question, Answer
+from .models import Test, Question, Answer, UserTestResult
 from .forms import AnswerInlineFormSet
 
 
@@ -116,4 +116,8 @@ class TestAdmin(nested_admin.NestedModelAdmin):
         return fieldsets
 
 
+class UserTestResultAdmin(admin.ModelAdmin):
+    list_display = ('user', 'test', 'score', 'is_passed')
+
 admin.site.register(Test, TestAdmin)
+admin.site.register(UserTestResult, UserTestResultAdmin)

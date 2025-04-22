@@ -16,6 +16,7 @@ from django.core.paginator import Paginator
 from teacher_app.views import teachers_home
 from utils.utils import get_user_groups, str_to_int
 from teacher_app.models import TestNewFormat, FilesForTestModel
+from quiz.models import Test as UniversalTest, UserTestResult as UserUniversalTest
 
 
 
@@ -66,7 +67,6 @@ def user_test_new_format(request, user_test_id):
     
     
     # данные для варианта берутся на основе производной модели TestNewFormat
-    # TODO: заменить на выборку по ID вместо названия(i have fixed already)
     base_data_for_variant = TestNewFormat.objects.get(title=test.title)
     file_with_tasks = base_data_for_variant.file_with_tasks
     number_of_inputs = base_data_for_variant.number_of_inputs
@@ -115,6 +115,17 @@ def scv_home(request):
     if request.user.groups.filter(name='Администратор').exists():
         return teachers_home(request)
     else:
+        universal_tests = UniversalTest.objects.all()
+        for test in universal_tests:
+            try:
+                user_universal_test = UserUniversalTest.objects.get(user=request.user, test=test)
+            except ObjectDoesNotExist:
+                user_universal_test = UserUniversalTest.objects.create(
+                    user=request.user, 
+                    test=test
+                    )
+                user_universal_test.save()
+
         # ast.literal_eval - используется для преобразования строкового представления списка из БД в нормальный список
         
         # один пользователь принадлежит только одной группе(т.к это как классы в школе - каждый ученик определён только в один класс)
@@ -212,6 +223,7 @@ def scv_home(request):
                 'merge_title_and_task': merge_title_and_task,
                 'usertests': usertests,
                 'completed_usertests': completed_usertests,
+                'universal_tests': [UserUniversalTest.objects.get(user=request.user, test=test) for test in UniversalTest.objects.all()] 
                 }
         
         return render(request, 'user_app/scv_home.html', context=context)
@@ -245,7 +257,6 @@ def show_result(request):
             return redirect('scv-home')
         else:
             # данные для варианта берутся на основе производной модели TestNewFormat
-            # TODO: заменить на выборку по ID вместо названия(i have fixed already)
             try:
                 base_data_from_variant = TestNewFormat.objects.get(title=test_obj.title)
             except TestNewFormat.DoesNotExist as error:
