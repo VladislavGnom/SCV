@@ -43,3 +43,25 @@ class AnswerInlineFormSet(forms.models.BaseInlineFormSet):
             raise forms.ValidationError(
                 "Для вопроса с несколькими ответами нужно выбрать хотя бы один правильный вариант!"
             )
+        
+
+class TestForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        questions = kwargs.pop('questions', [])
+        super().__init__(*args, **kwargs)
+        
+        for question in questions:
+            if question.question_type == Question.QuestionType.SINGLE:
+                self.fields[f'question_{question.pk}'] = forms.ChoiceField(
+                    choices=[(a.pk, a.text) for a in question.answers.all()],
+                    widget=forms.RadioSelect,
+                    label=question.text,
+                    required=True
+                )
+            elif question.question_type == Question.QuestionType.MULTIPLE:
+                self.fields[f'question_{question.pk}'] = forms.MultipleChoiceField(
+                    choices=[(a.pk, a.text) for a in question.answers.all()],
+                    widget=forms.CheckboxSelectMultiple,
+                    label=question.text,
+                    required=False
+                )

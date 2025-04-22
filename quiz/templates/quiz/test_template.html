@@ -1,0 +1,29 @@
+{% extends 'quiz/base.html' %}
+
+{% block content %}
+<h1>{{ test.title }}</h1>
+
+<div class="test-description">
+    {{ test.description|safe }}
+</div>
+{% if success %}
+success
+{% endif %}
+<form method="post" action="{% url 'submit-test' test.id %}">
+    {% csrf_token %}
+
+    {% for field in form %}
+        <fieldset>
+            <legend>Вопрос {{ forloop.counter }}: {{ field.label }}</legend>
+            {{ field }}
+        </fieldset>
+    {% endfor %}
+
+    <button type="submit">Отправить тест</button>
+</form>
+{% endblock %}
+
+<div class="test-meta">
+    <p>Время прохождения: {{ test.time_limit }} минут</p>
+    <p>Автор: {{ test.author.username }}</p>
+</div>

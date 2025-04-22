@@ -64,18 +64,18 @@
     
 
 from django.views.generic import View
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from quiz.models import Test
+from quiz.forms import TestForm
 
-
-class TestHandleView(View):
-    def get(self, request, pk):
-        self.test_obj = get_object_or_404(Test, pk=pk)
-
-        context = self.get_context_data()
-        return render(request, 'quiz/main_test_page.html', context=context)
+def test_view(request, test_id):
+    test = get_object_or_404(Test, pk=test_id)
+    if request.method == 'POST':
+        form = TestForm(request.POST, questions=test.questions.all())
+        if form.is_valid():
+            
+            return redirect('success')
+    else:
+        form = TestForm(questions=test.questions.all())
     
-    def get_context_data(self, **kwargs):
-        context = {}
-        context['test'] = self.test_obj
-        return context
+    return render(request, 'quiz/test_template.html', {'form': form, 'test': test})
