@@ -56,6 +56,7 @@ class TestForm(forms.Form):
                     choices=[(a.pk, a.text) for a in question.answers.all()],
                     widget=forms.RadioSelect,
                     label=question.text,
+                    error_messages={'required': 'Выберите один вариант ответа'},
                     required=True
                 )
             elif question.question_type == Question.QuestionType.MULTIPLE:
@@ -65,3 +66,15 @@ class TestForm(forms.Form):
                     label=question.text,
                     required=False
                 )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        fields_to_check = list(cleaned_data.items())
+
+        for field_name, value in fields_to_check:
+            if field_name.startswith('question_') and isinstance(self.fields[field_name], forms.MultipleChoiceField):
+                if not value:
+                    print(field_name)
+                    self.add_error(field_name, f'Для вопроса "{self.fields[field_name].label}" необходимо выбрать хотя бы один вариант')
+        
+        return cleaned_data
