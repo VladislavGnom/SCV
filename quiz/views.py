@@ -69,20 +69,24 @@ from django.utils import timezone
 from django.contrib import messages
 from quiz.models import Test, UserTestResult
 from quiz.forms import TestForm
+from quiz.utils import calculate_scores_by_test
 
 def test_view(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     if request.method == 'POST':
         form = TestForm(request.POST, questions=test.questions.all())
         if form.is_valid():
+            user_questions_data = {question: value for question, value in form.cleaned_data.items() if question.startswith('question_')}
+
+            calculated_scores = calculate_scores_by_test(test, user_questions_data)
             user_test_result = UserTestResult.objects.get(user=request.user, test=test)
             user_test_result.test = test
             user_test_result.completed_at = timezone.now()
-            user_test_result.score = 0    # TODO: will need to add get scores
-            user_test_result.is_passed = True
+            user_test_result.score = calculated_scores
+            user_test_result.is_passed = False
             user_test_result.save()
 
-            messages.info(request, 'Молодец! Работа выполнена')
+            messages.info(request, f'Молодец! Работа выполнена, количество очков: {calculated_scores}')
             return redirect('scv-home')
     else:
         form = TestForm(questions=test.questions.all())
