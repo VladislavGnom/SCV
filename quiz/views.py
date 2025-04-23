@@ -66,6 +66,7 @@
 from django.views.generic import View
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
+from django.contrib import messages
 from quiz.models import Test, UserTestResult
 from quiz.forms import TestForm
 
@@ -81,7 +82,8 @@ def test_view(request, test_id):
             user_test_result.is_passed = True
             user_test_result.save()
 
-            return redirect('success')
+            messages.info(request, 'Молодец! Работа выполнена')
+            return redirect('scv-home')
     else:
         form = TestForm(questions=test.questions.all())
     

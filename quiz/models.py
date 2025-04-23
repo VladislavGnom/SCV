@@ -84,9 +84,19 @@ class Test(models.Model):
         help_text='Оставьте пустым, если без ограничений'
     )
     created_at = models.DateTimeField(auto_now_add=True, null=True)
+    groups = models.ManyToManyField(
+        'Group',
+        through='TestGroupAccess',
+        related_name='tests',
+        verbose_name='Доступные группы',
+        blank=True
+    )
 
     def is_exam(self) -> bool:
         return self.test_type == self.TestType.EXAM
+    
+    def is_available_for(self, user):
+        return self.groups.filter(members=user).exists()
 
     def clean(self):
         super().clean()
@@ -141,3 +151,35 @@ class UserTestResult(models.Model):
 
     class Meta:
         unique_together = [['user', 'test']]
+
+
+class Group(models.Model):
+    """Группа пользователей (курсы, классы и т.д.)"""
+    name = models.CharField('Название', max_length=100)
+    members = models.ManyToManyField(
+        User,
+        related_name='learning_groups',
+        blank=True
+    )
+
+    class Meta:
+        ordering = ['name']  # Сортировка по умолчанию по имени
+        verbose_name = 'Группа'
+        verbose_name_plural = 'Группы'
+
+    def __str__(self):
+        return self.name
+
+
+class TestGroupAccess(models.Model):
+    """Контроль доступа тестов к группам"""
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    available_from = models.DateTimeField('Доступен с', null=True, blank=True)
+    available_until = models.DateTimeField('Доступен до', null=True, blank=True)
+    is_mandatory = models.BooleanField('Обязательный', default=False)
+
+    class Meta:
+        unique_together = [['test', 'group']]
+        verbose_name = 'Доступ теста к группе'
+        verbose_name_plural = 'Настройки доступа тестов'

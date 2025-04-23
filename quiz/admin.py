@@ -44,7 +44,7 @@
 import nested_admin
 from django.contrib import admin
 from django import forms
-from .models import Test, Question, Answer, UserTestResult
+from .models import Test, Question, Answer, UserTestResult, TestGroupAccess, Group as TestGroup
 from .forms import AnswerInlineFormSet
 
 
@@ -94,6 +94,18 @@ class QuestionInline(nested_admin.NestedStackedInline):
     fields = ('text', 'question_type')
 
 
+class TestGroupAccessInline(nested_admin.NestedTabularInline):
+    model = TestGroupAccess
+    extra = 1
+    fields = ('group', 'available_from', 'available_until', 'is_mandatory')
+    autocomplete_fields = ['group'] 
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "group":
+            kwargs["queryset"] = TestGroup.objects.all().order_by('name')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+
 class TestAdmin(nested_admin.NestedModelAdmin):
     list_display = ('title', 'test_type', 'is_timed', 'created_at')
     list_filter = ('test_type', )
@@ -107,7 +119,7 @@ class TestAdmin(nested_admin.NestedModelAdmin):
             'description': 'Параметры, специфичные для типа теста'
         })
     )
-    inlines = [QuestionInline]
+    inlines = [QuestionInline, TestGroupAccessInline]
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
@@ -118,6 +130,24 @@ class TestAdmin(nested_admin.NestedModelAdmin):
 
 class UserTestResultAdmin(admin.ModelAdmin):
     list_display = ('user', 'test', 'score', 'is_passed')
+
+
+@admin.register(TestGroup)
+class TestGroupAdmin(admin.ModelAdmin):
+    filter_vertical = ('members',)
+    search_fields = ('name',)  # Поля для поиска в autocomplete
+    list_display = ('name', )
+    list_filter = ('name', )
+
+    def get_member_count(self, obj):
+        return obj.members.count()
+    get_member_count.short_description = 'Количество участников'
+
+
+@admin.register(TestGroupAccess)
+class TestGroupAccessAdmin(admin.ModelAdmin):
+    list_display = ('test', 'group', 'is_mandatory')
+    list_filter = ('group', 'is_mandatory')
 
 admin.site.register(Test, TestAdmin)
 admin.site.register(UserTestResult, UserTestResultAdmin)

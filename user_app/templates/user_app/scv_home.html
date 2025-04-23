@@ -262,7 +262,7 @@
             <div class="card mt-5">
               <div class="h3 text-center mt-3">{{ test.test.title }}</div>
 
-              <a class="btn-start-test" href="{% url 'test-main' test.pk %}" target="_blank" style="text-decoration: none; color: inherit;"><button class="btn btn-primary col-12" style="border-radius: 0px;"><span>Начать тест</span></button></a>
+              <a class="btn-start-test" href="{% url 'test-main' test.test.pk %}" target="_blank" style="text-decoration: none; color: inherit;"><button class="btn btn-primary col-12" style="border-radius: 0px;"><span>Начать тест</span></button></a>
             </div>
           {% endfor %}
         {% endif %}

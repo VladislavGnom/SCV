@@ -12,12 +12,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.utils.timezone import now
 
 from teacher_app.views import teachers_home
 from utils.utils import get_user_groups, str_to_int
 from teacher_app.models import TestNewFormat, FilesForTestModel
-from quiz.models import Test as UniversalTest, UserTestResult as UserUniversalTest
-
+from quiz.models import Test as UniversalTest, TestGroupAccess, UserTestResult as UserUniversalTest
+from quiz.utils import get_test_group_by_user
 
 
 @login_required
@@ -115,17 +116,6 @@ def scv_home(request):
     if request.user.groups.filter(name='Администратор').exists():
         return teachers_home(request)
     else:
-        universal_tests = UniversalTest.objects.all()
-        for test in universal_tests:
-            try:
-                user_universal_test = UserUniversalTest.objects.get(user=request.user, test=test)
-            except ObjectDoesNotExist:
-                user_universal_test = UserUniversalTest.objects.create(
-                    user=request.user, 
-                    test=test
-                    )
-                user_universal_test.save()
-
         # ast.literal_eval - используется для преобразования строкового представления списка из БД в нормальный список
         
         # один пользователь принадлежит только одной группе(т.к это как классы в школе - каждый ученик определён только в один класс)
@@ -133,6 +123,25 @@ def scv_home(request):
         has_user_group = get_user_groups(request.user)[0]
         tests = Test.objects.filter(group=has_user_group, is_complete=False)
         
+        # -------- NEW - ACCESS TO SPECIALIZED TESTS FOR GROUPS -------
+        tests_for_group = TestGroupAccess.objects.filter(
+            group=get_test_group_by_user(request.user), 
+            available_from__lte=now(),
+            available_until__gte=now()
+        )
+
+        for test_group in tests_for_group:
+            try:
+                user_universal_test = UserUniversalTest.objects.get(user=request.user, test=test_group.test)
+            except ObjectDoesNotExist:
+                user_universal_test = UserUniversalTest.objects.create(
+                    user=request.user, 
+                    test=test_group.test
+                    )
+                user_universal_test.save()
+
+        # --------------------
+
         # список для списков типов заданий на основе которых будет генерироваться вариант/ы
         gen_tasks_for_type = []
         # все задания - список обьектов отобранных из БД для отображения в шаблоне
@@ -223,7 +232,7 @@ def scv_home(request):
                 'merge_title_and_task': merge_title_and_task,
                 'usertests': usertests,
                 'completed_usertests': completed_usertests,
-                'universal_tests': [UserUniversalTest.objects.get(user=request.user, test=test) for test in UniversalTest.objects.all()] 
+                'universal_tests': UserUniversalTest.objects.filter(is_passed=False)
                 }
         
         return render(request, 'user_app/scv_home.html', context=context)
