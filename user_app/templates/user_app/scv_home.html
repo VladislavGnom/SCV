@@ -181,7 +181,7 @@
     <div class="upload-card card">
       <div class="card-body">
         <h2 class="card-title">Upload File</h2>
-        <form id="uploadForm" class="mt-2" action="" method="post" enctype="multipart/form-data">
+        <form id="uploadForm" class="mt-2" action="{% url 'handle-uploaded-file' %}" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{ form.as_p }}
             <button class="btn btn-primary" type="submit">Upload</button>
