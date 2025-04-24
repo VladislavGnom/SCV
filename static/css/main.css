@@ -191,13 +191,29 @@
     }
 }
 
+ /* Стиль для изображений */
+.lb-nav .lightbox .lb-image .lb-container {
+    cursor: pointer;
+    max-width: 100%;
+    height: auto;
+    transition: transform 0.5s ease, top 0.5s ease, left 0.5s ease; /* Плавное изменение */
+    position: relative;
+}
 
-.horizontal-auto-center {
+/* Увеличение изображения */
+.zoomed {
+    transform: scale(1.5);  /* увеличиваем изображение в 1.5 раза */
     position: absolute;
-    left: 0;
-    right: 0;
-    width: 100px;
-    /* равномерное распределение отступов */
-    margin-left: auto;
-    margin-right: auto;
-  }
+}
+.header {
+    background-color: var(--dark-color);
+    color: white;
+    padding: 20px 0;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin: 0;
+}

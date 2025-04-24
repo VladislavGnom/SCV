@@ -1,6 +1,29 @@
 from django import forms
-from quiz.models import Question
+from quiz.models import Question, Answer
 
+
+class AnswerForm(forms.ModelForm):
+    class Meta:
+        model = Answer
+        fields = '__all__'
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = '__all__'
+
+    def clean(self):
+        cleaned_data = super().clean()
+        question_type = cleaned_data.get('question_type')
+
+        if question_type == Question.QuestionType.TEXT:
+            return cleaned_data
+
+        if self.instance.pk and self.instance.answers.count() < 2:
+            raise forms.ValidationError("Вопрос должен содержать минимум 2 ответа")
+        return cleaned_data
+    
 
 class AnswerInlineFormSet(forms.models.BaseInlineFormSet):
     def clean(self):
@@ -26,6 +49,9 @@ class AnswerInlineFormSet(forms.models.BaseInlineFormSet):
             question_type = self.instance.question.question_type
         
         if not question_type:
+            return
+        
+        if question_type == Question.QuestionType.TEXT:
             return
             
         # Считаем количество правильных ответов
@@ -66,15 +92,23 @@ class TestForm(forms.Form):
                     label=question.text,
                     required=False
                 )
+            elif question.question_type == Question.QuestionType.TEXT:
+                self.fields[f'question_{question.pk}'] = forms.CharField(
+                    widget=forms.Textarea(attrs={'class': 'text-answer'}),
+                    label=question.text,
+                    required=True
+                )
 
     def clean(self):
         cleaned_data = super().clean()
         fields_to_check = list(cleaned_data.items())
 
         for field_name, value in fields_to_check:
+            print(field_name, value)
             if field_name.startswith('question_') and isinstance(self.fields[field_name], forms.MultipleChoiceField):
                 if not value:
-                    print(field_name)
                     self.add_error(field_name, f'Для вопроса "{self.fields[field_name].label}" необходимо выбрать хотя бы один вариант')
+            if field_name.startswith('question_') and isinstance(self.fields[field_name], forms.Textarea):
+                ...
         
         return cleaned_data

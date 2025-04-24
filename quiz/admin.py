@@ -45,33 +45,39 @@ import nested_admin
 from django.contrib import admin
 from django import forms
 from .models import Test, Question, Answer, UserTestResult, TestGroupAccess, Group as TestGroup
-from .forms import AnswerInlineFormSet
-
-
-class AnswerForm(forms.ModelForm):
-    class Meta:
-        model = Answer
-        fields = '__all__'
-
-
-class QuestionForm(forms.ModelForm):
-    class Meta:
-        model = Question
-        fields = '__all__'
-
-    def clean(self):
-        cleaned_data = super().clean()
-        if self.instance.pk and self.instance.answers.count() < 2:
-            raise forms.ValidationError("Вопрос должен содержать минимум 2 ответа")
-        return cleaned_data
+from .forms import AnswerInlineFormSet, QuestionForm, AnswerForm
 
 
 class AnswerInline(nested_admin.NestedStackedInline):
     model = Answer
     form = AnswerForm
     formset = AnswerInlineFormSet  # Подключаем наш FormSet
-    extra = 0
-    min_num = 2
+    # extra = 0
+    # min_num = 2
+    classes = ['answer-inline']  # Добавляем класс для селектора
+
+
+    class Media:
+        js = ('admin/js/question_type_handler.js',)
+        css = {
+            'all': ('admin/css/question_types.css',)
+        }
+
+    def get_formset(self, request, obj=None, **kwargs):
+        if obj and obj.question_type == Question.QuestionType.TEXT:
+            self.min_num = 0
+            self.extra = 0
+        return super().get_formset(request, obj, **kwargs)
+
+    # def get_min_num(self, request, obj=None, **kwargs):
+    #     if obj and obj.question_type == Question.QuestionType.TEXT:
+    #         return 0
+    #     return super().get_min_num(request, obj, **kwargs)
+
+    # def get_extra(self, request, obj=None, **kwargs):
+    #     if obj and obj.question_type == Question.QuestionType.TEXT:
+    #         return 0
+    #     return super().get_extra(request, obj, **kwargs)
 
 
 class QuestionForm(forms.ModelForm):
