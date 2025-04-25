@@ -37,12 +37,12 @@ def normilize_user_answers(user_questions_data: dict[str: str]):
         question_obj = Question.objects.get(pk=question_pk)
 
         if isinstance(value, list):
-            answers = [Answer.objects.get(pk=value[i]).text for i in range(len(value))]
+            answers = [Answer.objects.get(pk=value[i]).pk for i in range(len(value))]
             # here can be any normilization of the answers
             normilized_user_questions_data[question] = set(answers)
         else:
             if value.isdigit() and question_obj.question_type == question_obj.QuestionType.SINGLE:
-                answer = Answer.objects.get(pk=value).text
+                answer = [Answer.objects.get(pk=value).pk]
             else:
                 answer = value
 
@@ -65,8 +65,20 @@ def evaluate_answers_by_test(test: Test, user_questions_data: dict[str: str], te
         user_answer, created = UserAnswer.objects.update_or_create(
             user_test_result=test_result,
             question=question,
-            defaults=prepare_answer_data(question, answer_data)
+            defaults={
+                'text_answer': answer_data if question.question_type in [Question.QuestionType.TEXT, Question.QuestionType.TEXT_AUTO] else None,
+                'check_status': (
+                    UserAnswer.CheckStatusChoices.NEEDS_REVIEW 
+                    if question.question_type == Question.QuestionType.TEXT 
+                    else UserAnswer.CheckStatusChoices.AUTO_CHECKED
+                )
+            }
         )
+
+        # Устанавливаем M2M-связи отдельно
+        if question.question_type in [Question.QuestionType.SINGLE, Question.QuestionType.MULTIPLE]:
+            # assert 1 == 0, answer_data
+            user_answer.selected_answers.set(answer_data if answer_data else [])
 
         auto_check_answer = get_right_handler(question)
         auto_check_answer(question, user_answer)

@@ -42,9 +42,11 @@
 # admin.site.register(QuestionType)
 
 import nested_admin
+from difflib import SequenceMatcher
 from django.contrib import admin
+from django.utils import timezone
 from django import forms
-from .models import Test, Question, Answer, UserTestResult, TestGroupAccess, Group as TestGroup
+from .models import Test, Question, Answer, UserTestResult, UserAnswer, TestGroupAccess, Group as TestGroup
 from .forms import AnswerInlineFormSet, QuestionForm, AnswerForm
 
 
@@ -136,6 +138,61 @@ class TestAdmin(nested_admin.NestedModelAdmin):
 
 class UserTestResultAdmin(admin.ModelAdmin):
     list_display = ('user', 'test', 'score', 'is_passed')
+
+
+@admin.register(UserAnswer)
+class UserAnswerAdmin(admin.ModelAdmin):
+    list_display = ('id', 'user_test_result', 'question', 'check_status', 'score', 'is_correct')
+    list_filter = ('check_status', 'question__test')
+    list_editable = ('score', 'is_correct')
+    actions = ['approve_answer', 'reject_answer']
+    readonly_fields = ('user_test_result', 'question', 'text_answer')
+    
+    fieldsets = (
+        (None, {
+            'fields': ('user_test_result', 'question', 'check_status')
+        }),
+        ('Ответ', {
+            # 'fields': ('text_answer', 'correct_answer', 'similarity')
+            'fields': ('text_answer',)
+        }),
+        ('Проверка', {
+            'fields': ('is_correct', 'score', 'admin_review_comment')
+        }),
+    )
+    
+    def similarity(self, obj):
+        """Вычисляем процент схожести для текстовых ответов"""
+        if obj.text_answer and obj.question.correct_answer:
+            ratio = SequenceMatcher(
+                None, 
+                obj.text_answer.lower(), 
+                obj.question.correct_answer.lower()
+            ).ratio()
+            return f"{ratio:.0%}"
+        return "-"
+    similarity.short_description = 'Схожесть с эталоном'
+
+    def get_correct_answer(self, obj):
+        """Показываем правильный ответ из связанного вопроса"""
+        return obj.question.correct_answer
+    get_correct_answer.short_description = 'Правильный ответ'
+    
+    def approve_answer(self, request, queryset):
+        queryset.update(
+            is_correct=True,
+            check_status=UserAnswer.CheckStatusChoices.MANUAL_CHECKED,
+            checked_by=request.user,
+            checked_at=timezone.now()
+        )
+    
+    def reject_answer(self, request, queryset):
+        queryset.update(
+            is_correct=False,
+            check_status=UserAnswer.CheckStatusChoices.MANUAL_CHECKED,
+            checked_by=request.user,
+            checked_at=timezone.now()
+        )
 
 
 @admin.register(TestGroup)

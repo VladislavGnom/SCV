@@ -111,6 +111,9 @@ class Test(models.Model):
     def is_timed(self) -> bool:
         '''Проверяет ограничен ли тест по времени'''
         return self.time_limit is not None
+    
+    def __str__(self):
+        return self.title
 
 
 class Question(models.Model):
@@ -137,6 +140,9 @@ class Question(models.Model):
     )
     # explanation = models.CharField('Пояснение')
 
+    def __str__(self):
+        return self.text
+
 
 
 
@@ -161,6 +167,9 @@ class UserTestResult(models.Model):
     completed_at = models.DateTimeField(null=True)
     score = models.PositiveIntegerField(default=0)
     is_passed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.test.title
 
     class Meta:
         unique_together = [['user', 'test']]
@@ -232,11 +241,18 @@ class TestGroupAccess(models.Model):
     """Контроль доступа тестов к группам"""
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    available_from = models.DateTimeField('Доступен с', null=True, blank=True, default=now())
-    available_until = models.DateTimeField('Доступен до', null=True, blank=True, default=now() + timedelta(days=1))
+    available_from = models.DateTimeField('Доступен с', null=True, blank=True, auto_now_add=True)
+    available_until = models.DateTimeField('Доступен до', null=True, blank=True)
     is_mandatory = models.BooleanField('Обязательный', default=False)
 
+    
     class Meta:
         unique_together = [['test', 'group']]
         verbose_name = 'Доступ теста к группе'
         verbose_name_plural = 'Настройки доступа тестов'
+
+    def save(self, *args, **kwargs):
+        if not self.available_until:
+            self.available_until = self.available_from + timedelta(days=1)
+        super().save(*args, **kwargs)
+        

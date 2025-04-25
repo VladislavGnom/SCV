@@ -83,14 +83,14 @@ def test_view(request, test_id):
             test_result, created = UserTestResult.objects.get_or_create(
                 user=request.user,
                 test=test,
-                defaults={'completed_at': timezone.now}
+                defaults={'completed_at': timezone.now()}
             )
             evaluated_result = evaluate_answers_by_test(test, user_questions_data, test_result)
             
             if evaluated_result: test_result.is_passed = False 
             
             total_score = sum(answer.score for answer in test_result.user_answers.all())
-            test_result.score = total_score,
+            test_result.score = total_score
             test_result.save()
 
             messages.info(request, f'Молодец! Работа выполнена, результаты уже доступны, страница их показа в разработке')
