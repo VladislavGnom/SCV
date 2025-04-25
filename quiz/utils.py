@@ -1,8 +1,27 @@
 from django.contrib.auth import get_user_model
-from quiz.models import Group as TestGroup, Test, Answer, Question
+from quiz.models import Group as TestGroup, Test, Answer, Question, UserAnswer, UserTestResult
 from quiz.services import check_text_answer, get_right_handler
 
 User = get_user_model()
+
+def prepare_answer_data(question, answer_data):
+    """Подготавливает данные для сохранения UserAnswer"""
+    data = {}
+    
+    if question.question_type in [Question.QuestionType.SINGLE, Question.QuestionType.MULTIPLE]:
+        # Для вопросов с выбором ответа
+        data['selected_answers'] = list(answer_data) if answer_data else []
+        
+    elif question.question_type in [Question.QuestionType.TEXT, Question.QuestionType.TEXT_AUTO]:
+        # Для текстовых ответов
+        data['text_answer'] = answer_data
+        data['check_status'] = (
+            UserAnswer.CheckStatusChoices.NEEDS_REVIEW 
+            if question.question_type == Question.QuestionType.TEXT 
+            else UserAnswer.CheckStatusChoices.AUTO_CHECKED
+        )
+    
+    return data
 
 def get_test_group_by_user(user: User):
     '''Return TestGroup instance if user has a group otherwise None'''
@@ -31,20 +50,25 @@ def normilize_user_answers(user_questions_data: dict[str: str]):
 
     return normilized_user_questions_data
 
-def calculate_scores_by_test(test: Test, user_questions_data: dict[str: str]) -> int:
-    '''Calculated scores for the test and return its'''
+def evaluate_answers_by_test(test: Test, user_questions_data: dict[str: str], test_result: UserTestResult) -> int:
+    '''Evaluated answer of the questions 
+    and defines the score for each question into UserAnswer models
+
+    ''' 
     questions = test.questions.all()
     normilized_user_questions_data = normilize_user_answers(user_questions_data)
-    scores = 0
 
     for question in questions:
         question_key = f'question_{question.pk}'
-        user_answer = normilized_user_questions_data.get(question_key)
+        answer_data = normilized_user_questions_data.get(question_key)
 
-        check_func = get_right_handler(question)
-        if check_func(question, user_answer):
-            scores += question.max_score
-        
-    return scores
+        user_answer, created = UserAnswer.objects.update_or_create(
+            user_test_result=test_result,
+            question=question,
+            defaults=prepare_answer_data(question, answer_data)
+        )
 
-        
+        auto_check_answer = get_right_handler(question)
+        auto_check_answer(question, user_answer)
+    
+    return True

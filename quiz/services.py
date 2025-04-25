@@ -1,4 +1,5 @@
 from django.core.exceptions import ValidationError
+from quiz.models import UserAnswer, Question
 
 
 class TestEvaluator:
@@ -49,23 +50,29 @@ from difflib import SequenceMatcher
 from quiz.models import Question
 import re
 
-def check_single_answer(question, user_answer):
+def check_single_answer(question: Question, user_answer: UserAnswer):
     """
     Checking single answer
     """
-    correct_answer = question.answers.get(is_correct=True).text.lower().strip()
-    user_answer = user_answer.lower().strip()
+    # Проверка одиночного выбора
+    correct_answer = question.answers.filter(is_correct=True).first()
+    user_answer.is_correct = (
+        user_answer.selected_answers.count() == 1 and
+        user_answer.selected_answers.first() == correct_answer
+    )
     
-    return correct_answer == user_answer 
+    user_answer.save()
 
-def check_multiple_answer(question, user_answers):
+def check_multiple_answer(question: Question, user_answer: UserAnswer):
     """
     Checking multiple answer
     """
-    correct_answers = set([answer.text.lower().strip() for answer in question.answers.filter(is_correct=True)])
-    user_answers = [answer.lower().strip() for answer in user_answers]
+    # Проверка множественного выбора
+    correct_ids = set(question.answers.filter(is_correct=True).values_list('id', flat=True))
+    selected_ids = set(user_answer.selected_answers.values_list('id', flat=True))
+    user_answer.is_correct = correct_ids == selected_ids
     
-    return correct_answers == user_answers
+    user_answer.save()
 
 def check_text_answer(question, user_answer):
     """
@@ -73,23 +80,27 @@ def check_text_answer(question, user_answer):
     """
     if question.question_type == Question.QuestionType.TEXT_AUTO:
         return check_auto_text_answer(question, user_answer)
-    return None  # Для ручной проверки возвращаем None
+    # TODO: реализовать проверку чисто текстовых ответов
+    return None  # Для ручной проверки возвращаем None 
 
-def check_auto_text_answer(question, user_answer):
+def check_auto_text_answer(question: Question, user_answer: UserAnswer):
     """
     Auto checking text answer
     """
     correct_answer = question.correct_answer.lower().strip()
-    user_answer = user_answer.lower().strip()
+    text_answer = user_answer.text_answer.lower().strip()
     
     if not question.answer_fuzzy_match:
         # Точное сравнение
-        print(correct_answer, user_answer)
         return correct_answer == user_answer
     
-    # Нечеткое сравнение
-    similarity = SequenceMatcher(None, correct_answer, user_answer).ratio()
-    return similarity >= 0.8  # Порог схожести 80%
+    if text_answer and correct_answer:
+        # Нечеткое сравнение
+        similarity = SequenceMatcher(None, correct_answer, text_answer).ratio()
+        user_answer.is_correct = similarity >= 0.8
+        user_answer.score = question.max_score if user_answer.is_correct else 0
+
+    user_answer.save()
 
 HANDLER_MAP = {
     'SN': check_single_answer,

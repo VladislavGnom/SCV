@@ -64,29 +64,36 @@
     
 
 from django.views.generic import View
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib import messages
 from quiz.models import Test, UserTestResult
 from quiz.forms import TestForm
-from quiz.utils import calculate_scores_by_test
+from quiz.utils import evaluate_answers_by_test
 
+@login_required
 def test_view(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     if request.method == 'POST':
         form = TestForm(request.POST, questions=test.questions.all())
         if form.is_valid():
             user_questions_data = {question: value for question, value in form.cleaned_data.items() if question.startswith('question_')}
+            
+            test_result, created = UserTestResult.objects.get_or_create(
+                user=request.user,
+                test=test,
+                defaults={'completed_at': timezone.now}
+            )
+            evaluated_result = evaluate_answers_by_test(test, user_questions_data, test_result)
+            
+            if evaluated_result: test_result.is_passed = False 
+            
+            total_score = sum(answer.score for answer in test_result.user_answers.all())
+            test_result.score = total_score,
+            test_result.save()
 
-            calculated_scores = calculate_scores_by_test(test, user_questions_data)
-            user_test_result = UserTestResult.objects.get(user=request.user, test=test)
-            user_test_result.test = test
-            user_test_result.completed_at = timezone.now()
-            user_test_result.score = calculated_scores
-            user_test_result.is_passed = False
-            user_test_result.save()
-
-            messages.info(request, f'Молодец! Работа выполнена, количество очков: {calculated_scores}')
+            messages.info(request, f'Молодец! Работа выполнена, результаты уже доступны, страница их показа в разработке')
             return redirect('scv-home')
     else:
         form = TestForm(questions=test.questions.all())

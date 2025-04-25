@@ -109,7 +109,6 @@ class TestForm(forms.Form):
         fields_to_check = list(cleaned_data.items())
 
         for field_name, value in fields_to_check:
-            print(field_name, value)
             if field_name.startswith('question_') and isinstance(self.fields[field_name], forms.MultipleChoiceField):
                 if not value:
                     self.add_error(field_name, f'Для вопроса "{self.fields[field_name].label}" необходимо выбрать хотя бы один вариант')

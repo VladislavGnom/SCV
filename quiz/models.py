@@ -166,33 +166,48 @@ class UserTestResult(models.Model):
         unique_together = [['user', 'test']]
 
 
-# class UserAnswer(models.Model):
-#     user_test_result = models.ForeignKey(
-#         UserTestResult,
-#         on_delete=models.CASCADE,
-#         related_name='user_answers'
-#     )
-#     question = models.ForeignKey(
-#         Question,
-#         on_delete=models.CASCADE,
-#         related_name='user_answers'
-#     )
-#     text_answer = models.TextField('Текстовый ответ', blank=True, null=True)
-#     selected_answers = models.ManyToManyField(Answer, blank=True)
-#     is_correct = models.BooleanField('Правильный ответ', null=True)
-#     score = models.PositiveIntegerField('Начисленные баллы', default=0)
-#     checked_by = models.ForeignKey(
-#         get_user_model(),
-#         on_delete=models.SET_NULL,
-#         null=True,
-#         blank=True,
-#         verbose_name='Проверил'
-#     )
-#     checked_at = models.DateTimeField('Время проверки', null=True, blank=True)
-#     feedback = models.TextField('Комментарий преподавателя', blank=True, null=True)
+class UserAnswer(models.Model):
+    user_test_result = models.ForeignKey(
+        UserTestResult,
+        on_delete=models.CASCADE,
+        related_name='user_answers'
+    )
+    question = models.ForeignKey(
+        Question,
+        on_delete=models.CASCADE,
+        related_name='user_answers'
+    )
+    text_answer = models.TextField('Текстовый ответ', blank=True, null=True)
+    selected_answers = models.ManyToManyField(Answer, blank=True)
+    is_correct = models.BooleanField('Правильный ответ', null=True)
+    score = models.PositiveIntegerField('Начисленные баллы', default=0)
+    checked_by = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Проверил'
+    )
+    checked_at = models.DateTimeField('Время проверки', null=True, blank=True)
+    feedback = models.TextField('Комментарий преподавателя', blank=True, null=True)
 
-#     class Meta:
-#         unique_together = [['user_test_result', 'question']]
+
+    class CheckStatusChoices(models.TextChoices):
+        NEEDS_REVIEW = 'review', 'Требуется проверка'
+        AUTO_CHECKED = 'auto', 'Автоматическая проверка'
+        MANUAL_CHECKED = 'manual', 'Проверено вручную'
+    
+
+    check_status = models.CharField(
+        'Статус проверки',
+        max_length=10,
+        choices=CheckStatusChoices.choices,
+        default=CheckStatusChoices.AUTO_CHECKED
+    )
+    admin_review_comment = models.TextField('Комментарий преподавателя', blank=True)
+
+    class Meta:
+        unique_together = [['user_test_result', 'question']]
 
 
 class Group(models.Model):
