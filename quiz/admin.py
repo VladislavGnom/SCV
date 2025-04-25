@@ -97,7 +97,7 @@ class QuestionInline(nested_admin.NestedStackedInline):
     min_num = 1
     form = QuestionForm
     inlines = [AnswerInline]
-    fields = ('text', 'question_type')
+    fields = ('text', 'question_type', 'max_score', 'correct_answer', 'answer_fuzzy_match')
 
 
 class TestGroupAccessInline(nested_admin.NestedTabularInline):

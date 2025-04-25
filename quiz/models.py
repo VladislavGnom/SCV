@@ -1,4 +1,6 @@
 from django.db import models
+from django.utils.timezone import now
+from datetime import timedelta
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
@@ -116,15 +118,26 @@ class Question(models.Model):
         SINGLE = 'SN', 'Один правильный ответ'
         MULTIPLE = 'ML', 'Несколько правильных ответов'
         TEXT = 'TX', 'Текстовый'
+        TEXT_AUTO = 'TXA', 'Текстовый (auto)'
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='questions')
     question_type = models.CharField(
         'Тип вопроса',
-        max_length=2,
+        max_length=3,
         choices=QuestionType.choices,
         default=QuestionType.SINGLE
         )
     text = models.TextField('Текст вопроса')
+    max_score = models.PositiveIntegerField('Максимальный балл', default=1)
+    
+    correct_answer = models.TextField('Правильный ответ (для автопроверки)', blank=True, null=True)
+    answer_fuzzy_match = models.BooleanField(
+        'Нечеткое сравнение ответов',
+        default=False,
+        help_text='Если включено, система будет учитывать опечатки и синонимы'
+    )
     # explanation = models.CharField('Пояснение')
+
+
 
 
 class Answer(models.Model):
@@ -153,6 +166,35 @@ class UserTestResult(models.Model):
         unique_together = [['user', 'test']]
 
 
+# class UserAnswer(models.Model):
+#     user_test_result = models.ForeignKey(
+#         UserTestResult,
+#         on_delete=models.CASCADE,
+#         related_name='user_answers'
+#     )
+#     question = models.ForeignKey(
+#         Question,
+#         on_delete=models.CASCADE,
+#         related_name='user_answers'
+#     )
+#     text_answer = models.TextField('Текстовый ответ', blank=True, null=True)
+#     selected_answers = models.ManyToManyField(Answer, blank=True)
+#     is_correct = models.BooleanField('Правильный ответ', null=True)
+#     score = models.PositiveIntegerField('Начисленные баллы', default=0)
+#     checked_by = models.ForeignKey(
+#         get_user_model(),
+#         on_delete=models.SET_NULL,
+#         null=True,
+#         blank=True,
+#         verbose_name='Проверил'
+#     )
+#     checked_at = models.DateTimeField('Время проверки', null=True, blank=True)
+#     feedback = models.TextField('Комментарий преподавателя', blank=True, null=True)
+
+#     class Meta:
+#         unique_together = [['user_test_result', 'question']]
+
+
 class Group(models.Model):
     """Группа пользователей (курсы, классы и т.д.)"""
     name = models.CharField('Название', max_length=100)
@@ -175,8 +217,8 @@ class TestGroupAccess(models.Model):
     """Контроль доступа тестов к группам"""
     test = models.ForeignKey(Test, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    available_from = models.DateTimeField('Доступен с', null=True, blank=True)
-    available_until = models.DateTimeField('Доступен до', null=True, blank=True)
+    available_from = models.DateTimeField('Доступен с', null=True, blank=True, default=now())
+    available_until = models.DateTimeField('Доступен до', null=True, blank=True, default=now() + timedelta(days=1))
     is_mandatory = models.BooleanField('Обязательный', default=False)
 
     class Meta:

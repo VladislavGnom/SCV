@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
-from quiz.models import Group as TestGroup, Test, Answer
+from quiz.models import Group as TestGroup, Test, Answer, Question
+from quiz.services import check_text_answer, get_right_handler
 
 User = get_user_model()
 
@@ -13,12 +14,18 @@ def normilize_user_answers(user_questions_data: dict[str: str]):
     normilized_user_questions_data = user_questions_data.copy()
 
     for question, value in normilized_user_questions_data.items():
+        question_pk = question.split('_')[-1]
+        question_obj = Question.objects.get(pk=question_pk)
+
         if isinstance(value, list):
             answers = [Answer.objects.get(pk=value[i]).text for i in range(len(value))]
             # here can be any normilization of the answers
             normilized_user_questions_data[question] = set(answers)
         else:
-            answer = Answer.objects.get(pk=value).text
+            if value.isdigit() and question_obj.question_type == question_obj.QuestionType.SINGLE:
+                answer = Answer.objects.get(pk=value).text
+            else:
+                answer = value
 
             normilized_user_questions_data[question] = answer
 
@@ -30,18 +37,13 @@ def calculate_scores_by_test(test: Test, user_questions_data: dict[str: str]) ->
     normilized_user_questions_data = normilize_user_answers(user_questions_data)
     scores = 0
 
-    for qs in questions:
-        question_key = f'question_{qs.pk}'
-        
-        if qs.question_type == qs.QuestionType.SINGLE:
-            right_answer = qs.answers.get(is_correct=True).text
-        elif qs.question_type == qs.QuestionType.MULTIPLE:
-            right_answer = set([answer.text for answer in qs.answers.filter(is_correct=True)])
-
+    for question in questions:
+        question_key = f'question_{question.pk}'
         user_answer = normilized_user_questions_data.get(question_key)
 
-        if user_answer == right_answer:
-            scores += 1    # TODO: make separate score by every question
+        check_func = get_right_handler(question)
+        if check_func(question, user_answer):
+            scores += question.max_score
         
     return scores
 

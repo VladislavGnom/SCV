@@ -98,6 +98,11 @@ class TestForm(forms.Form):
                     label=question.text,
                     required=True
                 )
+            elif question.question_type == Question.QuestionType.TEXT_AUTO:
+                self.fields[f'question_{question.pk}'] = forms.CharField(
+                    label=question.text,
+                    required=True
+                )
 
     def clean(self):
         cleaned_data = super().clean()

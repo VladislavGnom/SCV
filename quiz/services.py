@@ -1,7 +1,5 @@
 from django.core.exceptions import ValidationError
 
-from quiz.models import AnswerOption
-
 
 class TestEvaluator:
     def __init__(self, test, user_answers):
@@ -46,3 +44,63 @@ class TestEvaluator:
             return option.is_correct, option.feedback or question.explanation
         except AnswerOption.DoesNotExist:
             return False, "Не выбран вариант ответа"
+        
+from difflib import SequenceMatcher
+from quiz.models import Question
+import re
+
+def check_single_answer(question, user_answer):
+    """
+    Checking single answer
+    """
+    correct_answer = question.answers.get(is_correct=True).text.lower().strip()
+    user_answer = user_answer.lower().strip()
+    
+    return correct_answer == user_answer 
+
+def check_multiple_answer(question, user_answers):
+    """
+    Checking multiple answer
+    """
+    correct_answers = set([answer.text.lower().strip() for answer in question.answers.filter(is_correct=True)])
+    user_answers = [answer.lower().strip() for answer in user_answers]
+    
+    return correct_answers == user_answers
+
+def check_text_answer(question, user_answer):
+    """
+    Checking text answer
+    """
+    if question.question_type == Question.QuestionType.TEXT_AUTO:
+        return check_auto_text_answer(question, user_answer)
+    return None  # Для ручной проверки возвращаем None
+
+def check_auto_text_answer(question, user_answer):
+    """
+    Auto checking text answer
+    """
+    correct_answer = question.correct_answer.lower().strip()
+    user_answer = user_answer.lower().strip()
+    
+    if not question.answer_fuzzy_match:
+        # Точное сравнение
+        print(correct_answer, user_answer)
+        return correct_answer == user_answer
+    
+    # Нечеткое сравнение
+    similarity = SequenceMatcher(None, correct_answer, user_answer).ratio()
+    return similarity >= 0.8  # Порог схожести 80%
+
+HANDLER_MAP = {
+    'SN': check_single_answer,
+    'ML': check_multiple_answer,
+    'TX': check_text_answer,
+    'TXA': check_text_answer
+}
+
+def get_right_handler(question):
+    '''Map question types of handlers'''
+    try:
+        return HANDLER_MAP[question.question_type]
+    except KeyError as error:
+        raise KeyError(f'Not available type of test: {error}')
