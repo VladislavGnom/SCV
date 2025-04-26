@@ -149,8 +149,8 @@ class TestAdmin(nested_admin.NestedModelAdmin):
 
 
 class UserTestResultAdmin(admin.ModelAdmin):
-    list_display = ('user', 'test', 'score', 'is_passed')
-    readonly_fields = ('user', 'test')
+    list_display = ('user', 'test', 'started_at', 'completed_at', 'score', 'is_passed')
+    readonly_fields = ('user', 'test', 'score', 'started_at', 'completed_at', 'is_passed')
 
     inlines = [UserAnswersInline]
 

@@ -1,5 +1,6 @@
 from datetime import timedelta
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
 from django.db import models
 from django.core.exceptions import ValidationError
 from .validators import validate_test_type
@@ -125,17 +126,19 @@ class UserTestResult(models.Model):
     user = models.ForeignKey(
         get_user_model(),
         on_delete=models.CASCADE,
-        related_name='test_results'
+        related_name='test_results',
+        verbose_name='Пользователь'
     )
     test = models.ForeignKey(
         Test,
         on_delete=models.CASCADE,
-        related_name='user_results'
+        related_name='user_results',
+        verbose_name='Тест'
     )
-    started_at = models.DateTimeField(auto_now_add=True)
-    completed_at = models.DateTimeField(null=True)
-    score = models.PositiveIntegerField(default=0)
-    is_passed = models.BooleanField(default=False)
+    started_at = models.DateTimeField(auto_now_add=True, verbose_name='Начат в')
+    completed_at = models.DateTimeField(null=True, verbose_name='Завершён в')
+    score = models.PositiveIntegerField(default=0, verbose_name='Количество баллов')
+    is_passed = models.BooleanField(default=False, verbose_name='Статус сдачи теста')
 
     def __str__(self):
         return self.test.title
@@ -164,7 +167,8 @@ class UserAnswer(models.Model):
     question = models.ForeignKey(
         Question,
         on_delete=models.CASCADE,
-        related_name='user_answers'
+        related_name='user_answers',
+        verbose_name='Вопрос'
     )
     text_answer = models.TextField('Текстовый ответ', blank=True, null=True)
     selected_answers = models.ManyToManyField(Answer, blank=True)
@@ -188,7 +192,7 @@ class UserAnswer(models.Model):
     admin_review_comment = models.TextField('Комментарий преподавателя', blank=True)
 
     def __str__(self):
-        return f'Ответ пользователя: {self.pk}'
+        return f'ID-{self.pk}'
         
 
     class Meta:
@@ -225,8 +229,11 @@ class TestGroupAccess(models.Model):
     is_mandatory = models.BooleanField('Обязательный', default=False)
 
     def save(self, *args, **kwargs):
-        if not self.available_until:
+        if not self.available_until and self.available_from:
             self.available_until = self.available_from + timedelta(days=1)
+        else:
+            self.available_until = now() + timedelta(days=1)
+
         super().save(*args, **kwargs)
 
     def __str__(self):
