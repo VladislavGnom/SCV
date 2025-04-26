@@ -1,69 +1,16 @@
-from django.db import models
-from django.utils.timezone import now
 from datetime import timedelta
 from django.contrib.auth import get_user_model
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
-
-User = get_user_model()
-
-# class Subject(models.Model):
-#     """Учебные предметы (география, математика и т.д.)"""
-#     name = models.CharField(max_length=100)
-#     slug = models.SlugField(unique=True)
-
-#     def __str__(self) -> str:
-#         return self.name
-
-# class UniversalTest(models.Model):
-#     """Базовая модель теста"""
-#     title = models.CharField(max_length=200)
-#     description = models.TextField()
-#     creator = models.ForeignKey(User, on_delete=models.CASCADE)
-#     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     time_limit = models.PositiveIntegerField(help_text="В минутах (0 - без ограничения)", default=0)
-#     is_published = models.BooleanField(default=False)
-
-# class QuestionType(models.Model):
-#     """Типы вопросов (можно расширять)"""
-#     name = models.CharField(max_length=50)  # Ключ (например, 'multiple_choice')
-#     verbose_name = models.CharField(max_length=100)  # Человекочитаемое название
-#     template = models.CharField(max_length=100)  # Шаблон для рендеринга
-#     has_answers = models.BooleanField(default=True)  # Есть варианты ответов?
-
-#     def __str__(self):
-#         return self.verbose_name
-
-# class Question(models.Model):
-#     """Вопрос теста"""
-#     test = models.ForeignKey(UniversalTest, on_delete=models.CASCADE, related_name='questions')
-#     type = models.ForeignKey(QuestionType, on_delete=models.CASCADE)
-#     text = models.TextField()
-#     explanation = models.TextField(blank=True)  # Пояснение после ответа
-#     order = models.PositiveIntegerField(default=0)
-#     points = models.PositiveIntegerField(default=1)
-
-# class AnswerOption(models.Model):
-#     """Варианты ответов"""
-#     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='options')
-#     text = models.TextField()
-#     is_correct = models.BooleanField(default=False)
-#     feedback = models.TextField(blank=True)  # Пояснение для конкретного варианта
-
-# class TestAttempt(models.Model):
-#     """Попытка прохождения теста"""
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     test = models.ForeignKey(UniversalTest, on_delete=models.CASCADE)
-#     started_at = models.DateTimeField(auto_now_add=True)
-#     completed_at = models.DateTimeField(null=True)
-#     results = models.JSONField(default=dict)  # Гибкое хранение результатов
-
 from django.db import models
 from django.core.exceptions import ValidationError
 from .validators import validate_test_type
 
+User = get_user_model()
+
+
 class Test(models.Model):
+    """Тест - главная единица этого приложения"""
+
+
     class TestType(models.TextChoices):
         EXAM = 'EX', 'Экзамен'
         QUIZ = 'QZ', 'Быстрый тест'
@@ -114,9 +61,17 @@ class Test(models.Model):
     
     def __str__(self):
         return self.title
+    
+
+    class Meta:
+        verbose_name = "Тест"  
+        verbose_name_plural = "Тесты" 
 
 
 class Question(models.Model):
+    """Вопрос к тесту"""
+
+
     class QuestionType(models.TextChoices):
         SINGLE = 'SN', 'Один правильный ответ'
         MULTIPLE = 'ML', 'Несколько правильных ответов'
@@ -139,21 +94,34 @@ class Question(models.Model):
         default=False,
         help_text='Если включено, система будет учитывать опечатки и синонимы'
     )
-    # explanation = models.CharField('Пояснение')
+    explanation = models.CharField('Пояснение к заданию', blank=True, null=True, max_length=100)
 
     def __str__(self):
         return self.text
 
 
+    class Meta:
+        verbose_name = "Вопрос"  
+        verbose_name_plural = "Вопросы"  
 
 
 class Answer(models.Model):
+    """Ответ на вопрос"""
     question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
     text = models.CharField(max_length=200)
     is_correct = models.BooleanField(default=False)
 
+    def __str__(self):
+        return self.text
+    
+
+    class Meta:
+        verbose_name = "Ответ" 
+        verbose_name_plural = "Ответы"  
+
 
 class UserTestResult(models.Model):
+    """Результат пользователя по тесту"""
     user = models.ForeignKey(
         get_user_model(),
         on_delete=models.CASCADE,
@@ -172,11 +140,22 @@ class UserTestResult(models.Model):
     def __str__(self):
         return self.test.title
 
+
     class Meta:
         unique_together = [['user', 'test']]
+        verbose_name = "Результат пользователя по тесту" 
+        verbose_name_plural = "Результат пользователя по тестам" 
 
 
 class UserAnswer(models.Model):
+    """Ответ пользователя к вопросу из теста"""
+
+
+    class CheckStatusChoices(models.TextChoices):
+        NEEDS_REVIEW = 'review', 'Требуется проверка'
+        AUTO_CHECKED = 'auto', 'Автоматическая проверка'
+        MANUAL_CHECKED = 'manual', 'Проверено вручную'
+
     user_test_result = models.ForeignKey(
         UserTestResult,
         on_delete=models.CASCADE,
@@ -200,14 +179,6 @@ class UserAnswer(models.Model):
     )
     checked_at = models.DateTimeField('Время проверки', null=True, blank=True)
     feedback = models.TextField('Комментарий преподавателя', blank=True, null=True)
-
-
-    class CheckStatusChoices(models.TextChoices):
-        NEEDS_REVIEW = 'review', 'Требуется проверка'
-        AUTO_CHECKED = 'auto', 'Автоматическая проверка'
-        MANUAL_CHECKED = 'manual', 'Проверено вручную'
-    
-
     check_status = models.CharField(
         'Статус проверки',
         max_length=10,
@@ -216,8 +187,14 @@ class UserAnswer(models.Model):
     )
     admin_review_comment = models.TextField('Комментарий преподавателя', blank=True)
 
+    def __str__(self):
+        return f'Ответ пользователя: {self.pk}'
+        
+
     class Meta:
         unique_together = [['user_test_result', 'question']]
+        verbose_name = "Ответ пользователя"
+        verbose_name_plural = "Ответы пользователя"
 
 
 class Group(models.Model):
@@ -229,13 +206,14 @@ class Group(models.Model):
         blank=True
     )
 
-    class Meta:
-        ordering = ['name']  # Сортировка по умолчанию по имени
-        verbose_name = 'Группа'
-        verbose_name_plural = 'Группы'
-
     def __str__(self):
         return self.name
+    
+
+    class Meta:
+        ordering = ['name'] 
+        verbose_name = 'Группа'
+        verbose_name_plural = 'Группы'
 
 
 class TestGroupAccess(models.Model):
@@ -246,14 +224,17 @@ class TestGroupAccess(models.Model):
     available_until = models.DateTimeField('Доступен до', null=True, blank=True)
     is_mandatory = models.BooleanField('Обязательный', default=False)
 
-    
-    class Meta:
-        unique_together = [['test', 'group']]
-        verbose_name = 'Доступ теста к группе'
-        verbose_name_plural = 'Настройки доступа тестов'
-
     def save(self, *args, **kwargs):
         if not self.available_until:
             self.available_until = self.available_from + timedelta(days=1)
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.test.title} - {self.group.name}'
+    
+
+    class Meta:
+        unique_together = [['test', 'group']]
+        verbose_name = 'Доступ теста к группе'
+        verbose_name_plural = 'Настройки доступа тестов'
         

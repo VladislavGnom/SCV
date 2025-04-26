@@ -49,7 +49,7 @@ from django import forms
 from .models import Test, Question, Answer, UserTestResult, UserAnswer, TestGroupAccess, Group as TestGroup
 from .forms import AnswerInlineFormSet, QuestionForm, AnswerForm
 
-
+# ------------ INLINES -----------------
 class AnswerInline(nested_admin.NestedStackedInline):
     model = Answer
     form = AnswerForm
@@ -71,27 +71,6 @@ class AnswerInline(nested_admin.NestedStackedInline):
             self.extra = 0
         return super().get_formset(request, obj, **kwargs)
 
-    # def get_min_num(self, request, obj=None, **kwargs):
-    #     if obj and obj.question_type == Question.QuestionType.TEXT:
-    #         return 0
-    #     return super().get_min_num(request, obj, **kwargs)
-
-    # def get_extra(self, request, obj=None, **kwargs):
-    #     if obj and obj.question_type == Question.QuestionType.TEXT:
-    #         return 0
-    #     return super().get_extra(request, obj, **kwargs)
-
-
-class QuestionForm(forms.ModelForm):
-    class Meta:
-        model = Question
-        fields = '__all__'
-    
-    def clean(self):
-        cleaned_data = super().clean()
-        # Дополнительная валидация вопроса при необходимости
-        return cleaned_data
-
 
 class QuestionInline(nested_admin.NestedStackedInline):
     model = Question
@@ -105,6 +84,7 @@ class QuestionInline(nested_admin.NestedStackedInline):
 class TestGroupAccessInline(nested_admin.NestedTabularInline):
     model = TestGroupAccess
     extra = 1
+    readonly_fields = ('available_from', )
     fields = ('group', 'available_from', 'available_until', 'is_mandatory')
     autocomplete_fields = ['group'] 
 
@@ -112,6 +92,38 @@ class TestGroupAccessInline(nested_admin.NestedTabularInline):
         if db_field.name == "group":
             kwargs["queryset"] = TestGroup.objects.all().order_by('name')
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
+    
+
+class UserAnswersInline(admin.StackedInline):
+    model = UserAnswer
+    extra = 0
+    min_num = 1
+    readonly_fields = ('user_test_result', 'question', 'text_answer')
+    fieldsets = (
+        (None, {
+            'fields': ('user_test_result', 'question', 'check_status')
+        }),
+        ('Ответ', {
+            'fields': ('text_answer',)
+        }),
+        ('Проверка', {
+            'fields': ('is_correct', 'score', 'admin_review_comment')
+        }),
+    )
+
+
+# --------------------------------------
+
+
+class QuestionForm(forms.ModelForm):
+    class Meta:
+        model = Question
+        fields = '__all__'
+    
+    def clean(self):
+        cleaned_data = super().clean()
+        # Дополнительная валидация вопроса при необходимости
+        return cleaned_data
     
 
 class TestAdmin(nested_admin.NestedModelAdmin):
@@ -138,6 +150,9 @@ class TestAdmin(nested_admin.NestedModelAdmin):
 
 class UserTestResultAdmin(admin.ModelAdmin):
     list_display = ('user', 'test', 'score', 'is_passed')
+    readonly_fields = ('user', 'test')
+
+    inlines = [UserAnswersInline]
 
 
 @admin.register(UserAnswer)
@@ -160,7 +175,6 @@ class UserAnswerAdmin(admin.ModelAdmin):
         }),
     )
 
-    
     @admin.display(description='Схожесть с эталоном')
     def similarity(self, obj):
         """Вычисляем процент схожести для текстовых ответов"""
@@ -173,12 +187,10 @@ class UserAnswerAdmin(admin.ModelAdmin):
             return f"{ratio:.0%}"
         return "-"
 
-
     @admin.display(description='Правильный ответ')
     def get_correct_answer(self, obj):
         """Показываем правильный ответ из связанного вопроса"""
         return obj.question.correct_answer
-    
     
     def approve_answer(self, request, queryset):
         queryset.update(
