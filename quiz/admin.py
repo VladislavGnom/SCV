@@ -146,21 +146,22 @@ class UserAnswerAdmin(admin.ModelAdmin):
     list_filter = ('check_status', 'question__test')
     list_editable = ('score', 'is_correct')
     actions = ['approve_answer', 'reject_answer']
-    readonly_fields = ('user_test_result', 'question', 'text_answer')
+    readonly_fields = ('user_test_result', 'question', 'text_answer', 'get_correct_answer', 'similarity')
     
     fieldsets = (
         (None, {
             'fields': ('user_test_result', 'question', 'check_status')
         }),
         ('Ответ', {
-            # 'fields': ('text_answer', 'correct_answer', 'similarity')
-            'fields': ('text_answer',)
+            'fields': ('text_answer', 'get_correct_answer', 'similarity')
         }),
         ('Проверка', {
             'fields': ('is_correct', 'score', 'admin_review_comment')
         }),
     )
+
     
+    @admin.display(description='Схожесть с эталоном')
     def similarity(self, obj):
         """Вычисляем процент схожести для текстовых ответов"""
         if obj.text_answer and obj.question.correct_answer:
@@ -171,12 +172,13 @@ class UserAnswerAdmin(admin.ModelAdmin):
             ).ratio()
             return f"{ratio:.0%}"
         return "-"
-    similarity.short_description = 'Схожесть с эталоном'
 
+
+    @admin.display(description='Правильный ответ')
     def get_correct_answer(self, obj):
         """Показываем правильный ответ из связанного вопроса"""
         return obj.question.correct_answer
-    get_correct_answer.short_description = 'Правильный ответ'
+    
     
     def approve_answer(self, request, queryset):
         queryset.update(
