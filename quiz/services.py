@@ -61,6 +61,7 @@ def check_single_answer(question: Question, user_answer: UserAnswer):
         user_answer.selected_answers.first() == correct_answer
     )
     
+    user_answer.score = question.max_score if user_answer.is_correct else 0
     user_answer.save()
 
 def check_multiple_answer(question: Question, user_answer: UserAnswer):
@@ -72,6 +73,7 @@ def check_multiple_answer(question: Question, user_answer: UserAnswer):
     selected_ids = set(user_answer.selected_answers.values_list('id', flat=True))
     user_answer.is_correct = correct_ids == selected_ids
     
+    user_answer.score = question.max_score if user_answer.is_correct else 0
     user_answer.save()
 
 def check_text_answer(question, user_answer):
@@ -92,21 +94,21 @@ def check_auto_text_answer(question: Question, user_answer: UserAnswer):
     
     if not question.answer_fuzzy_match:
         # Точное сравнение
-        return correct_answer == user_answer
+        user_answer.is_correct = correct_answer == text_answer
     
     if text_answer and correct_answer:
         # Нечеткое сравнение
         similarity = SequenceMatcher(None, correct_answer, text_answer).ratio()
         user_answer.is_correct = similarity >= 0.8
-        user_answer.score = question.max_score if user_answer.is_correct else 0
 
+    user_answer.score = question.max_score if user_answer.is_correct else 0
     user_answer.save()
 
 HANDLER_MAP = {
     'SN': check_single_answer,
     'ML': check_multiple_answer,
     'TX': check_text_answer,
-    'TXA': check_text_answer
+    'TXA': check_auto_text_answer
 }
 
 def get_right_handler(question):

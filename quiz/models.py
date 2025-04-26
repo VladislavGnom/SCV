@@ -61,7 +61,6 @@ User = get_user_model()
 
 from django.db import models
 from django.core.exceptions import ValidationError
-from difflib import SequenceMatcher
 from .validators import validate_test_type
 
 class Test(models.Model):
@@ -123,6 +122,7 @@ class Question(models.Model):
         MULTIPLE = 'ML', 'Несколько правильных ответов'
         TEXT = 'TX', 'Текстовый'
         TEXT_AUTO = 'TXA', 'Текстовый (auto)'
+        
     test = models.ForeignKey(Test, on_delete=models.CASCADE, related_name='questions')
     question_type = models.CharField(
         'Тип вопроса',
@@ -215,24 +215,6 @@ class UserAnswer(models.Model):
         default=CheckStatusChoices.AUTO_CHECKED
     )
     admin_review_comment = models.TextField('Комментарий преподавателя', blank=True)
-
-    @property
-    def similarity(self, obj):
-        """Вычисляем процент схожести для текстовых ответов"""
-        if obj.text_answer and obj.question.correct_answer:
-            ratio = SequenceMatcher(
-                None, 
-                obj.text_answer.lower(), 
-                obj.question.correct_answer.lower()
-            ).ratio()
-            return f"{ratio:.0%}"
-        return "-"
-
-
-    @property
-    def get_correct_answer(self, obj):
-        """Показываем правильный ответ из связанного вопроса"""
-        return obj.question.correct_answer
 
     class Meta:
         unique_together = [['user_test_result', 'question']]
