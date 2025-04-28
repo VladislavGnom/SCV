@@ -244,4 +244,15 @@ class TestGroupAccess(models.Model):
         unique_together = [['test', 'group']]
         verbose_name = 'Доступ теста к группе'
         verbose_name_plural = 'Настройки доступа тестов'
+
+
+class TestStatistics(models.Model):
+    test = models.ForeignKey(Test, on_delete=models.CASCADE)
+    average_score = models.FloatField()
+    completion_rate = models.FloatField()
+    average_time_spent = models.DurationField()
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name_plural = "Статистика тестов"
         

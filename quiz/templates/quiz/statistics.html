@@ -1,0 +1,76 @@
+{% extends 'quiz/base.html' %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h3>Общая статистика</h3>
+            </div>
+            <div class="card-body">
+                <p>Всего тестов: {{ total_tests }}</p>
+                <p>Всего попыток: {{ total_attempts }}</p>
+                <p>Средний балл: {{ avg_score|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Статистика по тестам</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Тест</th>
+                            <th>Попыток</th>
+                            <th>Средний балл</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for test in test_stats %}
+                        <tr>
+                            <td>{{ test.title }}</td>
+                            <td>{{ test.attempts }}</td>
+                            <td>{{ test.avg_score|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>Топ пользователей</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Пользователь</th>
+                            <th>Тестов пройдено</th>
+                            <th>Средний балл</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in user_stats %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.tests_completed }}</td>
+                            <td>{{ user.avg_score|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

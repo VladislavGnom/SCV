@@ -63,14 +63,18 @@
 #         return Response(serializer.data)
     
 
-from django.views.generic import View
+from django.views.generic import View, TemplateView
+from django.db.models import Count, Avg
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from quiz.models import Test, UserTestResult
 from quiz.forms import TestForm
 from quiz.utils import evaluate_answers_by_test
+
+User = get_user_model()
 
 @login_required
 def test_view(request, test_id):
@@ -103,3 +107,62 @@ def test_view(request, test_id):
         form = TestForm(questions=test.questions.all())
     
     return render(request, 'quiz/test_template.html', {'form': form, 'test': test})
+
+@login_required
+def test_result_view(request, test_id):
+    test = get_object_or_404(Test, pk=test_id)
+    user_test = UserTestResult.objects.get(user=request.user, test=test)
+    form = TestForm(questions=test.questions.all(), instance=user_test)
+
+    correct_fields = []
+    incorrect_fields = []
+
+    for field in form.fields.values():
+        field.widget.attrs['disabled'] = 'disabled'
+
+    user_answers = user_test.user_answers.all()
+
+    for user_answer in user_answers:
+        question_pk = user_answer.question.pk
+
+        if user_answer.is_correct:
+            correct_fields.append(f'question_{question_pk}')
+        else:
+            incorrect_fields.append(f'question_{question_pk}')
+        
+    context = {
+        'form': form, 
+        'test': test, 
+        'correct_fields': correct_fields, 
+        'incorrect_fields': incorrect_fields
+    }
+
+    return render(request, 'quiz/test_result_template.html', context=context)
+
+
+class TestStatisticsView(TemplateView):
+    template_name = 'quiz/statistics.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        
+        # Общая статистика
+        context['total_tests'] = Test.objects.count()
+        context['total_attempts'] = UserTestResult.objects.count()
+        context['avg_score'] = UserTestResult.objects.aggregate(
+            avg=Avg('score')
+        )['avg'] or 0
+
+        # Статистика по тестам
+        context['test_stats'] = Test.objects.annotate(
+            attempts=Count('user_results'),
+            avg_score=Avg('user_results__score')
+        ).order_by('-attempts')
+
+        # Статистика по пользователям
+        context['user_stats'] = User.objects.annotate(
+            tests_completed=Count('test_results'),
+            avg_score=Avg('test_results__score')
+        ).order_by('-tests_completed')[:10]
+
+        return context

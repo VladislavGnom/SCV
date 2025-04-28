@@ -1,0 +1,29 @@
+{% extends 'quiz/base.html' %}
+
+{% block content %}
+<h1>Результаты теста - {{ test.title }}</h1>
+
+<div class="test-description">
+    {{ test.description|safe }}
+</div>
+
+{% for field in form %}
+    <fieldset>
+        <legend>Вопрос {{ forloop.counter }}: {{ field.label }}</legend>
+        {{ field }}
+        {% if field.name in correct_fields %}
+            <span class="checkmark">✓</span>
+        {% elif field.name in incorrect_fields %}
+            <span class="crossmark">✗</span>
+        {% endif %}
+    </fieldset>
+{% endfor %}
+
+<div class="test-meta">
+    <p>Время прохождения: {{ test.time_limit }} минут</p>
+    <p>Автор: {{ test.author.username }}</p>
+</div>
+
+<a href="{% url 'scv-home' %}">Вернуться к тестам</a>
+
+{% endblock %}
