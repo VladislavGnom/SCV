@@ -146,13 +146,29 @@ class TestAdmin(nested_admin.NestedModelAdmin):
         if obj and obj.test_type in (Test.TestType.PRACTISE, Test.TestType.SURVEY, Test.TestType.PSYCHO):
             fieldsets[1][1]['fields'] = ()
         return fieldsets
+    
+
+    class Media:
+        js = ('js/admin_custom.js', )
 
 
 class UserTestResultAdmin(admin.ModelAdmin):
-    list_display = ('user', 'test', 'started_at', 'completed_at', 'score', 'is_passed')
-    readonly_fields = ('user', 'test', 'score', 'started_at', 'completed_at', 'is_passed')
+    list_display = ('user', 'test', 'started_at', 'completed_at', 'time_spent', 'score', 'is_passed')
+    readonly_fields = ('user', 'test', 'score', 'started_at', 'completed_at', 'time_spent', 'is_passed')
 
     inlines = [UserAnswersInline]
+
+    @admin.display(description='Прохождение теста')
+    def time_spent(self, obj):
+        """Вычисляемое поле - время прохождения теста"""
+        if obj.completed_at and obj.started_at:
+            duration = obj.completed_at - obj.started_at
+            # Форматируем в ЧЧ:ММ:СС
+            total_seconds = int(duration.total_seconds())
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return f"{hours:02}:{minutes:02}:{seconds:02}"
+        return "Тест не завершен"
 
 
 @admin.register(UserAnswer)
