@@ -67,6 +67,7 @@ from django.views.generic import View, TemplateView
 from django.db.models import Count, Avg
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -102,7 +103,8 @@ def test_view(request, test_id):
             test_result.save()
 
             messages.info(request, f'Молодец! Работа выполнена, результаты уже доступны, страница их показа в разработке')
-            return redirect('scv-home')
+            url_redirect = reverse('test-result', args=(test_id, ))
+            return redirect(url_redirect)
     else:
         form = TestForm(questions=test.questions.all())
     

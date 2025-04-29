@@ -1,5 +1,5 @@
 from django import forms
-from quiz.models import Question, Answer
+from quiz.models import Question, Answer, UserTestResult
 
 
 class AnswerForm(forms.ModelForm):
@@ -17,7 +17,7 @@ class QuestionForm(forms.ModelForm):
         cleaned_data = super().clean()
         question_type = cleaned_data.get('question_type')
 
-        if question_type == Question.QuestionType.TEXT:
+        if question_type in [Question.QuestionType.TEXT, Question.QuestionType.TEXT_AUTO]:
             return cleaned_data
 
         if self.instance.pk and self.instance.answers.count() < 2:
@@ -147,7 +147,7 @@ class TestForm(forms.ModelForm):
                 )
                 
                 # Устанавливаем начальное значение для существующих ответов
-                if hasattr(self, 'instance'):
+                if hasattr(self, 'instance') and isinstance(self.instance, UserTestResult):
                     user_answer = self.instance.user_answers.filter(question=question).first()
                     if user_answer:
                         self.initial[field_name] = user_answer.selected_answers.first().pk
@@ -160,7 +160,7 @@ class TestForm(forms.ModelForm):
                     required=False
                 )
                 
-                if hasattr(self, 'instance'):
+                if hasattr(self, 'instance') and isinstance(self.instance, UserTestResult):
                     user_answer = self.instance.user_answers.filter(question=question).first()
                     if user_answer:
                         self.initial[field_name] = user_answer.selected_answers.values_list('pk', flat=True)
@@ -172,7 +172,7 @@ class TestForm(forms.ModelForm):
                     required=True
                 )
                 
-                if hasattr(self, 'instance'):
+                if hasattr(self, 'instance') and isinstance(self.instance, UserTestResult):
                     user_answer = self.instance.user_answers.filter(question=question).first()
                     if user_answer:
                         self.initial[field_name] = user_answer.text_answer

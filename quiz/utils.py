@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
 from quiz.models import Group as TestGroup, Test, Answer, Question, UserAnswer, UserTestResult
 from quiz.services import check_text_answer, get_right_handler
 
@@ -36,13 +37,13 @@ def normilize_user_answers(user_questions_data: dict[str: str]):
         question_pk = question.split('_')[-1]
         question_obj = Question.objects.get(pk=question_pk)
 
-        if isinstance(value, list):
-            answers = [Answer.objects.get(pk=value[i]).pk for i in range(len(value))]
+        if isinstance(value, QuerySet):
+            answers = [value[i].pk for i in range(len(value))]
             # here can be any normilization of the answers
             normilized_user_questions_data[question] = set(answers)
         else:
-            if value.isdigit() and question_obj.question_type == question_obj.QuestionType.SINGLE:
-                answer = [Answer.objects.get(pk=value).pk]
+            if question_obj.question_type == question_obj.QuestionType.SINGLE:
+                answer = [value.pk]
             else:
                 answer = value
 
@@ -82,5 +83,5 @@ def evaluate_answers_by_test(test: Test, user_questions_data: dict[str: str], te
 
         auto_check_answer = get_right_handler(question)
         auto_check_answer(question, user_answer)
-    
+        
     return True
