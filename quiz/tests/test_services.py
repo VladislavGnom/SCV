@@ -191,13 +191,3 @@ class ServicesTest(TestCase):
         self.assertTrue(not user_answer.is_correct)
         self.assertEqual(user_answer.score, 0)
         # ----------------------------------------
-
-        # ----------- test fuzzy match on ---------------
-
-
-
-
-
-
-
-

@@ -64,6 +64,7 @@
     
 
 from django.views.generic import View, TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Count, Avg
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
@@ -81,6 +82,7 @@ User = get_user_model()
 def test_view(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     if request.method == 'POST':
+        print(request.POST)
         form = TestForm(request.POST, questions=test.questions.all())
         if form.is_valid():
             user_questions_data = {question: value for question, value in form.cleaned_data.items() if question.startswith('question_')}
@@ -142,7 +144,7 @@ def test_result_view(request, test_id):
     return render(request, 'quiz/test_result_template.html', context=context)
 
 
-class TestStatisticsView(TemplateView):
+class TestStatisticsView(LoginRequiredMixin, TemplateView):
     template_name = 'quiz/statistics.html'
 
     def get_context_data(self, **kwargs):
