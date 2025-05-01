@@ -82,7 +82,6 @@ User = get_user_model()
 def test_view(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     if request.method == 'POST':
-        print(request.POST)
         form = TestForm(request.POST, questions=test.questions.all())
         if form.is_valid():
             user_questions_data = {question: value for question, value in form.cleaned_data.items() if question.startswith('question_')}
@@ -94,7 +93,7 @@ def test_view(request, test_id):
             )
             evaluated_result = evaluate_answers_by_test(test, user_questions_data, test_result)
             
-            if evaluated_result: test_result.is_passed = True 
+            if evaluated_result: test_result.is_passed = False # DEVELOPMENT 
             
             total_score = sum(answer.score for answer in test_result.user_answers.all())
             test_result.score = total_score

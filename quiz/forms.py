@@ -164,10 +164,11 @@ class TestForm(forms.ModelForm):
                     user_answer = self.instance.user_answers.filter(question=question).first()
                     if user_answer:
                         self.initial[field_name] = user_answer.selected_answers.values_list('pk', flat=True)
-
+                
+                self.fields[field_name].label_attrs = {'class': 'checkbox-option'}
             elif question.question_type in [Question.QuestionType.TEXT, Question.QuestionType.TEXT_AUTO]:
                 self.fields[field_name] = forms.CharField(
-                    widget=forms.Textarea(attrs={'class': 'text-answer'}),
+                    widget=forms.Textarea(attrs={'class': 'text-input'}),
                     label=question.text,
                     required=True
                 )
@@ -176,6 +177,8 @@ class TestForm(forms.ModelForm):
                     user_answer = self.instance.user_answers.filter(question=question).first()
                     if user_answer:
                         self.initial[field_name] = user_answer.text_answer
+
+                self.fields[field_name].label_attrs = {'class': 'question-text'}
 
     def clean(self):
         cleaned_data = super().clean()

@@ -149,7 +149,7 @@ class TestAdmin(nested_admin.NestedModelAdmin):
     
 
     class Media:
-        js = ('js/admin_custom.js', )
+        js = ('quiz/js/admin_custom.js', )
 
 
 class UserTestResultAdmin(admin.ModelAdmin):

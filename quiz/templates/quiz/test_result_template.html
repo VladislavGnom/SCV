@@ -1,29 +1,38 @@
 {% extends 'quiz/base.html' %}
 
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'quiz/css/test_template.css' %}">
+<link rel="stylesheet" href="{% static 'quiz/css/test_result_template.css' %}">
+{% endblock %}
+
+
 {% block content %}
-<h1>Результаты теста - {{ test.title }}</h1>
-
-<div class="test-description">
-    {{ test.description|safe }}
+<div class="container">
+    <h1>Результаты теста - {{ test.title }}</h1>
+    
+    <div class="test-info">
+        {{ test.description|safe }}
+    </div>
+    
+    {% for field in form %}
+        <div class="question-block">
+            <fieldset class="{% if field.name in correct_fields %}correct-answer{% elif field.name in incorrect_fields %}incorrect-answer{% endif %}">
+                <legend>Вопрос {{ forloop.counter }}: {{ field.label }}</legend>
+                {{ field }}
+            </fieldset>
+        </div>
+    {% endfor %}
+    
+    <div class="test-meta">
+        <p>Время прохождения: {{ test.time_limit }} минут</p>
+        <p>Автор: {{ test.author.username }}</p>
+    </div>
+    <button class="submit-btn"><a href="{% url 'scv-home' %}" class="submit-link">Вернуться к тестам</a></button>
 </div>
 
-{% for field in form %}
-    <fieldset>
-        <legend>Вопрос {{ forloop.counter }}: {{ field.label }}</legend>
-        {{ field }}
-        {% if field.name in correct_fields %}
-            <span class="checkmark">✓</span>
-        {% elif field.name in incorrect_fields %}
-            <span class="crossmark">✗</span>
-        {% endif %}
-    </fieldset>
-{% endfor %}
 
-<div class="test-meta">
-    <p>Время прохождения: {{ test.time_limit }} минут</p>
-    <p>Автор: {{ test.author.username }}</p>
-</div>
-
-<a href="{% url 'scv-home' %}">Вернуться к тестам</a>
+<script src="{% static 'quiz/js/test_template.js' %}"></script>
 
 {% endblock %}
