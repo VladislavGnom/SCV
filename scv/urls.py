@@ -3,6 +3,7 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 
+handler403 = 'quiz.views.custom_403_view'
 
 urlpatterns = [
     path('', include('user_app.urls')),

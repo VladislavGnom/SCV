@@ -1,5 +1,6 @@
 from django.test import TestCase, Client
 from django.urls import reverse
+from django.contrib.auth.models import Group
 from django.contrib.auth import get_user_model
 from quiz.models import Test, UserTestResult
 
@@ -21,6 +22,8 @@ class ViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_user_test_view_login(self):
+        UserTestResult.objects.create(user=self.user, test=self.test)
+
         self.client.login(username='testuser', password='12345')
         url_query = reverse('test-main', args=[self.test.pk])
         response = self.client.get(url_query)
@@ -33,6 +36,8 @@ class ViewTest(TestCase):
         self.assertIn('/accounts/login', response.url)
 
     def test_handle_test_view_login(self):
+        UserTestResult.objects.create(user=self.user, test=self.test)
+
         self.client.login(username='testuser', password='12345')
         url_query = reverse('submit-test', args=[self.test.pk])
         response = self.client.post(url_query)
@@ -61,3 +66,12 @@ class ViewTest(TestCase):
         url_query = reverse('test-result', args=[self.test.pk])
         response = self.client.get(url_query)
         self.assertEqual(response.status_code, 200)
+
+    def test_test_view_test_is_passed_correct_behaviour(self):
+        UserTestResult.objects.create(user=self.user, test=self.test, is_passed=True)
+
+        self.client.login(username='testuser', password='12345')
+        url_query = reverse('test-main', args=[self.test.pk])
+        response = self.client.get(url_query)
+
+        self.assertEqual(response.status_code, 302)

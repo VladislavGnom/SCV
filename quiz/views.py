@@ -69,6 +69,8 @@ from django.db.models import Count, Avg
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
+from django.http import HttpResponseForbidden
+from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -81,6 +83,14 @@ User = get_user_model()
 @login_required
 def test_view(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
+
+    user_test = UserTestResult.objects.get(
+        user=request.user,
+        test=test
+    )
+
+    if user_test.is_passed: raise PermissionDenied()
+
     if request.method == 'POST':
         form = TestForm(request.POST, questions=test.questions.all())
         if form.is_valid():
@@ -93,7 +103,7 @@ def test_view(request, test_id):
             )
             evaluated_result = evaluate_answers_by_test(test, user_questions_data, test_result)
             
-            if evaluated_result: test_result.is_passed = False # DEVELOPMENT 
+            if evaluated_result: test_result.is_passed = True # DEVELOPMENT 
             
             total_score = sum(answer.score for answer in test_result.user_answers.all())
             test_result.score = total_score
@@ -169,3 +179,9 @@ class TestStatisticsView(LoginRequiredMixin, TemplateView):
         ).order_by('-tests_completed')[:10]
 
         return context
+
+def custom_403_view(request, exception=None):
+    # перенаправление с сообщением
+    from django.contrib import messages
+    messages.error(request, "Доступ запрещен")
+    return redirect('scv-home')  # Перенаправление на главную
