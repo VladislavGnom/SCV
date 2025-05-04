@@ -14,6 +14,7 @@ class ViewTest(TestCase):
         )
         self.test = Test.objects.create(
             title='Sample Test',
+            results_visibility=Test.VisibilityChoices.ALL,
         )
 
     def test_user_test_view_no_login(self):
@@ -60,12 +61,37 @@ class ViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
 
     def test_test_result_view_login(self):
-        UserTestResult.objects.create(user=self.user, test=self.test)
+        user_test = UserTestResult.objects.create(user=self.user, test=self.test, is_passed=True)
 
+        # ALL VISIBILITY STATUS && IS_PASSED = TRUE
         self.client.login(username='testuser', password='12345')
         url_query = reverse('test-result', args=[self.test.pk])
         response = self.client.get(url_query)
         self.assertEqual(response.status_code, 200)
+
+        # HIDDEN VISIBILITY STATUS && IS_PASSED = TRUE
+        self.test.results_visibility = self.test.VisibilityChoices.HIDDEN
+        self.test.save()
+
+        response = self.client.get(url_query)
+        self.assertEqual(response.status_code, 302)
+
+        # ALL VISIBILITY STATUS && IS_PASSED = FALSE
+        user_test.is_passed = False
+        self.test.results_visibility = self.test.VisibilityChoices.ALL
+        self.test.save()
+        user_test.save()
+
+        response = self.client.get(url_query)
+        self.assertEqual(response.status_code, 302)
+
+        # HIDDEN VISIBILITY STATUS && IS_PASSED = FALSE
+        user_test.is_passed = False
+        self.test.results_visibility = self.test.VisibilityChoices.HIDDEN
+        self.test.save()
+
+        response = self.client.get(url_query)
+        self.assertEqual(response.status_code, 302)
 
     def test_test_view_test_is_passed_correct_behaviour(self):
         UserTestResult.objects.create(user=self.user, test=self.test, is_passed=True)

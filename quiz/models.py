@@ -19,6 +19,11 @@ class Test(models.Model):
         SURVEY = 'SR', 'Опрос'
         PSYCHO = 'PS', 'Психологический тест'
 
+    
+    class VisibilityChoices(models.TextChoices):
+        HIDDEN = 'hidden', 'Не показывать'
+        ALL = 'all', 'Всем пользователям'
+
     title = models.CharField('Название', max_length=200)
     description = models.TextField('Описание', blank=True)
     test_type = models.CharField(
@@ -26,6 +31,12 @@ class Test(models.Model):
         max_length=2,
         choices=TestType.choices,
         default=TestType.QUIZ
+    )
+    results_visibility = models.CharField(
+        'Показ результатов',
+        max_length=20, 
+        choices=VisibilityChoices.choices,
+        default=VisibilityChoices.ALL
     )
     time_limit = models.PositiveIntegerField(
         'Лимит времени (в мин)',
@@ -41,6 +52,7 @@ class Test(models.Model):
         verbose_name='Доступные группы',
         blank=True
     )
+    
 
     def is_exam(self) -> bool:
         return self.test_type == self.TestType.EXAM
@@ -138,8 +150,12 @@ class UserTestResult(models.Model):
     started_at = models.DateTimeField(auto_now_add=True, verbose_name='Начат в')
     completed_at = models.DateTimeField(null=True, verbose_name='Завершён в')
     score = models.PositiveIntegerField(default=0, verbose_name='Количество баллов')
+    max_score = models.FloatField(verbose_name='Максимальный балл', default=1)
     is_passed = models.BooleanField(default=False, verbose_name='Статус сдачи теста')
 
+    def percentage(self):
+        return round((self.score / self.max_score) * 100)
+    
     def __str__(self):
         return self.test.title
 
@@ -148,6 +164,7 @@ class UserTestResult(models.Model):
         unique_together = [['user', 'test']]
         verbose_name = "Результат пользователя по тесту" 
         verbose_name_plural = "Результат пользователя по тестам" 
+        ordering = ['-completed_at']
 
 
 class UserAnswer(models.Model):

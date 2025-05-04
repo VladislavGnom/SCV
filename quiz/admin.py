@@ -127,12 +127,12 @@ class QuestionForm(forms.ModelForm):
     
 
 class TestAdmin(nested_admin.NestedModelAdmin):
-    list_display = ('title', 'test_type', 'is_timed', 'created_at')
+    list_display = ('title', 'test_type', 'results_visibility', 'is_timed', 'created_at')
     list_filter = ('test_type', )
     search_fields = ('title', 'description')
     fieldsets = (
         (None, {
-            'fields': ('title', 'description', 'test_type')
+            'fields': ('title', 'description', 'test_type', 'results_visibility')
         }),
         ('Настройки', {
             'fields': ('time_limit',),

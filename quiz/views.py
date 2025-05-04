@@ -106,7 +106,9 @@ def test_view(request, test_id):
             if evaluated_result: test_result.is_passed = True # DEVELOPMENT 
             
             total_score = sum(answer.score for answer in test_result.user_answers.all())
+            total_score_by_test = sum(question.max_score for question in test.questions.all())
             test_result.score = total_score
+            test_result.max_score = total_score_by_test
             
             if not created:
                 test_result.completed_at = timezone.now()
@@ -125,6 +127,14 @@ def test_view(request, test_id):
 def test_result_view(request, test_id):
     test = get_object_or_404(Test, pk=test_id)
     user_test = UserTestResult.objects.get(user=request.user, test=test)
+
+    if test.results_visibility == Test.VisibilityChoices.HIDDEN:    
+        messages.warning(request, 'Результаты теста уточняйте у учителя')
+        return redirect('scv-home')
+    elif not user_test.is_passed:
+        messages.warning(request, 'Вы ещё не завершили тест, страница будет доступна только после его прохождения')
+        return redirect('scv-home')
+    
     form = TestForm(questions=test.questions.all(), instance=user_test)
 
     correct_fields = []
@@ -179,9 +189,29 @@ class TestStatisticsView(LoginRequiredMixin, TemplateView):
         ).order_by('-tests_completed')[:10]
 
         return context
+    
+@login_required
+def student_statistics(request):
+    attempts = UserTestResult.objects.filter(user=request.user).select_related('test')
+    
+    # Общая статистика
+    total_tests = attempts.count()
+    passed_tests = attempts.filter(is_passed=True).count()
+    avg_score = attempts.aggregate(Avg('score'))['score__avg'] or 0
+    
+    context = {
+        'attempts': attempts,
+        'total_tests': total_tests,
+        'passed_tests': passed_tests,
+        'success_rate': round((passed_tests / total_tests) * 100) if total_tests else 0,
+        'avg_score': round(avg_score, 2),
+    }
+    
+    return render(request, 'quiz/stats/student_statistics.html', context)
 
 def custom_403_view(request, exception=None):
-    # перенаправление с сообщением
     from django.contrib import messages
+
     messages.error(request, "Доступ запрещен")
-    return redirect('scv-home')  # Перенаправление на главную
+
+    return redirect('scv-home')
