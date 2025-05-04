@@ -147,6 +147,11 @@ class TestAdmin(nested_admin.NestedModelAdmin):
             fieldsets[1][1]['fields'] = ()
         return fieldsets
     
+    def save_model(self, request, obj, form, change):
+        if not obj.author:
+            obj.author = request.user
+        super().save_model(request, obj, form, change)
+    
 
     class Media:
         js = ('quiz/js/admin_custom.js', )

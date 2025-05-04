@@ -39,7 +39,7 @@ urlpatterns = [
     path('user-test/<int:test_id>/', test_view, name='test-main'),
     path('handle-test/<int:test_id>/', test_view, name='submit-test'),
     path('test-statistics/', TestStatisticsView.as_view(), name='test-statistics'),
-    path('my-statistics/', student_statistics, name='student_statistics'),
+    path('my-statistics/', student_statistics, name='student-statistics'),
     path('test-result/<int:test_id>', test_result_view, name='test-result'),
     # path('api/', include(router.urls)),
 ]

@@ -1,37 +1,45 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<!-- Шрифт Roboto -->
-<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-<!-- Иконки Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 {% endblock %}
 
 {% block main %}
 <div class="container text-center">
 <h1 class="mb-3">Ваши тесты:</h1>
-    {% if data_tests_of_user %}
     <table class="table">
         <thead class="thead-dark">
             <tr>
-            <th scope="col" style="width: 10%;">#</th>
-            <th scope="col">Название</th>
-            <th scope="col">Динамика</th>
-            <th scope="col">Статус</th>
+                <th scope="col" style="width: 10%;">#</th>
+                <th scope="col">Название</th>
+                <th scope="col">Динамика</th>
+                <th scope="col">Статус</th>
             </tr>
         </thead>
         <tbody>
+        {% if data_tests_of_user %}
         {% for test, count_of_questions in data_tests_of_user %}
           <tr>
             <th scope="row" class="number_of_test"></th>
             <td style="overflow-x: clip;">{{ test.title }}</td>
             <td>{% if test.is_complete %}{{ test.right_answers }}/{{ count_of_questions }}{% else %}-{% endif %}</td>
             <td>{% if test.is_complete %}✅{% else %}❌{% endif %}</td>
-          </tr>
+        </tr>
         {% endfor %}
+        {% endif %}
+        {% if data_universal_tests_of_user %}
+            {% for attempt, data_of_test in data_universal_tests_of_user %}
+                <tr>
+                    <th scope="row" class="number_of_test"></th>
+                    <td style="overflow-x: clip;">{{ attempt.test.title }}</td>
+                    <td>{% if attempt.is_passed %}{{ data_of_test.0 }}/{{ data_of_test.1 }}{% else %}-{% endif %}</td>
+                    <td>{% if attempt.is_passed %}✅{% else %}❌{% endif %}</td>
+                </tr>
+            {% endfor %}
+        {% endif %}
         </tbody>
     </table>
-    {% endif %}
+
 
     <script>
         let number_of_test_elems = document.getElementsByClassName('number_of_test');

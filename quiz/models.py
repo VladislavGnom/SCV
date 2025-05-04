@@ -52,6 +52,14 @@ class Test(models.Model):
         verbose_name='Доступные группы',
         blank=True
     )
+    author = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='created_tests',
+        verbose_name='Автор теста',
+        blank=True, 
+        null=True
+    )
     
 
     def is_exam(self) -> bool:
@@ -64,14 +72,11 @@ class Test(models.Model):
         super().clean()
         validate_test_type(self)
 
-    def __str__(self):
-        return f"{self.title} ({self.get_test_type_display()})"
-
     @property
     def is_timed(self) -> bool:
         '''Проверяет ограничен ли тест по времени'''
         return self.time_limit is not None
-    
+
     def __str__(self):
         return self.title
     

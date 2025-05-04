@@ -474,9 +474,15 @@ def show_tests_user_profile(request: HttpRequest):
 
     data_tests_of_user = zip(all_tests_of_user, count_of_questions_list)
 
+    attempts = UserUniversalTest.objects.filter(user=request.user).select_related('test')   
+    correct_completed_questions_by_tests = [attempt.user_answers.filter(is_correct=True).count() for attempt in attempts]
+    all_questions_by_tests = [attempt.user_answers.all().count() for attempt in attempts]
+    data_universal_tests_of_user = zip(attempts, zip(correct_completed_questions_by_tests, all_questions_by_tests))
+
     context = {
         'title': 'Все тесты',
         'data_tests_of_user': data_tests_of_user,
+        'data_universal_tests_of_user': data_universal_tests_of_user,
     }
 
     return render(request, 'user_app/tests_user_profile.html', context=context)\

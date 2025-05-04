@@ -2,10 +2,14 @@
     color: white;
     text-decoration: none;
 }
+a:hover {
+    color: white;
+    text-decoration: none;
+}
 .correct-answer {
     background-color: #e8f5e9; /* Светло-зеленый фон */
     border-left: 4px solid #4caf50; /* Зеленая левая граница */
-    padding: 12px;
+    padding: 25px 12px;
     margin: 8px 0;
     border-radius: 4px;
     position: relative;
@@ -23,7 +27,7 @@
 .incorrect-answer {
     background-color: #ffebee; /* Светло-красный фон */
     border-left: 4px solid #f44336; /* Красная левая граница */
-    padding: 12px;
+    padding: 25px 12px;
     margin: 8px 0;
     border-radius: 4px;
     position: relative;
@@ -37,4 +41,24 @@
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
+}
+fieldset {
+    position: relative; 
+    padding-top: 20px; 
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+  
+legend {
+    position: absolute; 
+    top: 0;
+    left: 10px;
+    background: none; 
+    padding: 0 10px;
+    font-size: 14px;
+    font-weight: bold;
+    max-width: calc(100% - 20px); 
+    white-space: nowrap;
+    overflow: hidden; 
+    text-overflow: ellipsis;
 }
