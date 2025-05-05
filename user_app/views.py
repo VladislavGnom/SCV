@@ -1,6 +1,7 @@
 import os
 import json
 import ast
+from itertools import chain
 from random import shuffle
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from user_app.forms import ImageForm, TaskForm, TestForm
@@ -153,20 +154,20 @@ def scv_home(request):
         name_for_test = []
 
         # тесты пользователя (сгенерированные)
-        data = UserTest.objects.filter(user=current_user, is_complete=False)
+        user_generated_tests = UserTest.objects.filter(user=current_user, is_complete=False)
 
         # список для названия всех тестов пользователя которые не завершены 
         all_title_tests = []
 
         # перебираем тесты пользователя которые незавершены и формируем список из названий этих тестов
-        for test in data:
+        for test in user_generated_tests:
             all_title_tests.append(test.title) 
 
         # перебираем тесты для пользователя и добавляем в gen_tasks_for_type список из типов заданий, которые были заданы через админ панель
         for test in tests:
             if not test.title in [test.title for test in UserTest.objects.filter(user=current_user, is_complete=True)]:
                 # проверка есть ли уже тест в таблице UserTest из таблицы Test
-                if not test.title in [test.title for test in data]:
+                if not test.title in [test.title for test in user_generated_tests]:
                     if test.generate_random_order_tasks:
                         # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
                         lst_current_tasks = ast.literal_eval(test.task_numbers)
@@ -185,7 +186,7 @@ def scv_home(request):
         form = ImageForm()
 
         # усли нет сгенерированных тестов для пользователя, то генерируем их
-        if not data:
+        if not user_generated_tests:
             # генерация варианта, перебираем список состоящий из списков типов заданий 
             for indx, gen_task in enumerate(gen_tasks_for_type):
                     # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
@@ -196,20 +197,24 @@ def scv_home(request):
                     UserTest.objects.create(title=f'{name_for_test[indx]}', user=current_user, tasks_id=[v.pk for v in variant], number_of_attempts=tests.get(title=f'{name_for_test[indx]}').number_of_attempts)
         else:
             # список из id заданий для отображения сгенерированного варианта
-            gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data if obj.tasks_id]
+            gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in user_generated_tests if obj.tasks_id]
             # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
             for gen_task in gen_tasks_for_type:
                 variant = [Question.objects.get(pk=pk) for pk in gen_task]
                 all_tasks.append(variant)
 
 
-        usertests = data
-
+        usertests = user_generated_tests
+        universal_usertests = UserUniversalTest.objects.filter(user=current_user, is_passed=False)
+        all_usertests = list(chain(usertests, universal_usertests))
 
         merge_title_and_task = list(zip(all_title_tests, usertests))
 
         completed_usertests = UserTest.objects.filter(user=current_user, is_complete=True)
-        
+        completed_universal_usertests = UserUniversalTest.objects.filter(user=current_user, is_passed=True)
+
+        all_completed_usertests = list(chain(completed_usertests, completed_universal_usertests))
+
         context = {
             'title': 'Главная страница',
             'form': form, 
@@ -217,8 +222,8 @@ def scv_home(request):
             'tasks': all_tasks,
             'all_title_tests': all_title_tests,
             'merge_title_and_task': merge_title_and_task,
-            'usertests': usertests,
-            'completed_usertests': completed_usertests,
+            'usertests': all_usertests,
+            'completed_usertests': all_completed_usertests,
             'universal_tests': UserUniversalTest.objects.filter(is_passed=False)
             }
         

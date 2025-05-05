@@ -54,10 +54,10 @@
     {% if usertests %}
             {% for test in usertests %}
                 <div class="submission-item mt-3">
-                    <div class="submission-title">{{ test.title }}</div>
+                    <div class="submission-title">{% if test.title %}{{ test.title }}{% else %}{{ test.test.title }}{% endif %}</div>
                     <div class="submission-meta">
-                    Попытки: {{ test.current_attempts }}/{{ test.number_of_attempts }}. 
-                    <span class="status-in-process">Статус: {% if test.current_attempts == 0 %} Работа в процессе решения{% else %} Работа в процессе решения, попробуй решить на максимум баллов{% endif %}</span>
+                    {% if test.current_attempts %}Попытки: {{ test.current_attempts }}/{{ test.number_of_attempts }}. {% else %}{% endif %}
+                    <span class="status-in-process">Статус: {% if test.current_attempts %}{% if test.current_attempts == 0 %} Работа в процессе решения{% else %} Работа в процессе решения, попробуй решить на максимум баллов{% endif %}{% else %}{% if not test.is_passed %}Работа в процессе решения, попробуй решить на максимум баллов{% endif %}{% endif %}</span>
                     </div>
                 </div>
             {% endfor %}
@@ -68,9 +68,9 @@
     {% if completed_usertests %}
             {% for test in completed_usertests %}
                 <div class="submission-item mt-3">
-                    <div class="submission-title">{{ test.title }}</div>
+                    <div class="submission-title">{% if test.title %}{{ test.title }}{% else %}{{ test.test.title }}{% endif %}</div>
                     <div class="submission-meta">
-                    Попытки: {{ test.current_attempts }}/{{ test.number_of_attempts }}. 
+                    {% if test.current_attempts %}Попытки: {{ test.current_attempts }}/{{ test.number_of_attempts }}. {% else %}{% endif %}
                     <span class="status-completed">Статус: Работа выполнена и загружена</span>
                     </div>
                 </div>
