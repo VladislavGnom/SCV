@@ -90,6 +90,9 @@ def test_view(request, test_id):
     )
 
     if user_test.is_passed: raise PermissionDenied()
+    elif not user_test.started_at: 
+        user_test.started_at = timezone.now()
+        user_test.save()
 
     if request.method == 'POST':
         form = TestForm(request.POST, questions=test.questions.all())
@@ -157,7 +160,8 @@ def test_result_view(request, test_id):
         'form': form, 
         'test': test, 
         'correct_fields': correct_fields, 
-        'incorrect_fields': incorrect_fields
+        'incorrect_fields': incorrect_fields,
+        'test_completion_time': user_test.formatted_duration,
     }
 
     return render(request, 'quiz/test_result_template.html', context=context)

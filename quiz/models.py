@@ -152,14 +152,34 @@ class UserTestResult(models.Model):
         related_name='user_results',
         verbose_name='Тест'
     )
-    started_at = models.DateTimeField(auto_now_add=True, verbose_name='Начат в')
+    started_at = models.DateTimeField(verbose_name='Начат в', null=True, blank=True)
     completed_at = models.DateTimeField(null=True, verbose_name='Завершён в')
+    duration = models.DurationField(
+        null=True, 
+        blank=True,
+        verbose_name="Длительность выполнения",
+        help_text="Время, затраченное на тест"
+    )
     score = models.PositiveIntegerField(default=0, verbose_name='Количество баллов')
     max_score = models.FloatField(verbose_name='Максимальный балл', default=1)
     is_passed = models.BooleanField(default=False, verbose_name='Статус сдачи теста')
 
     def percentage(self):
         return round((self.score / self.max_score) * 100)
+    
+    def save(self, *args, **kwargs):
+        if self.completed_at and not self.duration:
+            self.duration = self.completed_at - self.started_at
+        super().save(*args, **kwargs)
+
+    @property
+    def formatted_duration(self):
+        if self.duration:
+            total_seconds = int(self.duration.total_seconds())
+            hours, remainder = divmod(total_seconds, 3600)
+            minutes, seconds = divmod(remainder, 60)
+            return f"{hours:02}:{minutes:02}:{seconds:02}"
+        return "Не завершен" 
     
     def __str__(self):
         return self.test.title

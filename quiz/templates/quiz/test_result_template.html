@@ -26,7 +26,7 @@
     {% endfor %}
     
     <div class="test-meta">
-        <p>Время прохождения: {{ test.time_limit }} минут</p>
+        <p>Время прохождения: {{ test_completion_time }}</p>
         <p>Автор: {{ test.author.last_name }} {{ test.author.first_name }}</p>
     </div>
     <button class="submit-btn"><a href="{% url 'scv-home' %}" class="submit-link">Вернуться к тестам</a></button>
