@@ -67,6 +67,7 @@
                             const img = document.createElement('img');
                             const a = document.createElement('a');
                             a.href = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
+                            a.target = '_blank';
                             img.src = 'http://{{ request.get_host }}/media/imgs/{{ t.question_text }}';
                             img.setAttribute('style', 'max-height: 300px; overflow: auto;'); // Установливаем стили
                             document.getElementById('task-div-{{ t.pk }}').appendChild(a);
