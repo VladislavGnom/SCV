@@ -4,6 +4,7 @@ import ast
 from itertools import chain
 from random import shuffle
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
+from django.db.models import Q
 from user_app.forms import ImageForm, TaskForm, TestForm
 from user_app.models import Image, Task, Test, UserTest, CustomUser, Question, Answer
 from django.http import Http404, HttpResponseNotFound, JsonResponse, HttpResponseServerError, HttpRequest
@@ -116,7 +117,7 @@ def index(request):
 def scv_home(request):
     current_user = request.user
 
-    if current_user.groups.filter(name='Администратор').exists():
+    if current_user.groups.filter(Q(name='Администратор') | Q(name='Учитель')).exists():
         return teachers_home(request)
     else:
         # ast.literal_eval - используется для преобразования строкового представления списка из БД в нормальный список
@@ -457,7 +458,7 @@ def profile(request: HttpRequest):
         'active_block': '',
     }
 
-    if request.user.groups.filter(name='Администратор').exists():
+    if request.user.groups.filter(Q(name='Администратор') | Q(name='Учитель')).exists():
         return render(request, 'teacher_app/profile_teach.html', context=context)
     else:
         return render(request, 'user_app/profile.html', context=context)

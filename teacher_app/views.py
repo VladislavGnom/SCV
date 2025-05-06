@@ -304,7 +304,8 @@ def show_result_detail(request, class_id, title):
 
     # тесты пользователей соответсвующие одному названию теста и разным пользователям входящих в эту группу
     usertests = UserTest.objects.filter(title=title.replace('\\', '/'), user_id__in=users_id)
-
+    print(users_id)
+    print(usertests)
     # отбираю записи из таблицы Test по названию и получаю строковое представление списка номеров заданий и с помощью функции ast.literal_eval() преобразую эту строку в список, а затем узнаю кол-во элеменотов с помощью len() 
     try:
         count_tasks = len(ast.literal_eval(Test.objects.get(title=title.replace('\\', '/')).task_numbers))
