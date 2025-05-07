@@ -1,0 +1,224 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #2c3e50;
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 24px;
+}
+
+.question-block {
+    margin-bottom: 25px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.question-text {
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+/* Стили для радиокнопок */
+.radio-option {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.radio-option input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.radio-checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #eee;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+}
+
+.radio-option:hover input ~ .radio-checkmark {
+    background-color: #e0e0e0;
+}
+
+.radio-option input:checked ~ .radio-checkmark {
+    background-color: #2c3e50;
+}
+
+.radio-checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.radio-option input:checked ~ .radio-checkmark:after {
+    display: block;
+}
+
+.radio-option .radio-checkmark:after {
+    top: 6px;
+    left: 6px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: white;
+}
+
+/* Стили для чекбоксов */
+.checkbox-option {
+    display: block;
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-option input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.checkbox-mark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #eee;
+    border: 1px solid #ddd;
+}
+
+.checkbox-option:hover input ~ .checkbox-mark {
+    background-color: #e0e0e0;
+}
+
+.checkbox-option input:checked ~ .checkbox-mark {
+    background-color: #2c3e50;
+}
+
+.checkbox-mark:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+.checkbox-option input:checked ~ .checkbox-mark:after {
+    display: block;
+}
+
+.checkbox-option .checkbox-mark:after {
+    left: 7px;
+    top: 3px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* Стили для текстовых полей */
+.text-input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 14px;
+}
+
+.text-input:focus {
+    outline: none;
+    border-color: #2c3e50;
+    box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.2);
+}
+
+/* Кнопка отправки */
+.submit-btn {
+    background-color: #2c3e50;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: block;
+    margin: 30px auto 0;
+    transition: background-color 0.3s;
+}
+
+.submit-btn:hover {
+    background-color: #1a252f;
+}
+
+/* Информация о тесте */
+.test-info {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+/* Загрузка файла */
+.file-upload {
+    margin: 15px 0;
+}
+
+.file-upload-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-custom {
+    display: inline-block;
+    padding: 8px 12px;
+    background-color: #eee;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.file-custom:hover {
+    background-color: #e0e0e0;
+}
+
+.file-selected {
+    margin-left: 10px;
+    font-size: 13px;
+    color: #666;
+}
+.submit-link {
+    color: white;
+    text-decoration: none;
+}

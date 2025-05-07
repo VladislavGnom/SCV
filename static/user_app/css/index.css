@@ -1,0 +1,92 @@
+:root {
+    --primary-color: #3498db;
+    --dark-color: #2c3e50;
+    --light-color: #f8f9fa;
+  }
+  
+  body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--light-color);
+    color: #333;
+    line-height: 1.6;
+  }
+  
+  .hero-section {
+    background: linear-gradient(135deg, var(--dark-color) 0%, var(--primary-color) 100%);
+    color: white;
+    padding: 80px 0;
+    margin-bottom: 50px;
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  }
+  
+  .fact-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    margin-bottom: 40px;
+    border-left: 4px solid var(--primary-color);
+  }
+  
+  .glide__slide {
+    padding: 20px;
+  }
+  
+  .slide-card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    height: 100%;
+    border-top: 3px solid var(--primary-color);
+  }
+  
+  .footer {
+    background-color: var(--dark-color);
+    color: rgba(255,255,255,0.7);
+    padding: 30px 0;
+    margin-top: 50px;
+    font-size: 14px;
+  }
+  
+  .footer a {
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  
+  .footer a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+  }
+  
+  .glide__arrows {
+    position: relative;
+  }
+  
+  .glide__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+  }
+  
+  .glide__arrow:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+  
+  .glide__arrow--left {
+    left: -20px;
+  }
+  
+  .glide__arrow--right {
+    right: -20px;
+  }
