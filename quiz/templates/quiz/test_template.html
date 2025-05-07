@@ -1,0 +1,56 @@
+{% extends 'quiz/base.html' %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'quiz/css/test_template.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ test.title }}</h1>
+
+    <div class="test-info">
+        {{ test.description|safe }}
+    </div>
+    
+    <form method="post" action="{% url 'submit-test' test.id %}">
+        {% csrf_token %}
+    
+        {# Общие ошибки формы #}
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+                {% for error in form.non_field_errors %}
+                    {{ error }}
+                {% endfor %}
+            </div>
+        {% endif %}
+    
+        {% for field in form %}
+            <div class="question-block">
+            <fieldset>
+                <div class="question-text"><legend>Вопрос {{ forloop.counter }}: {{ field.label }}</legend></div>
+                {{ field }}
+            </fieldset>
+            </div>
+            {# Вывод ошибок #}
+            {% if field.errors %}
+                <div class="alert alert-danger mt-2">
+                    {% for error in field.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    
+    
+        <button type="submit" class="submit-btn">Отправить тест</button>
+    </form>
+</div>
+
+<script src="{% static 'quiz/js/test_template.js' %}"></script>
+{% endblock %}
+
+<div class="test-meta">
+    <p>Время прохождения: {{ test.time_limit }} минут</p>
+    <p>Автор: {{ test.author.username }}</p>
+</div>

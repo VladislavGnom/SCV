@@ -1,17 +1,38 @@
 {% extends 'base-special.html' %}
 
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'teacher_app/css/profile_teach.css' %}">
+{% endblock %}
+
 {% block main %}
-<div class="container text-center">
-<h1 class="mb-3">Profile</h1>
-<div class="card">
-    <div class="mt-3"></div>
-    Учитель: {{ data.first_name }} {{ data.last_name }}<br>
-    Группа: {{ group.name }}
-    <hr>
-    <form action="{% url 'logout' %}" method="post">
-        {% csrf_token %}
-        <button type="submit" class="mt-2 mb-3 btn-default btn-default-sm mx-auto">Logout</button>
-    </form>
-</div>
-</div>
+<div class="profile-container">
+    <div class="profile-card card">
+      <div class="card-header">
+        <h1 class="card-title">Профиль</h1>
+      </div>
+      <div class="profile-info">
+        <div class="info-item">
+          <div class="info-label">Учитель:</div>
+          <div class="info-value">{{ data.first_name }} {{ data.last_name }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Группа:</div>
+          <div class="info-value">{{ group.name }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="activity-section">
+      <div class="d-flex justify-content-between align-items-center">
+        <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <div class="block">
+                <button type="submit" class="col-12 mt-2 mb-3 btn-logout"><span>Logout</span></button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
 {% endblock %}

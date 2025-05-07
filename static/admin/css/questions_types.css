@@ -1,0 +1,3 @@
+.inline-related[data-question-type="text"] .answer-inline {
+    display: none !important;
+}

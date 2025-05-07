@@ -10,4 +10,8 @@ urlpatterns = [
     path('profile', views.profile, name='profile'),
     path('user_test/<int:user_test_id>', views.user_test, name='user-test'),
     path('profile/show_tests_user', views.show_tests_user_profile, name='show-tests-user-profile'),
+
+    # ------------- SYSTEM LOGIC ----------
+    path('upload_file', views.handle_uploaded_file, name='handle-uploaded-file'),
+    # -------------------------------------
 ]

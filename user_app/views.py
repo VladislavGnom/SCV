@@ -1,8 +1,10 @@
 import os
 import json
 import ast
+from itertools import chain
 from random import shuffle
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
+from django.db.models import Q
 from user_app.forms import ImageForm, TaskForm, TestForm
 from user_app.models import Image, Task, Test, UserTest, CustomUser, Question, Answer
 from django.http import Http404, HttpResponseNotFound, JsonResponse, HttpResponseServerError, HttpRequest
@@ -12,11 +14,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.conf import settings
 from django.core.paginator import Paginator
+from django.utils.timezone import now
 
 from teacher_app.views import teachers_home
 from utils.utils import get_user_groups, str_to_int
 from teacher_app.models import TestNewFormat, FilesForTestModel
-
+from quiz.models import Test as UniversalTest, TestGroupAccess, UserTestResult as UserUniversalTest
+from quiz.utils import get_test_group_by_user
 
 
 @login_required
@@ -66,7 +70,6 @@ def user_test_new_format(request, user_test_id):
     
     
     # данные для варианта берутся на основе производной модели TestNewFormat
-    # TODO: заменить на выборку по ID вместо названия(i have fixed already)
     base_data_for_variant = TestNewFormat.objects.get(title=test.title)
     file_with_tasks = base_data_for_variant.file_with_tasks
     number_of_inputs = base_data_for_variant.number_of_inputs
@@ -112,16 +115,37 @@ def index(request):
 @login_required()
 # представление отображения страницы активных к/р
 def scv_home(request):
-    if request.user.groups.filter(name='Администратор').exists():
+    current_user = request.user
+
+    if current_user.groups.filter(Q(name='Администратор') | Q(name='Учитель')).exists():
         return teachers_home(request)
     else:
         # ast.literal_eval - используется для преобразования строкового представления списка из БД в нормальный список
         
         # один пользователь принадлежит только одной группе(т.к это как классы в школе - каждый ученик определён только в один класс)
         # список (QuerySet) состоящий из тестов пользователя которые предназначены группе(классу) в которую он входит 
-        has_user_group = get_user_groups(request.user)[0]
+        has_user_group = get_user_groups(current_user)[0]
         tests = Test.objects.filter(group=has_user_group, is_complete=False)
         
+        # -------- NEW - ACCESS TO SPECIALIZED TESTS FOR GROUPS -------
+        tests_for_group = TestGroupAccess.objects.filter(
+            group=get_test_group_by_user(current_user), 
+            available_from__lte=now(),
+            available_until__gte=now()
+        )
+
+        for test_group in tests_for_group:
+            try:
+                user_universal_test = UserUniversalTest.objects.get(user=current_user, test=test_group.test)
+            except ObjectDoesNotExist:
+                user_universal_test = UserUniversalTest.objects.create(
+                    user=current_user, 
+                    test=test_group.test
+                    )
+                user_universal_test.save()
+
+        # --------------------
+
         # список для списков типов заданий на основе которых будет генерироваться вариант/ы
         gen_tasks_for_type = []
         # все задания - список обьектов отобранных из БД для отображения в шаблоне
@@ -131,20 +155,20 @@ def scv_home(request):
         name_for_test = []
 
         # тесты пользователя (сгенерированные)
-        data = UserTest.objects.filter(user=request.user, is_complete=False)
+        user_generated_tests = UserTest.objects.filter(user=current_user, is_complete=False)
 
         # список для названия всех тестов пользователя которые не завершены 
         all_title_tests = []
 
         # перебираем тесты пользователя которые незавершены и формируем список из названий этих тестов
-        for test in data:
+        for test in user_generated_tests:
             all_title_tests.append(test.title) 
 
         # перебираем тесты для пользователя и добавляем в gen_tasks_for_type список из типов заданий, которые были заданы через админ панель
         for test in tests:
-            if not test.title in [test.title for test in UserTest.objects.filter(user=request.user, is_complete=True)]:
+            if not test.title in [test.title for test in UserTest.objects.filter(user=current_user, is_complete=True)]:
                 # проверка есть ли уже тест в таблице UserTest из таблицы Test
-                if not test.title in [test.title for test in data]:
+                if not test.title in [test.title for test in user_generated_tests]:
                     if test.generate_random_order_tasks:
                         # используем функцию literal_eval - для безопасного интерпретирования списка из строки в виде которой он хранится в БД
                         lst_current_tasks = ast.literal_eval(test.task_numbers)
@@ -156,63 +180,53 @@ def scv_home(request):
                         gen_tasks_for_type.append(list(map(str_to_int, ast.literal_eval(test.task_numbers))))
                         name_for_test.append(test.title)
 
+        # получаем список из загруженных фотографий в БД ДЛЯ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
+        images = Image.objects.filter(user=current_user)
 
-        # upload file
-        if request.method == "POST":
-            form = ImageForm(request.POST, request.FILES)
-            if form.is_valid():
-                image = form.save(commit=False)
-                # устанавливаю пользователя который загружает фото - владельцем этого фото
-                image.user = request.user
-                image.group = Group.objects.get(pk=has_user_group)
-                image.save()
+        # форма для загрузки фото
+        form = ImageForm()
 
-                messages.success(request, message='Успешно загружено!')
-
-                return redirect('scv-home')
-        else:
-            # получаем список из загруженных фотографий в БД ДЛЯ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
-            images = Image.objects.filter(user=request.user)
-
-            # форма для загрузки фото
-            form = ImageForm()
-
-            # усли нет сгенерированных тестов для пользователя, то генерируем их
-            if not data:
-                # генерация варианта, перебираем список состоящий из списков типов заданий 
-                for indx, gen_task in enumerate(gen_tasks_for_type):
-                        # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
-                        variant = [Question.objects.get(pk=pk) for pk in gen_task]
-                        # добавляем в список всех обьектов заданий для отображения в шаблоне
-                        all_tasks.append(variant)
-                        # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
-                        UserTest.objects.create(title=f'{name_for_test[indx]}', user=request.user, tasks_id=[v.pk for v in variant], number_of_attempts=tests.get(title=f'{name_for_test[indx]}').number_of_attempts)
-            else:
-                # список из id заданий для отображения сгенерированного варианта
-                gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in data if obj.tasks_id]
-                # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
-                for gen_task in gen_tasks_for_type:
+        # усли нет сгенерированных тестов для пользователя, то генерируем их
+        if not user_generated_tests:
+            # генерация варианта, перебираем список состоящий из списков типов заданий 
+            for indx, gen_task in enumerate(gen_tasks_for_type):
+                    # создаём список из обьектов заданий из таблицы Task по их типу - берём рандомную задачу данного типа задачи
                     variant = [Question.objects.get(pk=pk) for pk in gen_task]
+                    # добавляем в список всех обьектов заданий для отображения в шаблоне
                     all_tasks.append(variant)
+                    # сохраняем сгенерированный вариант из заданий по их id в таблицу UserTest
+                    UserTest.objects.create(title=f'{name_for_test[indx]}', user=current_user, tasks_id=[v.pk for v in variant], number_of_attempts=tests.get(title=f'{name_for_test[indx]}').number_of_attempts)
+        else:
+            # список из id заданий для отображения сгенерированного варианта
+            gen_tasks_for_type = [ast.literal_eval(obj.tasks_id) for obj in user_generated_tests if obj.tasks_id]
+            # создание списка all_tasks из обьектов модели Task из уже имеющихся id задач в БД 
+            for gen_task in gen_tasks_for_type:
+                variant = [Question.objects.get(pk=pk) for pk in gen_task]
+                all_tasks.append(variant)
 
 
-            usertests = data
+        usertests = user_generated_tests
+        universal_usertests = UserUniversalTest.objects.filter(user=current_user, is_passed=False)
+        all_usertests = list(chain(usertests, universal_usertests))
 
+        merge_title_and_task = list(zip(all_title_tests, usertests))
 
-            merge_title_and_task = list(zip(all_title_tests, usertests))
+        completed_usertests = UserTest.objects.filter(user=current_user, is_complete=True)
+        completed_universal_usertests = UserUniversalTest.objects.filter(user=current_user, is_passed=True)
 
-            completed_usertests = UserTest.objects.filter(user=request.user, is_complete=True)
-            
-            context = {
-                'title': 'Главная страница',
-                'form': form, 
-                'images': images,
-                'tasks': all_tasks,
-                'all_title_tests': all_title_tests,
-                'merge_title_and_task': merge_title_and_task,
-                'usertests': usertests,
-                'completed_usertests': completed_usertests,
-                }
+        all_completed_usertests = list(chain(completed_usertests, completed_universal_usertests))
+
+        context = {
+            'title': 'Главная страница',
+            'form': form, 
+            'images': images,
+            'tasks': all_tasks,
+            'all_title_tests': all_title_tests,
+            'merge_title_and_task': merge_title_and_task,
+            'usertests': all_usertests,
+            'completed_usertests': all_completed_usertests,
+            'universal_tests': UserUniversalTest.objects.filter(is_passed=False)
+            }
         
         return render(request, 'user_app/scv_home.html', context=context)
     
@@ -245,7 +259,6 @@ def show_result(request):
             return redirect('scv-home')
         else:
             # данные для варианта берутся на основе производной модели TestNewFormat
-            # TODO: заменить на выборку по ID вместо названия(i have fixed already)
             try:
                 base_data_from_variant = TestNewFormat.objects.get(title=test_obj.title)
             except TestNewFormat.DoesNotExist as error:
@@ -445,7 +458,7 @@ def profile(request: HttpRequest):
         'active_block': '',
     }
 
-    if request.user.groups.filter(name='Администратор').exists():
+    if request.user.groups.filter(Q(name='Администратор') | Q(name='Учитель')).exists():
         return render(request, 'teacher_app/profile_teach.html', context=context)
     else:
         return render(request, 'user_app/profile.html', context=context)
@@ -467,10 +480,32 @@ def show_tests_user_profile(request: HttpRequest):
 
     data_tests_of_user = zip(all_tests_of_user, count_of_questions_list)
 
+    attempts = UserUniversalTest.objects.filter(user=request.user).select_related('test')   
+    correct_completed_questions_by_tests = [attempt.user_answers.filter(is_correct=True).count() for attempt in attempts]
+    all_questions_by_tests = [attempt.user_answers.all().count() for attempt in attempts]
+    data_universal_tests_of_user = zip(attempts, zip(correct_completed_questions_by_tests, all_questions_by_tests))
+
     context = {
         'title': 'Все тесты',
         'data_tests_of_user': data_tests_of_user,
+        'data_universal_tests_of_user': data_universal_tests_of_user,
     }
 
-    return render(request, 'user_app/tests_user_profile.html', context=context)
+    return render(request, 'user_app/tests_user_profile.html', context=context)\
+    
+def handle_uploaded_file(request):
+    current_user = request.user
+    has_user_group = get_user_groups(current_user)[0]
+
+    if request.method == "POST":
+        form = ImageForm(request.POST, request.FILES)
+        if form.is_valid():
+            image = form.save(commit=False)
+            image.user = current_user
+            image.group = Group.objects.get(pk=has_user_group)
+            image.save()
+
+            messages.success(request, message='Успешно загружено!')
+
+            return redirect('scv-home')
 
