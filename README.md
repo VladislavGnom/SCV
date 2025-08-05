@@ -15,24 +15,24 @@ SCV - это веб-платформа для проверки знаний уч
 ### Для учеников
 - Личный кабинет с активными тестами
   <img width="257" height="354" alt="Image" src="https://github.com/user-attachments/assets/5a9bfa4e-a8fc-4c72-a588-951636bcf462" />
+  <br><br>
 
-  
 - Возможность загрузки решений (скриншотов)
   <img width="257" height="354" alt="Image" src="https://github.com/user-attachments/assets/437bc98a-0268-484c-83be-ab573fe41738" />
-
+  <br><br>
   
 - Просмотр результатов выполненных тестов
   <img width="257" height="354" alt="Image" src="https://github.com/user-attachments/assets/e015a9b0-f7b4-443a-8283-b28758cc05fb" />
-
+  <br><br>
   
 - Статистика успеваемости
   <img width="257" height="354" alt="Image" src="https://github.com/user-attachments/assets/a131a5ab-1459-4fa6-9da7-cd7c8a3e47f1" />
   <img width="257" height="354" alt="Image" src="https://github.com/user-attachments/assets/f1621a9d-91ab-4a33-9607-689a7582d288" />
-
+  <br><br>
   
 - Личный профиль с основной информацией
   <img width="257" height="354" alt="Image" src="https://github.com/user-attachments/assets/2f98d128-2eec-496f-bc41-c5f0f6e809a1" />
-
+  <br><br>
 
 ### Для учителей
 - Управление классами учащихся
@@ -40,7 +40,7 @@ SCV - это веб-платформа для проверки знаний уч
 - Добавление заданий в базу вопросов
   <img width="257" height="354" alt="Image" src="https://github.com/user-attachments/assets/a84dd636-4dcc-4678-8d7f-1a7f0b6c569d" />
   <img width="257" height="354" alt="Image" src="https://github.com/user-attachments/assets/7631635a-c909-4bce-9a37-f549ad5d3edf" />
-
+  <br><br>
   
 - Просмотр результатов учащихся
 
